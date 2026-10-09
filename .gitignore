@@ -1,0 +1,45 @@
+# --- Secrets: only .env.example may be committed (agents.md) ------------
+.env
+.env.*
+!.env.example
+
+# --- Java / Maven --------------------------------------------------------
+backend/target/
+*.class
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+
+# --- Local media storage (Phase 4) ---------------------------------------
+storage-data/
+backend/storage-data/
+
+# --- Node / Next.js (frontend arrives in Phase 1) ------------------------
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+.next/
+*.tsbuildinfo
+
+# --- Logs ----------------------------------------------------------------
+*.log
+logs/
+
+# --- IDE / editor ---------------------------------------------------------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/*
+!.vscode/settings.json
+.project
+.classpath
+.settings/
+.factorypath
+
+# --- OS -------------------------------------------------------------------
+.DS_Store
+Thumbs.db
