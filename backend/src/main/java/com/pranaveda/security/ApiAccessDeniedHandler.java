@@ -1,9 +1,9 @@
 package com.pranaveda.security;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pranaveda.common.error.ApiError;
 import com.pranaveda.common.error.ErrorCode;
 import com.pranaveda.common.web.CorrelationIdFilter;
@@ -16,12 +16,14 @@ import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 
+import tools.jackson.databind.json.JsonMapper;
+
 /** Turns authorization failures into the uniform JSON error envelope (403 FORBIDDEN). */
 public class ApiAccessDeniedHandler implements AccessDeniedHandler {
 
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
-    public ApiAccessDeniedHandler(ObjectMapper objectMapper) {
+    public ApiAccessDeniedHandler(JsonMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
@@ -34,6 +36,7 @@ public class ApiAccessDeniedHandler implements AccessDeniedHandler {
             Instant.now(), request.getRequestURI(), MDC.get(CorrelationIdFilter.MDC_KEY), null);
         response.setStatus(ErrorCode.FORBIDDEN.httpStatus());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        objectMapper.writeValue(response.getOutputStream(), error);
+        response.getOutputStream().write(
+            objectMapper.writeValueAsString(error).getBytes(StandardCharsets.UTF_8));
     }
 }

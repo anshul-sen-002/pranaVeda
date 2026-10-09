@@ -3,7 +3,6 @@ package com.pranaveda.config;
 import java.util.Arrays;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pranaveda.security.ApiAccessDeniedHandler;
 import com.pranaveda.security.ApiAuthenticationEntryPoint;
 import com.pranaveda.security.JwtAuthenticationFilter;
@@ -24,6 +23,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import tools.jackson.databind.json.JsonMapper;
+
 /**
  * Security chain (architecture section 6): stateless bearer auth for the API,
  * HttpOnly refresh cookie for rotation, explicit authorization matrix.
@@ -40,12 +41,12 @@ public class SecurityConfig {
     private final String allowedOrigins;
     private final JwtService jwtService;
     private final UserRepository users;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
     public SecurityConfig(@Value("${app.cors.allowed-origins}") String allowedOrigins,
                           JwtService jwtService,
                           UserRepository users,
-                          ObjectMapper objectMapper) {
+                          JsonMapper objectMapper) {
         this.allowedOrigins = allowedOrigins;
         this.jwtService = jwtService;
         this.users = users;

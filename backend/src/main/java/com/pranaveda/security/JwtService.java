@@ -11,7 +11,6 @@ import javax.crypto.SecretKey;
 import com.pranaveda.common.error.ErrorCode;
 import com.pranaveda.common.error.UnauthorizedException;
 import com.pranaveda.user.Role;
-import com.pranaveda.user.User;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;

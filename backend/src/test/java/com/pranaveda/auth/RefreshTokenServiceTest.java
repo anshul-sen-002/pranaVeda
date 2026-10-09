@@ -95,3 +95,68 @@ class RefreshTokenServiceTest {
         assertThat(ex.getMessage()).contains("reuse");
         assertThat(sibling.getRevokedAt()).isNotNull();
     }
+
+    @Test
+    void expiredTokenReportsTokenExpired() {
+        RefreshToken expired = activeToken("old-token");
+        expired.setExpiresAt(Instant.now().minusSeconds(1));
+
+        UnauthorizedException ex = catchThrowableOfType(
+            () -> service.rotate("old-token"), UnauthorizedException.class);
+
+        assertThat(ex.code()).isEqualTo(ErrorCode.TOKEN_EXPIRED);
+    }
+
+    @Test
+    void unknownTokenRejected() {
+        when(tokens.findByTokenHash(anyString())).thenReturn(Optional.empty());
+
+        UnauthorizedException ex = catchThrowableOfType(
+            () -> service.rotate("who-is-this"), UnauthorizedException.class);
+
+        assertThat(ex.code()).isEqualTo(ErrorCode.UNAUTHENTICATED);
+    }
+
+    @Test
+    void blankTokenRejectedWithoutTouchingTheDatabase() {
+        assertThatThrownBy(() -> service.rotate(null)).isInstanceOf(UnauthorizedException.class);
+        assertThatThrownBy(() -> service.rotate("   ")).isInstanceOf(UnauthorizedException.class);
+        verify(tokens, never()).findByTokenHash(any());
+    }
+
+    @Test
+    void revokeMarksActiveTokenAndIsIdempotent() {
+        RefreshToken active = activeToken("logout-me");
+
+        service.revoke("logout-me");
+        assertThat(active.getRevokedAt()).isNotNull();
+
+        service.revoke("logout-me"); // second call: already revoked, no crash
+        assertThat(active.getRevokedAt()).isNotNull();
+    }
+
+    @Test
+    void revokeIgnoresBlankAndUnknownTokens() {
+        service.revoke(null);
+        service.revoke("");
+        verify(tokens, never()).findByTokenHash(any());
+
+        when(tokens.findByTokenHash(anyString())).thenReturn(Optional.empty());
+        service.revoke("unknown");
+        verify(tokens, never()).save(any(RefreshToken.class));
+    }
+
+    /** Builds an active token in the repository stub for the given plaintext. */
+    private RefreshToken activeToken(String plainToken) {
+        RefreshToken token = new RefreshToken();
+        ReflectionTestUtils.setField(token, "id", 100L);
+        token.setUserId(7L);
+        token.setTokenHash(RefreshTokenService.sha256(plainToken));
+        token.setFamilyId(UUID.randomUUID());
+        token.setExpiresAt(Instant.now().plus(Duration.ofDays(1)));
+        when(tokens.findByTokenHash(RefreshTokenService.sha256(plainToken)))
+            .thenReturn(Optional.of(token));
+        return token;
+    }
+}
+

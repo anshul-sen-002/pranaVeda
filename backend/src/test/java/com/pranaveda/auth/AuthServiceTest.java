@@ -90,3 +90,99 @@ class AuthServiceTest {
         assertThat(ex.code()).isEqualTo(ErrorCode.CONFLICT);
         verify(userService, never()).create(any(), any(), any(), any());
     }
+
+    @Test
+    void unknownEmailAndWrongPasswordShareOneError() {
+        when(users.findByEmail("ghost@pranaveda.dev")).thenReturn(Optional.empty());
+        UnauthorizedException unknown = catchThrowableOfType(
+            () -> authService.login(new LoginRequest("ghost@pranaveda.dev", "password123")),
+            UnauthorizedException.class);
+
+        User existing = user(5L);
+        when(users.findByEmail("demo@pranaveda.dev")).thenReturn(Optional.of(existing));
+        when(passwordEncoder.matches("wrong-password", existing.getPasswordHash())).thenReturn(false);
+        UnauthorizedException wrongPassword = catchThrowableOfType(
+            () -> authService.login(new LoginRequest("demo@pranaveda.dev", "wrong-password")),
+            UnauthorizedException.class);
+
+        assertThat(unknown.getMessage()).isEqualTo(wrongPassword.getMessage());
+        assertThat(unknown.code()).isEqualTo(ErrorCode.UNAUTHENTICATED);
+        assertThat(wrongPassword.code()).isEqualTo(ErrorCode.UNAUTHENTICATED);
+    }
+
+    @Test
+    void loginSuccessIssuesSession() {
+        User existing = user(5L);
+        when(users.findByEmail("demo@pranaveda.dev")).thenReturn(Optional.of(existing));
+        when(passwordEncoder.matches("password123", existing.getPasswordHash())).thenReturn(true);
+
+        IssuedSession session = authService.login(new LoginRequest("demo@pranaveda.dev", "password123"));
+
+        assertThat(session.response().accessToken()).isEqualTo("access-jwt");
+        assertThat(session.refreshToken()).isEqualTo("refresh-plain");
+    }
+
+    @Test
+    void loginDisabledAccountRejected() {
+        User existing = user(5L);
+        existing.setEnabled(false);
+        when(users.findByEmail("demo@pranaveda.dev")).thenReturn(Optional.of(existing));
+        when(passwordEncoder.matches("password123", existing.getPasswordHash())).thenReturn(true);
+
+        UnauthorizedException ex = catchThrowableOfType(
+            () -> authService.login(new LoginRequest("demo@pranaveda.dev", "password123")),
+            UnauthorizedException.class);
+
+        assertThat(ex.getMessage()).isEqualTo("Account is disabled.");
+    }
+
+    @Test
+    void refreshUsesRotatedTokenForNewSession() {
+        RefreshTokenService.IssuedRefreshToken rotated =
+            new RefreshTokenService.IssuedRefreshToken("rotated-plain", 2L, UUID.randomUUID(), 5L);
+        when(refreshTokenService.rotate("old-plain")).thenReturn(rotated);
+        when(users.findById(5L)).thenReturn(Optional.of(user(5L)));
+
+        IssuedSession session = authService.refresh("old-plain");
+
+        assertThat(session.refreshToken()).isEqualTo("rotated-plain");
+        assertThat(session.response().accessToken()).isEqualTo("access-jwt");
+    }
+
+    @Test
+    void logoutDelegatesRevocation() {
+        authService.logout("some-token");
+        verify(refreshTokenService).revoke("some-token");
+    }
+
+    @Test
+    void meRequiresAuthentication() {
+        UnauthorizedException ex = catchThrowableOfType(() -> authService.me(), UnauthorizedException.class);
+        assertThat(ex.code()).isEqualTo(ErrorCode.UNAUTHENTICATED);
+    }
+
+    @Test
+    void meReturnsSummaryOfContextUser() {
+        SecurityContextHolder.getContext().setAuthentication(
+            new UsernamePasswordAuthenticationToken(
+                new CurrentUserPrincipal(5L, "demo@pranaveda.dev", Role.USER), null, List.of()));
+        when(users.findById(5L)).thenReturn(Optional.of(user(5L)));
+
+        UserSummary summary = authService.me();
+
+        assertThat(summary.id()).isEqualTo(5L);
+        assertThat(summary.email()).isEqualTo("demo@pranaveda.dev");
+        assertThat(summary.role()).isEqualTo(Role.USER);
+    }
+
+    private static User user(long id) {
+        User user = new User();
+        ReflectionTestUtils.setField(user, "id", id);
+        user.setEmail("demo@pranaveda.dev");
+        user.setDisplayName("Demo User");
+        user.setRole(Role.USER);
+        user.setPasswordHash("$2a$12$abcdefghijklmnopqrstuv");
+        return user;
+    }
+}
+
