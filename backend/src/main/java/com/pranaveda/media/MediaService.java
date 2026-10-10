@@ -6,8 +6,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.pranaveda.common.error.BadRequestException;
+import com.pranaveda.common.error.ForbiddenException;
 import com.pranaveda.common.error.NotFoundException;
+import com.pranaveda.common.error.StorageException;
+import com.pranaveda.content.ContentRepository;
+import com.pranaveda.content.ContentStatus;
 import com.pranaveda.security.CurrentUserPrincipal;
+import com.pranaveda.user.Role;
 import com.pranaveda.user.User;
 import com.pranaveda.user.UserRepository;
 
@@ -18,10 +23,11 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * Orchestrates validated uploads: server-side type/size checks (agents.md 2.15),
  * provider upload via {@link StorageService}, and {@code media_assets} metadata
- * persistence. Owns the profile-photo lifecycle for the signed-in user.
+ * persistence. Owns the profile-photo lifecycle and authorized downloads for
+ * the signed-in user.
  *
- * <p>Ownership rule: personal uploads resolve the owner from the security
- * context via {@link CurrentUserPrincipal} - never from client-supplied IDs.
+ * <p>Ownership rule: personal uploads and downloads resolve the owner from the
+ * security context via {@link CurrentUserPrincipal} - never from client-supplied IDs.
  */
 @Service
 public class MediaService {
@@ -30,13 +36,16 @@ public class MediaService {
     private final MediaRepository media;
     private final UserRepository users;
     private final MediaProperties properties;
+    private final ContentRepository contentRepository;
 
     public MediaService(StorageService storage, MediaRepository media,
-                        UserRepository users, MediaProperties properties) {
+                        UserRepository users, MediaProperties properties,
+                        ContentRepository contentRepository) {
         this.storage = storage;
         this.media = media;
         this.users = users;
         this.properties = properties;
+        this.contentRepository = contentRepository;
     }
 
     /** ADMIN: validates and stores an asset, persisting safe metadata. */
@@ -123,6 +132,64 @@ public class MediaService {
         return users.findById(userId).map(User::getProfileImageUrl);
     }
 
+    /**
+     * Authorized download (agents.md 2.7). Public streaming and authenticated
+     * downloading are separate permissions, so this re-checks three things
+     * server-side regardless of what the UI shows:
+     *
+     * <ol>
+     *   <li>authentication (route is {@code /me/**}, resolved here),</li>
+     *   <li>content availability - linked content must be PUBLISHED for a
+     *       non-admin, so drafts/archived never leak through media,</li>
+     *   <li>download permission - the asset's {@code downloadable} flag, and
+     *       for owner-private kinds (profile images) the owner match.</li>
+     * </ol>
+     *
+     * @return a short-lived signed download descriptor (never the raw
+     *         credentials or a permanent private bucket URL)
+     */
+    @Transactional(readOnly = true)
+    public MediaDownloadDto download(long mediaId) {
+        CurrentUserPrincipal principal = CurrentUserPrincipal.requireCurrent();
+        MediaAsset asset = media.findById(mediaId)
+            .orElseThrow(() -> new NotFoundException("Media not found."));
+
+        boolean isAdmin = principal.role() == Role.ADMIN;
+
+        // Owner-private kinds: only the owner (or admin) may download.
+        if (asset.getKind() == MediaKind.PROFILE_IMAGE) {
+            boolean isOwner = asset.getOwnerId() != null && asset.getOwnerId() == principal.userId();
+            if (!isOwner && !isAdmin) {
+                throw new NotFoundException("Media not found."); // do not reveal existence
+            }
+        }
+
+        // Content availability: linked content must be visible to this caller.
+        if (asset.getContentId() != null && !isAdmin) {
+            ContentStatus status = contentRepository.findById(asset.getContentId())
+                .map(item -> item.getStatus())
+                .orElse(null);
+            if (status != ContentStatus.PUBLISHED) {
+                throw new NotFoundException("Media not found.");
+            }
+        }
+
+        // Download permission (streaming stays independent of this flag).
+        if (!asset.isDownloadable() && !isAdmin) {
+            throw new ForbiddenException("This item is available for streaming only and cannot be downloaded.");
+        }
+
+        if (asset.getSecureUrl() == null || asset.getSecureUrl().isBlank()) {
+            throw new StorageException("The stored file is currently unavailable.");
+        }
+
+        return new MediaDownloadDto(
+            asset.getSecureUrl(),
+            downloadFilename(asset),
+            contentTypeFor(asset),
+            asset.getBytes());
+    }
+
     // --- validation helpers ------------------------------------------------
 
     private byte[] readAndValidate(MultipartFile file, MediaKind kind) {
@@ -181,6 +248,36 @@ public class MediaService {
     /** Generated storage key - never derived from the original filename. */
     private static String generatePublicId(MediaKind kind) {
         return kind.name().toLowerCase(Locale.ROOT) + "-" + UUID.randomUUID();
+    }
+
+    /** A safe, deterministic download filename; never trusts the stored path. */
+    private static String downloadFilename(MediaAsset asset) {
+        String name = asset.getOriginalName();
+        if (name == null || name.isBlank()) {
+            String ext = asset.getFormat() != null && !asset.getFormat().isBlank()
+                ? "." + asset.getFormat() : "";
+            name = asset.getKind().name().toLowerCase(Locale.ROOT) + "-" + asset.getId() + ext;
+        }
+        // Strip anything a client may have embedded; keep just the final segment.
+        String base = name.replace('\\', '/');
+        int slash = base.lastIndexOf('/');
+        return slash >= 0 ? base.substring(slash + 1) : base;
+    }
+
+    /** Best-effort content type for the download response. */
+    private static String contentTypeFor(MediaAsset asset) {
+        String format = asset.getFormat() != null ? asset.getFormat().toLowerCase(Locale.ROOT) : "";
+        return switch (asset.getKind()) {
+            case PROFILE_IMAGE, CONTENT_IMAGE -> "image/" + (format.isBlank() ? "jpeg" : format);
+            case VIDEO -> "video/" + (format.isBlank() ? "mp4" : format);
+            case AUDIO -> switch (format) {
+                case "mp3", "mpeg" -> "audio/mpeg";
+                case "ogg" -> "audio/ogg";
+                case "wav" -> "audio/wav";
+                case "m4a", "mp4" -> "audio/mp4";
+                default -> "application/octet-stream";
+            };
+        };
     }
 
     private static String normalize(String contentType) {

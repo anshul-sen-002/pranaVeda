@@ -25,6 +25,11 @@ import org.hibernate.annotations.Checks;
  * <p>{@code ownerId} is set for personal uploads (profile photos) and null for
  * platform/admin content. {@code contentId} optionally links an asset to the
  * content item it illustrates.
+ *
+ * <p>{@code downloadable} is the agents.md 2.7 distinction between public
+ * streaming and authenticated downloading: a public video may be streamable
+ * while its original file is NOT downloadable. Profile images are always
+ * owner-private and treated as downloadable by their owner only.
  */
 @Entity
 @Table(name = "media_assets",
@@ -82,6 +87,13 @@ public class MediaAsset {
 
     @Column(name = "created_by")
     private Long createdBy;
+
+    /**
+     * Whether the original file may be downloaded by an authorized user
+     * (agents.md 2.7). Public streaming is independent of this flag.
+     */
+    @Column(name = "downloadable", nullable = false)
+    private boolean downloadable = true;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -199,6 +211,14 @@ public class MediaAsset {
 
     public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public boolean isDownloadable() {
+        return downloadable;
+    }
+
+    public void setDownloadable(boolean downloadable) {
+        this.downloadable = downloadable;
     }
 
     public Instant getCreatedAt() {

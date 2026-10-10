@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -62,5 +63,15 @@ public class MediaController {
     public ResponseEntity<Void> clearProfilePhoto() {
         mediaService.clearProfilePhoto();
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Signed-in user: authorized download descriptor for an asset (agents.md
+     * 2.7). Route is under {@code /me/**} (authenticated); the service re-checks
+     * ownership, content availability, and the downloadable flag.
+     */
+    @GetMapping("/me/media/{id}/download")
+    public MediaDownloadDto download(@PathVariable long id) {
+        return mediaService.download(id);
     }
 }
