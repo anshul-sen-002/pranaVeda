@@ -85,7 +85,9 @@ class ContentControllerTest {
 
         mockMvc.perform(get("/api/v1/content/mountain-pose"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.slug").value("mountain-pose"));
+            .andExpect(jsonPath("$.summary.slug").value("mountain-pose"))
+            .andExpect(jsonPath("$.summary.contentType").value("ASANA"))
+            .andExpect(jsonPath("$.description").value("Long description"));
     }
 
     @Test
@@ -103,15 +105,17 @@ class ContentControllerTest {
     void unknownSortReturnsValidationEnvelope() throws Exception {
         mockMvc.perform(get("/api/v1/content?sort=bogus"))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
-            .andExpect(jsonPath("$.message").value(Matchers.containsString("Unknown sort")));
+            .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+            .andExpect(jsonPath("$.message").value(Matchers.containsString("Unknown sort 'bogus'")));
     }
 
     @Test
     void unknownEnumFilterReturns400Not500() throws Exception {
         mockMvc.perform(get("/api/v1/content?difficulty=SUPERHUMAN"))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("BAD_REQUEST"));
+            .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+            .andExpect(jsonPath("$.fieldErrors[0].field").value("difficulty"))
+            .andExpect(jsonPath("$.correlationId").exists());
     }
 
     // --- drafts never leak ---------------------------------------------------

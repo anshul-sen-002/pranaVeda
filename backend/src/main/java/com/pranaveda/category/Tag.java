@@ -7,13 +7,17 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 /** Reusable content tag. */
 @Entity
-@Table(name = "tags")
+@Table(name = "tags",
+    uniqueConstraints = @UniqueConstraint(name = "uq_tags_slug", columnNames = "slug"),
+    indexes = @Index(name = "ix_tags_slug", columnList = "slug"))
 public class Tag {
 
     @Id

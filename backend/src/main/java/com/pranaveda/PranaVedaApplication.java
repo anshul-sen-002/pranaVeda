@@ -2,6 +2,7 @@ package com.pranaveda;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 /**
  * PranaVeda backend entry point.
@@ -11,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * repositories own persistence, entities are never exposed to clients.
  */
 @SpringBootApplication
+@ConfigurationPropertiesScan // binds @ConfigurationProperties records (app.media.*, app.cloudinary.*, app.ai.*)
 public class PranaVedaApplication {
 
     public static void main(String[] args) {

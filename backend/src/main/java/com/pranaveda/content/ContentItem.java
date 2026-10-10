@@ -14,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -21,13 +22,25 @@ import jakarta.persistence.Table;
 import com.pranaveda.category.Category;
 import com.pranaveda.category.Tag;
 
+import org.hibernate.annotations.Check;
+import org.hibernate.annotations.Checks;
+
 /**
- * A yoga content item (asana / article / video). Schema is Flyway-owned
- * (V3__content_library.sql). Publication visibility is NOT encoded here -
- * the service layer decides who may see which status (architecture section 4).
+ * A yoga content item (asana / article / video). Schema is Hibernate-owned
+ * from the entity mapping. Publication visibility is NOT encoded here - the
+ * service layer decides who may see which status (architecture section 4).
  */
 @Entity
-@Table(name = "content_items")
+@Table(name = "content_items", indexes = {
+    @Index(name = "ix_content_items_status", columnList = "status"),
+    @Index(name = "ix_content_items_type", columnList = "content_type"),
+    @Index(name = "ix_content_items_difficulty", columnList = "difficulty"),
+    @Index(name = "ix_content_items_published_desc", columnList = "published_at DESC")})
+@Checks({
+    @Check(constraints = "status IN ('DRAFT', 'PUBLISHED', 'ARCHIVED')"),
+    @Check(constraints = "content_type IN ('ASANA', 'ARTICLE', 'VIDEO')"),
+    @Check(constraints = "difficulty IS NULL OR difficulty IN ('BEGINNER', 'INTERMEDIATE', 'ADVANCED')"),
+    @Check(constraints = "duration_minutes IS NULL OR duration_minutes > 0")})
 public class ContentItem {
 
     @Id

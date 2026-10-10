@@ -12,14 +12,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+
+import org.hibernate.annotations.Check;
 
 /**
  * A registered account. Email is stored normalized (lowercase, trimmed) and
- * unique - the constraint lives in V2__users_and_refresh_tokens.sql because
- * Flyway owns the schema.
+ * unique - the constraint is declared here so Hibernate owns the schema.
  */
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = @UniqueConstraint(name = "uq_users_email", columnNames = "email"))
+@Check(constraints = "role IN ('USER', 'ADMIN')")
 public class User {
 
     @Id
@@ -45,6 +48,14 @@ public class User {
 
     @Column(name = "email_verified_at")
     private Instant emailVerifiedAt;
+
+    /** Delivery URL of the owner's profile photo, or null when none is set. */
+    @Column(name = "profile_image_url", length = 500)
+    private String profileImageUrl;
+
+    /** Cloudinary public id of the profile photo, used to delete/replace it. */
+    @Column(name = "profile_image_public_id", length = 255)
+    private String profileImagePublicId;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
@@ -116,6 +127,22 @@ public class User {
 
     public void setEmailVerifiedAt(Instant emailVerifiedAt) {
         this.emailVerifiedAt = emailVerifiedAt;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
+
+    public String getProfileImagePublicId() {
+        return profileImagePublicId;
+    }
+
+    public void setProfileImagePublicId(String profileImagePublicId) {
+        this.profileImagePublicId = profileImagePublicId;
     }
 
     public Instant getCreatedAt() {

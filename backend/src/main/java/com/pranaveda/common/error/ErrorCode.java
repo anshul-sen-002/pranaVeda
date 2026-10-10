@@ -17,6 +17,8 @@ public enum ErrorCode {
     RATE_LIMITED(HttpStatus.TOO_MANY_REQUESTS),
     PAYLOAD_TOO_LARGE(HttpStatus.CONTENT_TOO_LARGE), // Framework 7 rename of PAYLOAD_TOO_LARGE
     UNSUPPORTED_MEDIA_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE),
+    STORAGE_ERROR(HttpStatus.BAD_GATEWAY), // upstream storage provider (Cloudinary) failure
+    AI_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE), // AI provider timeout/unconfigured/failed
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final HttpStatus status;

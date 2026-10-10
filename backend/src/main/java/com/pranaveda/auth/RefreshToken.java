@@ -8,8 +8,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 /**
  * Server-side record of an issued refresh token. Only the SHA-256 hash of the
@@ -17,7 +19,11 @@ import jakarta.persistence.Table;
  * so presenting a revoked token can revoke the whole family (reuse detection).
  */
 @Entity
-@Table(name = "refresh_tokens")
+@Table(name = "refresh_tokens",
+    uniqueConstraints = @UniqueConstraint(name = "uq_refresh_tokens_hash", columnNames = "token_hash"),
+    indexes = {
+        @Index(name = "ix_refresh_tokens_user_id", columnList = "user_id"),
+        @Index(name = "ix_refresh_tokens_family_id", columnList = "family_id")})
 public class RefreshToken {
 
     @Id

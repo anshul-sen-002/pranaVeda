@@ -7,13 +7,17 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 /** Content category (e.g. "Morning", "Backbends", "Restorative"). */
 @Entity
-@Table(name = "categories")
+@Table(name = "categories",
+    uniqueConstraints = @UniqueConstraint(name = "uq_categories_slug", columnNames = "slug"),
+    indexes = @Index(name = "ix_categories_slug", columnList = "slug"))
 public class Category {
 
     @Id

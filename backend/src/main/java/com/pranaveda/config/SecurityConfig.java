@@ -66,7 +66,8 @@ public class SecurityConfig {
                 // ADMIN content studio (agents.md authorization matrix)
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 // personal endpoints - ownership is re-checked in the services
-                .requestMatchers("/api/v1/me/**", "/api/v1/auth/me").authenticated()
+                .requestMatchers("/api/v1/me/**", "/api/v1/auth/me",
+                                 "/api/v1/ai/**").authenticated()
                 // public content APIs (Phase 3+): anonymous browsing stays open
                 .anyRequest().permitAll())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))

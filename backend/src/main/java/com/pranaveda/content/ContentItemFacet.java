@@ -7,16 +7,26 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+
+import org.hibernate.annotations.Check;
 
 /**
  * One goal or target-body-area value attached to a content item
- * (table content_item_facets, V3). Deliberately no JPA association to
+ * (table content_item_facets). Deliberately no JPA association to
  * ContentItem: facets are written/read by content id, keeping list queries
  * join-free.
  */
 @Entity
-@Table(name = "content_item_facets")
+@Table(name = "content_item_facets",
+    uniqueConstraints = @UniqueConstraint(name = "uq_content_facet",
+        columnNames = {"content_id", "facet_type", "facet_value"}),
+    indexes = {
+        @Index(name = "ix_content_facets_lookup", columnList = "facet_type, facet_value"),
+        @Index(name = "ix_content_facets_content", columnList = "content_id")})
+@Check(constraints = "facet_type IN ('GOAL', 'TARGET_AREA')")
 public class ContentItemFacet {
 
     @Id
