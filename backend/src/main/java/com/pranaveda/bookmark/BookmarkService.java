@@ -87,6 +87,13 @@ public class BookmarkService {
         return bookmarks.existsByUserIdAndTargetTypeAndTargetId(userId, targetType, targetId);
     }
 
+    /** Count of the signed-in user's saved items (dashboard headline). */
+    @Transactional(readOnly = true)
+    public long countMine() {
+        long userId = CurrentUserPrincipal.requireCurrentUserId();
+        return bookmarks.countByUserId(userId);
+    }
+
     /**
      * The Saved Library page. All filters are plain bookmark columns (no joins),
      * so pagination stays exact. Content summaries resolve in one extra query for
