@@ -7,6 +7,8 @@ import java.util.UUID;
 import com.pranaveda.common.error.ConflictException;
 import com.pranaveda.common.error.ErrorCode;
 import com.pranaveda.common.error.UnauthorizedException;
+import com.pranaveda.mail.EmailService;
+import com.pranaveda.notification.NotificationService;
 import com.pranaveda.security.CurrentUserPrincipal;
 import com.pranaveda.security.JwtService;
 import com.pranaveda.user.Role;
@@ -39,6 +41,8 @@ class AuthServiceTest {
     private PasswordEncoder passwordEncoder;
     private RefreshTokenService refreshTokenService;
     private JwtService jwtService;
+    private NotificationService notificationService;
+    private EmailService emailService;
     private AuthService authService;
 
     @BeforeEach
@@ -48,7 +52,10 @@ class AuthServiceTest {
         passwordEncoder = mock(PasswordEncoder.class);
         refreshTokenService = mock(RefreshTokenService.class);
         jwtService = mock(JwtService.class);
-        authService = new AuthService(userService, users, passwordEncoder, refreshTokenService, jwtService);
+        notificationService = mock(NotificationService.class);
+        emailService = mock(EmailService.class);
+        authService = new AuthService(userService, users, passwordEncoder, refreshTokenService,
+                jwtService, notificationService, emailService);
 
         when(jwtService.createAccessToken(anyLong(), anyString(), any(Role.class))).thenReturn("access-jwt");
         when(jwtService.accessTtlSeconds()).thenReturn(900L);
@@ -95,14 +102,14 @@ class AuthServiceTest {
     void unknownEmailAndWrongPasswordShareOneError() {
         when(users.findByEmail("ghost@pranaveda.dev")).thenReturn(Optional.empty());
         UnauthorizedException unknown = catchThrowableOfType(
-            () -> authService.login(new LoginRequest("ghost@pranaveda.dev", "password123")),
+            () -> authService.login(new LoginRequest("ghost@pranaveda.dev", "password123"), "127.0.0.1"),
             UnauthorizedException.class);
 
         User existing = user(5L);
         when(users.findByEmail("demo@pranaveda.dev")).thenReturn(Optional.of(existing));
         when(passwordEncoder.matches("wrong-password", existing.getPasswordHash())).thenReturn(false);
         UnauthorizedException wrongPassword = catchThrowableOfType(
-            () -> authService.login(new LoginRequest("demo@pranaveda.dev", "wrong-password")),
+            () -> authService.login(new LoginRequest("demo@pranaveda.dev", "wrong-password"), "127.0.0.1"),
             UnauthorizedException.class);
 
         assertThat(unknown.getMessage()).isEqualTo(wrongPassword.getMessage());
@@ -116,7 +123,7 @@ class AuthServiceTest {
         when(users.findByEmail("demo@pranaveda.dev")).thenReturn(Optional.of(existing));
         when(passwordEncoder.matches("password123", existing.getPasswordHash())).thenReturn(true);
 
-        IssuedSession session = authService.login(new LoginRequest("demo@pranaveda.dev", "password123"));
+        IssuedSession session = authService.login(new LoginRequest("demo@pranaveda.dev", "password123"), "127.0.0.1");
 
         assertThat(session.response().accessToken()).isEqualTo("access-jwt");
         assertThat(session.refreshToken()).isEqualTo("refresh-plain");
@@ -130,7 +137,7 @@ class AuthServiceTest {
         when(passwordEncoder.matches("password123", existing.getPasswordHash())).thenReturn(true);
 
         UnauthorizedException ex = catchThrowableOfType(
-            () -> authService.login(new LoginRequest("demo@pranaveda.dev", "password123")),
+            () -> authService.login(new LoginRequest("demo@pranaveda.dev", "password123"), "127.0.0.1"),
             UnauthorizedException.class);
 
         assertThat(ex.getMessage()).isEqualTo("Account is disabled.");

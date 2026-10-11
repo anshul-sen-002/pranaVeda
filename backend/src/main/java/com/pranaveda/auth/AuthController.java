@@ -52,7 +52,7 @@ public class AuthController {
             HttpServletRequest httpRequest,
             HttpServletResponse response) {
         originGuard.requireAllowedOrigin(httpRequest);
-        IssuedSession session = authService.login(request);
+        IssuedSession session = authService.login(request, clientIp(httpRequest));
         cookies.addCookie(response, session.refreshToken());
         return ResponseEntity.ok(session.response());
     }
@@ -77,5 +77,22 @@ public class AuthController {
     @GetMapping("/me")
     public UserSummary me() {
         return authService.me();
+    }
+
+    /**
+     * Best-effort client IP for the sign-in alert. Honors the first entry of a
+     * (possibly comma-separated) {@code X-Forwarded-For} header set by a trusted
+     * reverse proxy, falling back to the direct remote address. Never throws.
+     */
+    private static String clientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            int comma = forwarded.indexOf(',');
+            String first = (comma >= 0 ? forwarded.substring(0, comma) : forwarded).trim();
+            if (!first.isEmpty()) {
+                return first;
+            }
+        }
+        return request.getRemoteAddr();
     }
 }

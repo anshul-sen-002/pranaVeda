@@ -43,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * <p>Boot 4's {@code @WebMvcTest} no longer pulls in security
  * auto-configuration, so it is imported explicitly here. {@link SecurityConfig}
- * MUST come before the security auto-configurations: their
+ * MUST come before the security auto-configurations: their++++++6++++++
  * {@code @ConditionalOnMissingBean(SecurityFilterChain)} checks must see our
  * chain, otherwise Boot registers a second catch-all default chain and
  * Spring Security 7 fails with {@code UnreachableFilterChainException}.
@@ -123,7 +123,7 @@ class AuthControllerTest {
 
     @Test
     void loginWithBadCredentialsReturns401Envelope() throws Exception {
-        when(authService.login(any())).thenThrow(new UnauthorizedException("Invalid email or password."));
+        when(authService.login(any(), any())).thenThrow(new UnauthorizedException("Invalid email or password."));
 
         mockMvc.perform(post("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)

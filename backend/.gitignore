@@ -4,7 +4,8 @@
 !.env.example
 
 # --- Java / Maven --------------------------------------------------------
-backend/target/
+# (paths relative to backend/ - this file is read as backend/.gitignore)
+target/
 *.class
 *.jar
 *.war
@@ -12,7 +13,6 @@ backend/target/
 
 # --- Local media storage (Phase 4) ---------------------------------------
 storage-data/
-backend/storage-data/
 
 # --- Node / Next.js (frontend arrives in Phase 1) ------------------------
 node_modules/

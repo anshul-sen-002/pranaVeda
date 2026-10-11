@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.pranaveda.content.ContentControllerTest
--------------------------------------------------------------------------------
-Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.551 s -- in com.pranaveda.content.ContentControllerTest

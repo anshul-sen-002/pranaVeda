@@ -1,8 +1,14 @@
 package com.pranaveda.auth;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+
 import com.pranaveda.common.error.ConflictException;
 import com.pranaveda.common.error.NotFoundException;
 import com.pranaveda.common.error.UnauthorizedException;
+import com.pranaveda.mail.EmailService;
+import com.pranaveda.notification.NotificationService;
+import com.pranaveda.notification.NotificationType;
 import com.pranaveda.security.CurrentUserPrincipal;
 import com.pranaveda.security.JwtService;
 import com.pranaveda.user.Role;
@@ -10,6 +16,8 @@ import com.pranaveda.user.User;
 import com.pranaveda.user.UserRepository;
 import com.pranaveda.user.UserService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,22 +32,30 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+
     private final UserService userService;
     private final UserRepository users;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
+    private final NotificationService notificationService;
+    private final EmailService emailService;
 
     public AuthService(UserService userService,
                        UserRepository users,
                        PasswordEncoder passwordEncoder,
                        RefreshTokenService refreshTokenService,
-                       JwtService jwtService) {
+                       JwtService jwtService,
+                       NotificationService notificationService,
+                       EmailService emailService) {
         this.userService = userService;
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.refreshTokenService = refreshTokenService;
         this.jwtService = jwtService;
+        this.notificationService = notificationService;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -49,11 +65,12 @@ public class AuthService {
         }
         User user = userService.create(request.email(), request.password(), request.displayName(), Role.USER);
         RefreshTokenService.IssuedRefreshToken refresh = refreshTokenService.issue(user.getId());
+        welcome(user);
         return session(user, refresh.token());
     }
 
     @Transactional
-    public IssuedSession login(LoginRequest request) {
+    public IssuedSession login(LoginRequest request, String ip) {
         User user = users.findByEmail(UserService.normalizeEmail(request.email()))
             .orElseThrow(() -> new UnauthorizedException("Invalid email or password."));
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
@@ -63,6 +80,7 @@ public class AuthService {
             throw new UnauthorizedException("Account is disabled.");
         }
         RefreshTokenService.IssuedRefreshToken refresh = refreshTokenService.issue(user.getId());
+        onSignIn(user, ip);
         return session(user, refresh.token());
     }
 
@@ -93,5 +111,34 @@ public class AuthService {
             jwtService.createAccessToken(user.getId(), user.getEmail(), user.getRole()),
             "Bearer", jwtService.accessTtlSeconds(), UserSummary.from(user));
         return new IssuedSession(response, refreshToken);
+    }
+
+    /** Best-effort welcome notification; never breaks registration. */
+    private void welcome(User user) {
+        try {
+            notificationService.create(user.getId(), NotificationType.WELCOME,
+                "Welcome to PranaVeda",
+                "Hi " + user.getDisplayName()
+                    + ", your calm practice space is ready. Explore yoga, guided audio, and your personal dashboard.",
+                "/dashboard");
+        } catch (RuntimeException ex) {
+            log.warn("Failed to create welcome notification for user {}", user.getId(), ex);
+        }
+    }
+
+    /** Best-effort sign-in alert (in-app + email); never breaks login. */
+    private void onSignIn(User user, String ip) {
+        try {
+            String when = OffsetDateTime.now(ZoneOffset.UTC).toString();
+            notificationService.create(user.getId(), NotificationType.LOGIN_ALERT,
+                "New sign-in to your account",
+                "We noticed a sign-in to your PranaVeda account"
+                    + (ip != null && !ip.isBlank() ? " from " + ip : "")
+                    + ". If this wasn't you, please change your password.",
+                null);
+            emailService.sendLoginAlert(user.getEmail(), user.getDisplayName(), when, ip);
+        } catch (RuntimeException ex) {
+            log.warn("Failed to record sign-in alert for user {}", user.getId(), ex);
+        }
     }
 }

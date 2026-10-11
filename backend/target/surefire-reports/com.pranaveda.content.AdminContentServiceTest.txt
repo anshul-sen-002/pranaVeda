@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.pranaveda.content.AdminContentServiceTest
--------------------------------------------------------------------------------
-Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.350 s -- in com.pranaveda.content.AdminContentServiceTest
