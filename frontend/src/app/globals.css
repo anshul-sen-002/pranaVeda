@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+/*
+ * =====================================================================
+ * PranaVeda theme - source of truth is docs/design-tokens.md
+ * Primary identity: calm sky-blue with cyan-to-blue gradients.
+ * =====================================================================
+ */
+@theme {
+  /* Primary - sky blue scale */
+  --color-primary-50: #eff9fe;
+  --color-primary-100: #d9f1fd;
+  --color-primary-200: #b3e3fb;
+  --color-primary-300: #7dd1f8;
+  --color-primary-400: #45c0f5;
+  --color-primary-500: #1fa9ed;
+  --color-primary-600: #1789c7;
+  --color-primary-700: #126c9e;
+  --color-primary-800: #0e5278;
+  --color-primary-900: #0a3d59;
+
+  /* Surfaces & neutrals */
+  --color-surface: #ffffff;
+  --color-surface-tint: #eaf6fc;
+  --color-surface-tint-2: #d6ecf7;
+  --color-border-soft: #e3eef6;
+
+  /* Text */
+  --color-heading: #223240;
+  --color-body: #5a6b78;
+  --color-muted: #93a3ae;
+
+  /* Supporting accents (used sparingly) */
+  --color-accent-coral: #e8746a;
+  --color-accent-amber: #f5b942;
+  --color-success: #3fb98a;
+  --color-warning: #e8a33d;
+  --color-danger: #e06a6a;
+
+  /* Primary CTA gradient */
+  --background-image-gradient-primary: linear-gradient(135deg, #45c0f5 0%, #1789c7 100%);
+
+  --font-sans: var(--font-geist-sans);
+
+  /* Calm, quiet motion */
+  --animate-fade-in-up: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-float-slow: float-slow 7s ease-in-out infinite;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+html {
+  /* Reserve space for the scrollbar so layout does not jump between routes. */
+  scrollbar-gutter: stable;
+}
+
+body {
+  background-color: var(--color-surface-tint);
+  color: var(--color-body);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  /* Respect OS reduced-motion (agents.md 6). Framer Motion honours this too. */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Consistent, visible keyboard focus on our own controls. */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+/* Screen-reader-only helper for accessible names / live regions. */
+.sr-only-focusable:not(:focus):not(:focus-within) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
