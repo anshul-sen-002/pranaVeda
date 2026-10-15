@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "motion/react";
-import { Mail, UserRound, UserPlus } from "lucide-react";
+import { ArrowRight, Mail, UserRound } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/Button";
@@ -150,7 +150,7 @@ export function RegisterForm() {
         </div>
 
         <Button type="submit" size="lg" fullWidth loading={isSubmitting}>
-          {isSubmitting ? null : <UserPlus className="size-4" aria-hidden="true" />}
+          {isSubmitting ? null : <ArrowRight className="size-4" aria-hidden="true" />}
           {isSubmitting ? "Creating account..." : "Create account"}
         </Button>
       </div>

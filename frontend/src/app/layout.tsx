@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { AuthProvider } from "@/providers/AuthProvider";
@@ -21,6 +21,18 @@ export const metadata: Metadata = {
   },
   description:
     "Explore asanas, guided breathing, and calming soundscapes. Sign in to save routines, track streaks, and personalise your wellness journey.",
+};
+
+/**
+ * Mobile contract: `width=device-width, initial-scale=1` is the baseline that
+ * makes every page (current and future) render at the real device width.
+ * `viewport-fit=cover` lets full-bleed sections extend under notches safely
+ * (content still keeps its own safe padding).
+ */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

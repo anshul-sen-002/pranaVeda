@@ -3,7 +3,7 @@ package com.pranaveda.content;
 import java.time.Instant;
 import java.util.List;
 
-/** Full detail projection: card data plus long-form and audit fields. */
+/** Full detail projection: card data plus long-form, guided-step and audit fields. */
 public record ContentDetail(
     ContentSummary summary,
     String description,
@@ -16,6 +16,8 @@ public record ContentDetail(
     String seoTitle,
     String seoDescription,
     List<String> targetAreas,
+    /** Ordered guided-slideshow steps; empty when the pose has none. */
+    List<ContentStepDto> steps,
     Instant createdAt,
     Instant updatedAt,
     Long createdBy,

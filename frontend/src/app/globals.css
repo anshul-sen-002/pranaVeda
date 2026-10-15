@@ -68,6 +68,23 @@
   }
 }
 
+/* Media never overflows its container on narrow screens. */
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+/* Long words (emails, URLs, tokens) wrap instead of forcing sideways scroll. */
+p,
+li,
+a,
+span,
+div {
+  overflow-wrap: anywhere;
+}
+
 html {
   /* Reserve space for the scrollbar so layout does not jump between routes. */
   scrollbar-gutter: stable;

@@ -179,7 +179,7 @@ class ContentControllerTest {
 
     private static ContentDetail detail() {
         return new ContentDetail(summary(), "Long description", null, null, null, null, null, null,
-            null, null, List.of(), Instant.parse("2026-01-01T00:00:00Z"),
+            null, null, List.of(), List.of(), Instant.parse("2026-01-01T00:00:00Z"),
             Instant.parse("2026-01-01T00:00:00Z"), 1L, 1L);
     }
 

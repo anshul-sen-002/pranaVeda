@@ -25,13 +25,16 @@ class ContentServiceTest {
 
     private ContentRepository contentRepository;
     private ContentItemFacetRepository facetRepository;
+    private ContentStepRepository stepRepository;
     private ContentService contentService;
 
     @BeforeEach
     void setUp() {
         contentRepository = mock(ContentRepository.class);
         facetRepository = mock(ContentItemFacetRepository.class);
-        contentService = new ContentService(contentRepository, facetRepository);
+        stepRepository = mock(ContentStepRepository.class);
+        contentService = new ContentService(contentRepository, facetRepository, stepRepository);
+        when(stepRepository.findByContentIdOrderByStepOrderAsc(any())).thenReturn(List.of());
     }
 
     @Test

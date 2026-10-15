@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { ArrowRight, Sparkles } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
+import { BreathOrb } from "@/components/motion/BreathOrb";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -41,9 +42,9 @@ export function Hero() {
         />
       </div>
 
-      <div className="mx-auto max-w-6xl px-5 pt-16 pb-20 sm:px-8 sm:pt-24 sm:pb-28">
+      <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pt-16 pb-20 sm:px-8 sm:pt-24 sm:pb-28 lg:grid-cols-[1.05fr_0.95fr]">
         {/* Mobile logo */}
-        <div className="mb-10 lg:hidden">
+        <div className="mb-2 lg:hidden">
           <Logo />
         </div>
 
@@ -97,6 +98,15 @@ export function Hero() {
               Browse content without an account
             </Link>
           </div>
+        </motion.div>
+
+        {/* Breathing orb visual */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <BreathOrb />
         </motion.div>
       </div>
     </section>

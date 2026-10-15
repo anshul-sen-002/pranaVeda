@@ -24,14 +24,15 @@ export const PasswordInput = forwardRef<HTMLInputElement, Omit<InputProps, "type
           ref={ref}
           type={visible ? "text" : "password"}
           {...props}
-          className={cn("pr-12", props.className)}
+          className={cn("pr-14", props.className)}
         />
+        {/* 44px touch target: padded to size, icon stays optically centred. */}
         <button
           type="button"
           tabIndex={-1}
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? "Hide password" : "Show password"}
-          className="absolute top-[2.15rem] right-3 text-muted transition-colors hover:text-primary-600"
+          className="absolute top-[1.7rem] right-1.5 flex size-11 items-center justify-center rounded-lg text-muted transition-colors hover:text-primary-600 active:bg-primary-50"
         >
           {visible ? <EyeOff className="size-5" aria-hidden="true" /> : <Eye className="size-5" aria-hidden="true" />}
         </button>

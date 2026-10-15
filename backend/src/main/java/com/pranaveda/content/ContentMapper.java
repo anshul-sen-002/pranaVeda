@@ -34,7 +34,8 @@ public final class ContentMapper {
             item.getPublishedAt());
     }
 
-    public static ContentDetail detail(ContentItem item, List<ContentItemFacet> facets) {
+    public static ContentDetail detail(ContentItem item, List<ContentItemFacet> facets,
+                                       List<ContentStep> steps) {
         return new ContentDetail(
             summary(item, facets),
             item.getDescription(),
@@ -47,6 +48,7 @@ public final class ContentMapper {
             item.getSeoTitle(),
             item.getSeoDescription(),
             facetValues(facets, FacetType.TARGET_AREA),
+            steps == null ? List.of() : steps.stream().map(ContentStepDto::from).toList(),
             item.getCreatedAt(),
             item.getUpdatedAt(),
             item.getCreatedBy(),

@@ -1,0 +1,56 @@
+# =====================================================================
+# Development profile TEMPLATE - copy to application-dev.properties
+# and fill in your own LOCAL values. The real application-dev.properties
+# is git-ignored and must NEVER be committed (it holds local secrets).
+#
+#   cp application-dev.properties.example application-dev.properties
+# =====================================================================
+
+# --- Local PostgreSQL connection (your own local instance) --------------
+spring.datasource.url=jdbc:postgresql://localhost:5432/pranaveda
+spring.datasource.username=postgres
+spring.datasource.password=CHANGE_ME
+spring.datasource.hikari.maximum-pool-size=5
+
+# --- Developer-friendly SQL logging -------------------------------------
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# --- CORS: Next.js dev server ------------------------------------------
+app.cors.allowed-origins=http://localhost:3000,http://127.0.0.1:3000
+
+# --- JWT (dev only; generate your own, >= 32 bytes) ---------------------
+app.security.jwt.secret=CHANGE_ME_GENERATE_YOUR_OWN_32_PLUS_BYTES
+app.security.jwt.access-ttl=15m
+app.security.jwt.refresh-ttl=14d
+app.security.refresh-cookie-name=pv_refresh
+app.security.cookie-secure=false
+
+# --- Media storage (Cloudinary; your own credentials, server-side only) --
+app.cloudinary.cloud-name=CHANGE_ME
+app.cloudinary.api-key=CHANGE_ME
+app.cloudinary.api-secret=CHANGE_ME
+app.cloudinary.folder=pranaveda
+
+app.media.max-image-bytes=5242880
+app.media.max-video-bytes=104857600
+app.media.max-audio-bytes=52428800
+
+# --- AI wellness companion (OpenRouter; your own key, optional) ---------
+# Without a key the /api/v1/ai/** chat endpoints return 503 AI_UNAVAILABLE.
+app.ai.provider=openrouter
+app.ai.base-url=https://openrouter.ai/api/v1
+app.ai.api-key=
+app.ai.model=openrouter/free
+app.ai.max-tokens=1024
+app.ai.timeout-seconds=30
+app.ai.max-message-chars=4000
+
+# --- Mail (disabled by default; enable with your own SMTP creds) --------
+spring.autoconfigure.exclude=org.springframework.boot.mail.autoconfigure.MailSenderAutoConfiguration
+app.mail.enabled=false
+app.mail.from=
+app.mail.host=smtp.gmail.com
+app.mail.port=587
+app.mail.username=
+app.mail.password=

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "motion/react";
-import { LogIn, Mail } from "lucide-react";
+import { ArrowRight, Mail } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/Button";
@@ -101,7 +101,7 @@ export function LoginForm() {
         </div>
 
         <Button type="submit" size="lg" fullWidth loading={isSubmitting}>
-          {isSubmitting ? null : <LogIn className="size-4" aria-hidden="true" />}
+          {isSubmitting ? null : <ArrowRight className="size-4" aria-hidden="true" />}
           {isSubmitting ? "Signing in..." : "Sign in"}
         </Button>
       </div>

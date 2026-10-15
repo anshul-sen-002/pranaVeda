@@ -47,6 +47,7 @@ class AdminContentServiceTest {
     private ContentItemFacetRepository facetRepository;
     private CategoryRepository categoryRepository;
     private TagRepository tagRepository;
+    private ContentStepRepository stepRepository;
     private AdminContentService service;
 
     @BeforeEach
@@ -55,7 +56,9 @@ class AdminContentServiceTest {
         facetRepository = mock(ContentItemFacetRepository.class);
         categoryRepository = mock(CategoryRepository.class);
         tagRepository = mock(TagRepository.class);
-        service = new AdminContentService(contentRepository, facetRepository, categoryRepository, tagRepository);
+        stepRepository = mock(ContentStepRepository.class);
+        service = new AdminContentService(contentRepository, facetRepository, categoryRepository,
+            tagRepository, stepRepository);
 
         authenticateAsAdmin();
         when(contentRepository.save(any(ContentItem.class))).thenAnswer(invocation -> {
@@ -65,6 +68,7 @@ class AdminContentServiceTest {
         });
         when(facetRepository.findByContentId(anyLong())).thenReturn(List.of());
         when(facetRepository.findByContentIdIn(anyCollection())).thenReturn(List.of());
+        when(stepRepository.findByContentIdOrderByStepOrderAsc(anyLong())).thenReturn(List.of());
     }
 
     @AfterEach
@@ -225,6 +229,31 @@ class AdminContentServiceTest {
         when(contentRepository.findById(404L)).thenReturn(Optional.empty());
 
         assertThat(catchThrowableOfType(() -> service.get(404L), NotFoundException.class)).isNotNull();
+    }
+
+    @Test
+    void publishIsBlockedWhileAnyStepHasNoNarration() {
+        ContentItem item = draft(1L);
+        when(contentRepository.findById(1L)).thenReturn(Optional.of(item));
+        ContentStep missing = new ContentStep();
+        missing.setCaption("Step 1");
+        when(stepRepository.findByContentIdOrderByStepOrderAsc(1L)).thenReturn(List.of(missing));
+
+        BadRequestException ex = catchThrowableOfType(() -> service.publish(1L), BadRequestException.class);
+
+        assertThat(ex.getMessage()).contains("Step 1 has no narration");
+        assertThat(item.getStatus()).isEqualTo(ContentStatus.DRAFT);
+    }
+
+    @Test
+    void publishSucceedsWhenEveryStepHasNarration() {
+        ContentItem item = draft(1L);
+        when(contentRepository.findById(1L)).thenReturn(Optional.of(item));
+        ContentStep ready = new ContentStep();
+        ready.setInstruction("Stand tall and breathe.");
+        when(stepRepository.findByContentIdOrderByStepOrderAsc(1L)).thenReturn(List.of(ready));
+
+        assertThat(service.publish(1L).status()).isEqualTo(ContentStatus.PUBLISHED);
     }
 
     // --- helpers -------------------------------------------------------------

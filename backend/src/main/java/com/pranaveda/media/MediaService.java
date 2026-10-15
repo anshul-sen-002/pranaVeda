@@ -192,6 +192,39 @@ public class MediaService {
 
     // --- validation helpers ------------------------------------------------
 
+    /**
+     * ADMIN: deletes a content image after validating asset ownership
+     * (feature requirement: validate Cloudinary asset ownership before
+     * deletion). The public id NEVER comes from the client - it is read from
+     * our own {@code media_assets} row and must be inside the folder our
+     * upload pipeline generated ({@code content/images/...}), so a tampered
+     * row cannot destroy an arbitrary Cloudinary object.
+     *
+     * Idempotent: a missing asset row is a no-op.
+     *
+     * @param mediaAssetId asset to delete
+     * @param contentId    content item that must own the asset
+     */
+    @Transactional
+    public void deleteContentImage(long mediaAssetId, long contentId) {
+        Optional<MediaAsset> found = media.findById(mediaAssetId);
+        if (found.isEmpty()) {
+            return; // already gone - deleting a step must stay idempotent
+        }
+        MediaAsset asset = found.get();
+        boolean owned = asset.getKind() == MediaKind.CONTENT_IMAGE
+            && asset.getContentId() != null
+            && asset.getContentId() == contentId
+            && asset.getPublicId() != null
+            && asset.getPublicId().startsWith(folderFor(MediaKind.CONTENT_IMAGE) + "/");
+        if (!owned) {
+            // Never hand an unverified public id to the storage provider.
+            throw new BadRequestException("This media asset does not belong to the given content item.");
+        }
+        storage.delete(asset.getPublicId(), resourceTypeFor(asset.getKind()));
+        media.delete(asset);
+    }
+
     private byte[] readAndValidate(MultipartFile file, MediaKind kind) {
         if (file == null || file.isEmpty()) {
             throw new BadRequestException("No file was provided.");

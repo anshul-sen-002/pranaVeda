@@ -37,15 +37,18 @@ public class AdminContentService {
     private final ContentItemFacetRepository facetRepository;
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
+    private final ContentStepRepository stepRepository;
 
     public AdminContentService(ContentRepository contentRepository,
                                ContentItemFacetRepository facetRepository,
                                CategoryRepository categoryRepository,
-                               TagRepository tagRepository) {
+                               TagRepository tagRepository,
+                               ContentStepRepository stepRepository) {
         this.contentRepository = contentRepository;
         this.facetRepository = facetRepository;
         this.categoryRepository = categoryRepository;
         this.tagRepository = tagRepository;
+        this.stepRepository = stepRepository;
     }
 
     @Transactional(readOnly = true)
@@ -65,7 +68,7 @@ public class AdminContentService {
 
     @Transactional(readOnly = true)
     public ContentDetail get(long id) {
-        return ContentMapper.detail(getItem(id), facetRepository.findByContentId(id));
+        return detail(getItem(id));
     }
 
     @Transactional
@@ -79,7 +82,7 @@ public class AdminContentService {
         item.setUpdatedBy(editor);
         ContentItem saved = contentRepository.save(item);
         saveFacets(saved.getId(), request);
-        return ContentMapper.detail(saved, facetRepository.findByContentId(saved.getId()));
+        return detail(saved);
     }
 
     @Transactional
@@ -98,7 +101,7 @@ public class AdminContentService {
         apply(item, request);
         item.setUpdatedBy(CurrentUserPrincipal.requireCurrentUserId());
         saveFacets(item.getId(), request);
-        return ContentMapper.detail(item, facetRepository.findByContentId(item.getId()));
+        return detail(item);
     }
 
     @Transactional
@@ -119,13 +122,40 @@ public class AdminContentService {
     private ContentDetail transition(long id, ContentStatus target) {
         ContentItem item = getItem(id);
         if (item.getStatus() != target) {
+            if (target == ContentStatus.PUBLISHED) {
+                requireNarrationApproved(item); // publish is the approval gate for AI drafts
+            }
             if (target == ContentStatus.PUBLISHED && item.getPublishedAt() == null) {
                 item.setPublishedAt(Instant.now()); // records the FIRST publication date
             }
             item.setStatus(target);
             item.setUpdatedBy(CurrentUserPrincipal.requireCurrentUserId());
         }
-        return ContentMapper.detail(item, facetRepository.findByContentId(item.getId()));
+        return detail(item);
+    }
+
+    /**
+     * Publishing a pose with guided steps requires every step to carry
+     * narration text - an AI draft must be reviewed/edited (or generated)
+     * before the pose goes live. Steps without images are fine; a step
+     * without text is not.
+     */
+    private void requireNarrationApproved(ContentItem item) {
+        List<ContentStep> steps = stepRepository.findByContentIdOrderByStepOrderAsc(item.getId());
+        for (int i = 0; i < steps.size(); i++) {
+            if (steps.get(i).getInstruction() == null || steps.get(i).getInstruction().isBlank()) {
+                throw new BadRequestException(
+                    "Step " + (i + 1) + " has no narration text. Edit or generate instructions "
+                        + "for every step before publishing.");
+            }
+        }
+    }
+
+    /** Full detail projection including facets and ordered guided steps. */
+    private ContentDetail detail(ContentItem item) {
+        return ContentMapper.detail(item,
+            facetRepository.findByContentId(item.getId()),
+            stepRepository.findByContentIdOrderByStepOrderAsc(item.getId()));
     }
 
     // --- request -> entity mapping ----------------------------------------

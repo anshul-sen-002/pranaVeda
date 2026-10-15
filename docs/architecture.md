@@ -233,14 +233,14 @@ Planned tables (authoritative detail lands in `docs/database-schema.md`):
 
 | File | Purpose | Committed? |
 |------|---------|-----------|
-| `backend/src/main/resources/application.properties` | shared config, default profile `dev`, optional `.env` import | yes |
+| `backend/src/main/resources/application.properties` | shared config (placeholders only, no secrets), optional `.env` import | yes |
 | `backend/src/main/resources/application-dev.properties` | local PostgreSQL, SQL echo, dev CORS | yes |
-| `backend/src/main/resources/application-prod.properties` | env-only secrets, strict CORS, proxy headers | yes |
-| `.env` | local values (your DB credentials) | **no** — gitignored |
-| `.env.example` | placeholder template | yes |
+| `backend/.env` | local values (DB credentials, keys) | **no** — gitignored |
+| `backend/.env.example` | placeholder template | yes |
 
-**Profile activation:** `dev` by default; production sets
-`SPRING_PROFILES_ACTIVE=prod` (or `-Dspring.profiles.active=prod`).
+**Profile activation:** two `.properties` files only. `dev` is the default;
+production reuses the SAME files and sets every value via host environment
+variables (no prod-only file, no secrets in code).
 
 **Environment contract** (keep `.env.example` in sync):
 

@@ -21,11 +21,14 @@ public class ContentService {
 
     private final ContentRepository contentRepository;
     private final ContentItemFacetRepository facetRepository;
+    private final ContentStepRepository stepRepository;
 
     public ContentService(ContentRepository contentRepository,
-                          ContentItemFacetRepository facetRepository) {
+                          ContentItemFacetRepository facetRepository,
+                          ContentStepRepository stepRepository) {
         this.contentRepository = contentRepository;
         this.facetRepository = facetRepository;
+        this.stepRepository = stepRepository;
     }
 
     @Transactional(readOnly = true)
@@ -50,7 +53,11 @@ public class ContentService {
         if (item.getStatus() != ContentStatus.PUBLISHED) {
             throw notFound(); // never leak the existence of drafts/archived items
         }
-        return ContentMapper.detail(item, facetRepository.findByContentId(item.getId()));
+        // Steps ride along only after the status check above, so guided
+        // content of a draft can never leak through this public endpoint.
+        return ContentMapper.detail(item,
+            facetRepository.findByContentId(item.getId()),
+            stepRepository.findByContentIdOrderByStepOrderAsc(item.getId()));
     }
 
     static NotFoundException notFound() {
