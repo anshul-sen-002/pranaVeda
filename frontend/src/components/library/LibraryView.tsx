@@ -49,16 +49,17 @@ export function LibraryView() {
   const page = params.page ?? 0;
   const totalPages = data?.totalPages ?? 0;
   const total = data?.totalElements ?? null;
+
   return (
     <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
       <div className="lg:sticky lg:top-20 lg:self-start">
         <LibrarySidebar params={params} qInput={qInput} onQInput={setQInput} onPatch={patch} onReset={reset} total={total} />
       </div>
       <div className="min-w-0">
-        <div className="flex items-center justify-between gap-4">
+        <div className="mt-3"><LibrarySearch value={qInput} onChange={setQInput} /></div>
+        <div className="flex items-center justify-between gap-4 mt-4">
           <h2 className="text-lg font-semibold text-heading">All Poses{total !== null ? <span className="ml-2 text-sm font-normal text-muted">({total})</span> : null}</h2>
         </div>
-        <div className="mt-3"><LibrarySearch value={qInput} onChange={setQInput} /></div>
         {loading ? <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 9 }).map((_, i) => <ContentCardSkeleton key={i} />)}</div> : null}
         {err ? (
           <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-danger/30 bg-danger/5 px-6 py-12 text-center" role="alert">
@@ -88,4 +89,3 @@ export function LibraryView() {
     </div>
   );
 }
-

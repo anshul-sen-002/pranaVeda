@@ -6,9 +6,9 @@ import { CONTENT_TYPE_META, DIFFICULTY_META } from "@/lib/library/contentMeta";
 import type { ContentSummary } from "@/lib/api/types";
 
 /**
- * Public library card (agents.md 2.1). Clicking it opens the public detail
- * page — no login required to browse. Uses a plain <img> so it works with any
- * remote host (e.g. Cloudinary) without extra Next image-domain config.
+ * Library card matching Image 3 (Yoga Poses Listing):
+ * image + type tag overlay, difficulty dot + label, duration, title,
+ * sanskrit name, summary, "Read more" link. Public browsing — no login.
  */
 export function ContentCard({ item }: { item: ContentSummary }) {
   const type = CONTENT_TYPE_META[item.contentType];
@@ -18,7 +18,7 @@ export function ContentCard({ item }: { item: ContentSummary }) {
   return (
     <Link
       href={`/yoga/${item.slug}`}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border-soft bg-surface transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-[0_16px_40px_-24px_rgba(23,137,199,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+      className="flex flex-col overflow-hidden rounded-2xl border border-border-soft bg-surface transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-[0_16px_40px_-24px_rgba(23,137,199,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
     >
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-primary-50">
         {item.featuredImageUrl ? (
@@ -44,8 +44,8 @@ export function ContentCard({ item }: { item: ContentSummary }) {
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
+      <div className="flex-1 flex-col p-5">
+        <div className="flex items-center gap-2 text-xs text-muted mb-1">
           <span className="inline-flex items-center gap-1.5">
             <span className={cn("size-1.5 rounded-full", difficulty.dot)} aria-hidden="true" />
             {difficulty.label}
@@ -61,11 +61,11 @@ export function ContentCard({ item }: { item: ContentSummary }) {
           ) : null}
         </div>
 
-        <h3 className="mt-2 text-lg font-semibold text-heading transition-colors group-hover:text-primary-700">
+        <h3 className="text-lg font-semibold text-heading transition-colors group-hover:text-primary-700">
           {item.title}
         </h3>
         {item.sanskritName ? (
-          <p className="text-xs text-muted italic">{item.sanskritName}</p>
+          <p className="mt-0.5 text-xs text-muted italic">{item.sanskritName}</p>
         ) : null}
 
         <p className="mt-2 line-clamp-3 flex-1 text-sm text-muted">{item.summary}</p>

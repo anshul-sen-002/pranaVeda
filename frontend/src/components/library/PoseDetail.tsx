@@ -1,13 +1,13 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeft, Leaf, ShieldAlert, Sparkles, Heart } from "lucide-react";
+import { ArrowLeft, ChevronDown, Clock, Flower2, Leaf, ShieldAlert, Sparkles, Volume2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import { DIFFICULTY_META } from "@/lib/library/contentMeta";
 import type { ContentDetail } from "@/lib/api/types";
 import { LeafSprig } from "@/components/brand/Botanical";
-import { PoseDetailInfo } from "@/components/library/PoseDetailInfo";
+import { SaveButton } from "@/components/library/SaveButton";
 
 function splitSteps(text: string | null): { title: string; body: string }[] {
   if (!text?.trim()) return [];
@@ -37,39 +37,38 @@ function Section({ icon, title, children, tone }: { icon: ReactNode; title: stri
   );
 }
 
-/** Mockup 4: breadcrumb, gallery left, title/meta/tabs right. */
 export function PoseDetail({ detail }: { detail: ContentDetail }) {
   const item = detail.summary;
   const difficulty = DIFFICULTY_META[item.difficulty];
   const steps = splitSteps(detail.instructions);
   const gallery = [item.featuredImageUrl, ...detail.steps.map((s) => s.imageUrl)].filter((u): u is string => !!u).slice(0, 5);
   const [activeImg, setActiveImg] = useState(0);
-  const [tab, setTab] = useState<"instructions" | "benefits">("instructions");
   const [openStep, setOpenStep] = useState(0);
   return (
     <article className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted mb-6">
         <Link href="/yoga" className="inline-flex items-center gap-1 font-medium text-primary-700 underline-offset-4 hover:underline">
           <ArrowLeft className="size-3.5" aria-hidden="true" /> Yoga Poses
         </Link>
         <span aria-hidden="true">›</span>
         <span className="truncate text-body">{item.title}</span>
       </nav>
-      <div className="mt-5 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+      <div className="grid gap-6 lg:grid-cols-[0.6fr_0.4fr]">
+        {/* Left: hero image + thumbnails */}
         <div className="min-w-0">
-          <div className="relative overflow-hidden rounded-2xl border border-border-soft bg-primary-50">
+          <div className="relative overflow-hidden rounded-2xl border border-border-soft bg-primary-50 aspect-[4/5] sm:aspect-none h-[500px] sm:h-auto">
             <LeafSprig className="pointer-events-none absolute bottom-2 left-2 h-24 w-16 text-primary-200" />
             {gallery[activeImg] ? (
-              <img src={gallery[activeImg]} alt={`${item.title} demonstration`} className="relative aspect-[4/5] w-full object-cover sm:aspect-square" />
+              <img src={gallery[activeImg]} alt={`${item.title} demonstration`} className="h-full w-full object-cover" />
             ) : (
-              <div className="flex aspect-[4/5] items-center justify-center text-primary-300 sm:aspect-square">
-                <Leaf className="size-14" aria-hidden="true" />
+              <div className="flex h-full items-center justify-center text-primary-300">
+                <Leaf className="size-16" aria-hidden="true" />
               </div>
             )}
           </div>
           {gallery.length > 1 ? (
-            <div className="mt-3 grid grid-cols-4 gap-2" aria-label="Pose images">
-              {gallery.slice(0, 4).map((url, i) => (
+            <div className="mt-3 grid grid-cols-5 gap-2" aria-label="Pose images">
+              {gallery.map((url, i) => (
                 <button key={i} type="button" onClick={() => setActiveImg(i)} aria-pressed={activeImg === i} aria-label={`View image ${i + 1}`}
                   className={cn("overflow-hidden rounded-xl border-2", activeImg === i ? "border-primary-500" : "border-transparent opacity-70 hover:opacity-100")}>
                   <img src={url} alt="" aria-hidden="true" className="aspect-square w-full object-cover" loading="lazy" />
@@ -78,11 +77,75 @@ export function PoseDetail({ detail }: { detail: ContentDetail }) {
             </div>
           ) : null}
         </div>
-        <PoseDetailInfo item={item} difficulty={difficulty} steps={steps} tab={tab} setTab={setTab} openStep={openStep} setOpenStep={setOpenStep} breathing={detail.breathingNotes} safety={detail.safetyPrecautions} instructions={detail.instructions} benefits={detail.benefits} />
+
+        {/* Right: title, sanskrit, badges, description */}
+        <div className="min-w-0">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight text-heading sm:text-3xl">{item.title}</h1>
+              {item.sanskritName ? <p className="mt-1 text-sm text-muted italic">{item.sanskritName}</p> : null}
+            </div>
+            <SaveButton targetType="CONTENT" targetId={item.id} />
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-100 px-2.5 py-1 font-medium text-primary-800">
+              <span className={cn("size-1.5 rounded-full", difficulty.dot)} aria-hidden="true" /> {difficulty.label}
+            </span>
+            {item.durationMinutes ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary-50 px-2.5 py-1 font-medium text-primary-800">
+                <Clock className="size-3.5" aria-hidden="true" /> {item.durationMinutes} min
+              </span>
+            ) : null}
+            {steps.length > 0 ? <span className="rounded-full bg-primary-50 px-2.5 py-1 font-medium text-primary-800">{steps.length} steps</span> : null}
+          </div>
+          {item.summary ? <p className="mt-4 text-sm leading-relaxed text-body sm:text-base">{item.summary}</p> : null}
+
+          {/* Instructions accordion */}
+          <div className="mt-6">
+            <h2 className="flex items-center gap-2 text-base font-semibold text-heading">
+              <Flower2 className="size-5 text-primary-600" aria-hidden="true" /> Instructions
+            </h2>
+            {steps.length > 0 ? (
+              <ol className="mt-3 space-y-2">
+                {steps.map((s, i) => {
+                  const open = openStep === i;
+                  return (
+                    <li key={i} className="overflow-hidden rounded-xl border border-border-soft bg-surface">
+                      <button type="button" onClick={() => setOpenStep(open ? -1 : i)} aria-expanded={open} className="flex w-full items-center gap-3 px-4 py-3 text-left">
+                        <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-semibold text-primary-800">{i + 1}</span>
+                        <span className="flex-1 text-sm font-semibold text-heading">{s.title}</span>
+                        <ChevronDown className={cn("size-4 text-muted transition-transform", open && "rotate-180")} aria-hidden="true" />
+                      </button>
+                      {open ? (
+                        <div className="border-t border-border-soft px-4 py-3">
+                          <p className="text-sm leading-relaxed whitespace-pre-line text-body">{s.body}</p>
+                          {i === 0 && detail.breathingNotes ? (
+                            <p className="mt-2 text-xs text-body flex items-start gap-1.5">
+                              <Volume2 className="mt-0.5 size-3.5 shrink-0 text-primary-600" aria-hidden="true" />
+                              Breathing: {detail.breathingNotes.split("\n")[0]}
+                            </p>
+                          ) : null}
+                          {i === 0 && detail.safetyPrecautions ? (
+                            <p className="mt-1.5 text-xs text-body flex items-start gap-1.5">
+                              <ShieldAlert className="mt-0.5 size-3.5 shrink-0 text-warning" aria-hidden="true" />
+                              Safety: {detail.safetyPrecautions.split("\n")[0]}
+                            </p>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ol>
+            ) : (
+              <p className="mt-3 rounded-xl bg-surface-tint p-4 text-sm text-muted">Step-by-step guidance is on its way for this pose.</p>
+            )}
+          </div>
+        </div>
       </div>
       <div className="mt-8 grid gap-4 md:grid-cols-2">
         {detail.breathingNotes ? <Section icon={<Sparkles className="size-5" />} title="Breathing">{detail.breathingNotes}</Section> : null}
-        {detail.modifications ? <Section icon={<Heart className="size-5" />} title="Modifications">{detail.modifications}</Section> : null}
+        {detail.modifications ? <Section icon={<ShieldAlert className="size-5" />} title="Modifications">{detail.modifications}</Section> : null}
         {detail.safetyPrecautions ? <Section icon={<ShieldAlert className="size-5" />} title="Safety precautions" tone="safety">{detail.safetyPrecautions}</Section> : null}
         {detail.evidenceNotes ? <Section icon={<Leaf className="size-5" />} title="Traditional & evidence notes" tone="evidence">{detail.evidenceNotes}</Section> : null}
       </div>
@@ -90,3 +153,4 @@ export function PoseDetail({ detail }: { detail: ContentDetail }) {
     </article>
   );
 }
+
