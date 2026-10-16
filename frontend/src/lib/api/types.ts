@@ -313,3 +313,49 @@ export interface RoutineRequest {
   isPublic?: boolean;
   contentIds: number[];
 }
+
+/* ------------------------------------------------------------------ */
+/* Calm music (mirrors backend AudioTrackSummary / AudioDetailDto)    */
+/* ------------------------------------------------------------------ */
+
+/** Fixed, curated catalog vocabulary from the backend (agents.md 2.12). */
+export type AudioCategory =
+  | "MEDITATION"
+  | "NATURE"
+  | "SINGING_BOWLS"
+  | "SLEEP"
+  | "FOCUS"
+  | "GUIDED_BREATHING";
+
+/** Card view of an audio track (backend AudioTrackSummary). */
+export interface AudioTrackSummary {
+  id: number;
+  title: string;
+  slug: string;
+  description: string | null;
+  category: AudioCategory;
+  /** Duration in seconds for display; null when unknown. */
+  durationSeconds: number | null;
+  coverImageUrl: string | null;
+  tags: string[];
+  publishedAt: string;
+}
+
+/** Full track view with stream URL (backend AudioDetailDto). */
+export interface AudioDetailDto {
+  id: number;
+  title: string;
+  slug: string;
+  description: string | null;
+  category: AudioCategory;
+  durationSeconds: number | null;
+  coverImageUrl: string | null;
+  /** Playable URL when streamable; null otherwise. Never a raw storage key. */
+  streamUrl: string | null;
+  downloadable: boolean;
+  tags: string[];
+  creator: string | null;
+  license: string | null;
+  publishedAt: string;
+}
+

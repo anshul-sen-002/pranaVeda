@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   },
   description:
     "Explore asanas, guided breathing, and calming soundscapes. Sign in to save routines, track streaks, and personalise your wellness journey.",
+  // Brand favicon served from the shared public asset (pranaveda.png).
+  icons: { icon: [{ url: "/pranaveda.png", type: "image/png" }] },
 };
 
 /**
