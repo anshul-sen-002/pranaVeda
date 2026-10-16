@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ContentDetailView } from "@/components/library/ContentDetailView";
+import { PoseDetail } from "@/components/library/PoseDetail";
+import { GuidedPractice } from "@/components/guided/GuidedPractice";
+import { SiteFooter } from "@/components/layout/SiteFooter";
+import { SiteHeader } from "@/components/layout/SiteHeader";
 import { getContent } from "@/lib/api/content";
 
 // The detail page reads uncached data in generateMetadata (per-slug SEO) as
@@ -33,5 +36,18 @@ export default async function YogaDetailPage({
   // Drafts/archived are a 404 for the public API — surface a real 404 page.
   if (!detail) notFound();
 
-  return <ContentDetailView detail={detail} />;
+  return (
+    <div className="flex min-h-dvh flex-col">
+      <SiteHeader />
+      <main className="flex flex-1 flex-col">
+        <PoseDetail detail={detail} />
+        {detail.steps.length > 0 ? (
+          <section className="mx-auto w-full max-w-6xl px-5 pb-14 sm:px-8" aria-label="Guided practice">
+            <GuidedPractice steps={detail.steps} poseTitle={detail.summary.title} />
+          </section>
+        ) : null}
+      </main>
+      <SiteFooter />
+    </div>
+  );
 }

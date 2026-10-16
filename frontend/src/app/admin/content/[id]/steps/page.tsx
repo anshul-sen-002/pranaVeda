@@ -33,8 +33,8 @@ function StepsEditor() {
   const [steps, setSteps] = useState<ContentStep[]>([]);
   const [status, setStatus] = useState<ContentStatus | null>(null);
   const [title, setTitle] = useState("");
-  const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -51,8 +51,8 @@ function StepsEditor() {
     setError(e instanceof ApiError ? e.message : "Something went wrong. Please try again.");
 
   const refresh = useCallback(async () => {
-    if (!accessToken) return;
     setLoading(true);
+    if (!accessToken) return;
     try {
       const [detail, list] = await Promise.all([
         adminContentApi.get(accessToken, contentId),
@@ -64,10 +64,7 @@ function StepsEditor() {
       setDrafts(Object.fromEntries(list.map((s) => [s.id, s.instruction ?? ""])));
     } catch (e) {
       fail(e);
-    } finally {
-      setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken, contentId]);
 
   useEffect(() => {
@@ -380,4 +377,3 @@ function StepsEditor() {
     </main>
   );
 }
-

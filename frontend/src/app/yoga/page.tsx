@@ -1,59 +1,43 @@
+import { SiteFooter } from "@/components/layout/SiteFooter";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import { LibraryView } from "@/components/library/LibraryView";
+import { LeafSprig } from "@/components/brand/Botanical";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-
-import { LibraryView } from "@/components/library/LibraryView";
 import { ContentCardSkeleton } from "@/components/library/ContentCardSkeleton";
-import { listCategories, listTags } from "@/lib/api/content";
-import type { CategoryDto, TagDto } from "@/lib/api/types";
 
 export const metadata: Metadata = {
-  title: "Yoga Library | PranaVeda",
-  description:
-    "Browse asanas, articles, and guided sequences. Search, filter by goal and difficulty, and find the practice that fits today.",
+  title: "Yoga Poses | PranaVeda",
+  description: "Explore poses for every level and goal. Find what feels right for your body and mind.",
 };
-
-/**
- * The taxonomy fetch is uncached, so it must sit inside a <Suspense> boundary
- * — otherwise Next cannot prerender this route at all. The fallback mirrors
- * the filter toolbar + card grid so the layout never jumps.
- */
-async function LibraryWithTaxonomy() {
-  // Public endpoints — no auth required. Fetch taxonomy server-side so the
-  // filter bar has data on first paint. A backend outage degrades gracefully
-  // to empty filters rather than breaking the whole page.
-  const [categories, tags] = await Promise.all([
-    listCategories().catch(() => [] as CategoryDto[]),
-    listTags().catch(() => [] as TagDto[]),
-  ]);
-
-  return <LibraryView categories={categories} tags={tags} />;
-}
-
-function LibraryFallback() {
-  return (
-    <div className="space-y-6" aria-hidden="true">
-      <div className="space-y-4 rounded-2xl border border-border-soft bg-surface p-4 sm:p-5">
-        <div className="h-10 w-full animate-pulse rounded-xl bg-primary-50" />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-16 animate-pulse rounded-xl bg-primary-50" />
-          ))}
-        </div>
-      </div>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <ContentCardSkeleton key={i} />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export default function YogaPage() {
   return (
-    <Suspense fallback={<LibraryFallback />}>
-      <LibraryWithTaxonomy />
-    </Suspense>
+    <div className="flex min-h-dvh flex-col">
+      <SiteHeader />
+      <main className="flex flex-1 flex-col">
+        <section className="relative overflow-hidden border-b border-border-soft bg-gradient-to-br from-surface via-primary-50 to-surface-tint-2">
+          <LeafSprig className="pointer-events-none absolute top-2 left-6 hidden h-32 w-24 text-primary-300 sm:block" />
+          <LeafSprig flip className="pointer-events-none absolute right-6 bottom-2 hidden h-32 w-24 text-primary-200 sm:block" />
+          <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
+            <p className="text-xs font-semibold tracking-[0.14em] text-primary-600 uppercase">Yoga library</p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-heading sm:text-4xl">Yoga Poses</h1>
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-body sm:text-base">Explore poses for every level and goal. Find what feels right for your body and mind.</p>
+          </div>
+        </section>
+        <div className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8 sm:py-10">
+          <Suspense
+            fallback={
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
+                {Array.from({ length: 6 }).map((_, i) => <ContentCardSkeleton key={i} />)}
+              </div>
+            }
+          >
+            <LibraryView />
+          </Suspense>
+        </div>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }
-

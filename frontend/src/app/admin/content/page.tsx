@@ -1,5 +1,4 @@
 "use client";
-
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -41,15 +40,11 @@ function AdminContentList() {
 
   const load = useCallback(async () => {
     if (!accessToken) return;
-    setLoading(true);
-    setListError(null);
     try {
       const page = await adminContentApi.list(accessToken, { size: 50 });
       setItems(page.content);
     } catch (error) {
       setListError(error instanceof ApiError ? error.message : "Could not load content.");
-    } finally {
-      setLoading(false);
     }
   }, [accessToken]);
 
