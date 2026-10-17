@@ -35,9 +35,19 @@ public class AdminAudioService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<AudioTrackSummary> list() {
+    public PageResponse<AudioDetailDto> list() {
         List<AudioTrack> all = tracks.findAllByOrderByCreatedAtDesc();
-        return PageResponse.of(all.stream().map(this::summary).toList(), 0, all.size(), all.size());
+        // One extra query for every referenced audio/cover asset in the page.
+        java.util.Set<Long> assetIds = new java.util.LinkedHashSet<>();
+        for (AudioTrack track : all) {
+            if (track.getAudioAssetId() != null) assetIds.add(track.getAudioAssetId());
+            if (track.getCoverAssetId() != null) assetIds.add(track.getCoverAssetId());
+        }
+        java.util.Map<Long, MediaAsset> assets = assetIds.isEmpty()
+                ? java.util.Map.of()
+                : media.findAllById(assetIds).stream()
+                        .collect(java.util.stream.Collectors.toMap(MediaAsset::getId, a -> a));
+        return PageResponse.of(all.stream().map(t -> detail(t, assets)).toList(), 0, all.size(), all.size());
     }
 
     @Transactional(readOnly = true)
@@ -162,25 +172,26 @@ public class AdminAudioService {
         return value == null || value.isBlank() ? null : value.trim();
     }
 
-    private AudioTrackSummary summary(AudioTrack track) {
-        String cover = track.getCoverAssetId() == null ? null
-                : media.findById(track.getCoverAssetId()).map(MediaAsset::getSecureUrl).orElse(null);
-        return new AudioTrackSummary(track.getId(), track.getTitle(), track.getSlug(),
-                track.getDescription(), track.getCategory(), track.getDurationSecs(),
-                cover, splitTags(track.getTags()), track.getPublishedAt());
+    private AudioDetailDto detail(AudioTrack track) {
+        java.util.Map<Long, MediaAsset> assets = new java.util.HashMap<>();
+        if (track.getAudioAssetId() != null) {
+            media.findById(track.getAudioAssetId()).ifPresent(a -> assets.put(a.getId(), a));
+        }
+        if (track.getCoverAssetId() != null) {
+            media.findById(track.getCoverAssetId()).ifPresent(a -> assets.put(a.getId(), a));
+        }
+        return detail(track, assets);
     }
 
-    private AudioDetailDto detail(AudioTrack track) {
-        String cover = track.getCoverAssetId() == null ? null
-                : media.findById(track.getCoverAssetId()).map(MediaAsset::getSecureUrl).orElse(null);
-        String stream = null;
-        if (track.isStreamable() && track.getAudioAssetId() != null) {
-            stream = media.findById(track.getAudioAssetId()).map(MediaAsset::getSecureUrl).orElse(null);
-        }
+    private AudioDetailDto detail(AudioTrack track, java.util.Map<Long, MediaAsset> assets) {
+        MediaAsset cover = track.getCoverAssetId() == null ? null : assets.get(track.getCoverAssetId());
+        MediaAsset audio = track.getAudioAssetId() == null ? null : assets.get(track.getAudioAssetId());
+        String stream = (track.isStreamable() && audio != null) ? audio.getSecureUrl() : null;
         return new AudioDetailDto(track.getId(), track.getTitle(), track.getSlug(),
-                track.getDescription(), track.getCategory(), track.getDurationSecs(), cover, stream,
+                track.getDescription(), track.getCategory(), track.getDurationSecs(),
+                cover == null ? null : cover.getSecureUrl(), stream,
                 track.isDownloadable(), splitTags(track.getTags()), track.getCreator(),
-                track.getLicense(), track.getPublishedAt());
+                track.getLicense(), track.getStatus(), track.getPublishedAt());
     }
 
     private static java.util.List<String> splitTags(String tags) {

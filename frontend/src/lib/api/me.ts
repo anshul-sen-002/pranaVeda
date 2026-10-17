@@ -14,6 +14,7 @@ import type {
   SavedItemDto,
   StreakDto,
   WellnessProfileDto,
+  WellnessProfileRequest,
 } from "./types";
 
 /**
@@ -54,6 +55,15 @@ export const meApi = {
   wellnessProfile(accessToken: string): Promise<WellnessProfileDto> {
     return apiRequest<WellnessProfileDto>("/api/v1/me/wellness-profile", {
       accessToken,
+    });
+  },
+
+  /** Create or fully update the caller's wellness profile (all fields optional). */
+  saveWellnessProfile(accessToken: string, body: WellnessProfileRequest): Promise<WellnessProfileDto> {
+    return apiRequest<WellnessProfileDto>("/api/v1/me/wellness-profile", {
+      method: "PUT",
+      accessToken,
+      body,
     });
   },
 
@@ -150,6 +160,31 @@ export const meApi = {
   /** Deletes one of the caller's routines. */
   deleteRoutine(accessToken: string, id: number): Promise<void> {
     return apiRequest<void>(`/api/v1/me/routines/${id}`, {
+      method: "DELETE",
+      accessToken,
+    }) as Promise<void>;
+  },
+
+  /** The caller's current profile photo URL (404 when unset). */
+  profilePhoto(accessToken: string): Promise<{ photoUrl: string | null }> {
+    return apiRequest<{ photoUrl: string | null }>("/api/v1/me/profile-photo", { accessToken });
+  },
+
+  /** Replaces (or sets) the caller's profile photo. Images only, 5 MB max client-side. */
+  setProfilePhoto(accessToken: string, file: File): Promise<{ photoUrl: string | null }> {
+    const form = new FormData();
+    form.append("file", file);
+    return apiRequest<{ photoUrl: string | null }>("/api/v1/me/profile-photo", {
+      method: "POST",
+      accessToken,
+      body: form,
+      isFormData: true,
+    });
+  },
+
+  /** Removes the caller's profile photo. Idempotent. */
+  clearProfilePhoto(accessToken: string): Promise<void> {
+    return apiRequest<void>("/api/v1/me/profile-photo", {
       method: "DELETE",
       accessToken,
     }) as Promise<void>;

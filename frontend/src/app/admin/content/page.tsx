@@ -2,21 +2,23 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Loader2, Plus } from "lucide-react";
+import { ArrowRight, ImagePlus, Loader2, Plus } from "lucide-react";
 
 import { AdminGuard } from "@/components/admin/AdminGuard";
+import { MediaUpload } from "@/components/admin/MediaUpload";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/hooks/useAuth";
 import { adminContentApi } from "@/lib/api/admin";
 import { ApiError } from "@/lib/api/client";
-import type { ContentSummary, ContentType } from "@/lib/api/types";
+import type { ContentSummary, ContentType, MediaDto } from "@/lib/api/types";
 
 /**
  * Admin content list + create (agents.md 2.15). Creating a pose yields a
  * DRAFT; steps are managed on the dedicated page and publication is an
- * explicit server-checked action.
+ * explicit server-checked action. Each row can set its featured cover via
+ * the Cloudinary pipeline (upload → PUT featuredImageUrl).
  */
 export default function AdminContentPage() {
   return (
@@ -32,6 +34,8 @@ function AdminContentList() {
   const [items, setItems] = useState<ContentSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
+  const [coverFor, setCoverFor] = useState<number | null>(null);
+  const [coverMsg, setCoverMsg] = useState<Record<number, string>>({});
 
   const [title, setTitle] = useState("");
   const [type, setType] = useState<ContentType>("ASANA");
@@ -68,6 +72,48 @@ function AdminContentList() {
     } catch (error) {
       setCreateError(error instanceof ApiError ? error.message : "Could not create content.");
       setCreating(false);
+    }
+  };
+
+  /** Merge the new cover URL into the existing content and PUT it back. */
+  const saveCover = async (id: number, media: MediaDto) => {
+    if (!accessToken) return;
+    try {
+      const detail = await adminContentApi.get(accessToken, id);
+      const s = detail.summary;
+      await adminContentApi.update(accessToken, id, {
+        title: s.title,
+        slug: s.slug,
+        summary: s.summary ?? "",
+        description: detail.description ?? undefined,
+        commonName: s.commonName ?? undefined,
+        sanskritName: s.sanskritName ?? undefined,
+        contentType: s.contentType,
+        difficulty: s.difficulty ?? undefined,
+        durationMinutes: s.durationMinutes ?? undefined,
+        featuredImageUrl: media.url,
+        instructions: detail.instructions ?? undefined,
+        breathingNotes: detail.breathingNotes ?? undefined,
+        modifications: detail.modifications ?? undefined,
+        safetyPrecautions: detail.safetyPrecautions ?? undefined,
+        benefits: detail.benefits ?? undefined,
+        evidenceNotes: detail.evidenceNotes ?? undefined,
+        seoTitle: detail.seoTitle ?? undefined,
+        seoDescription: detail.seoDescription ?? undefined,
+        categorySlugs: s.categories.map((c) => c.slug),
+        tagSlugs: s.tags.map((t) => t.slug),
+        goals: s.goals,
+        targetAreas: detail.targetAreas,
+      });
+      setItems((prev) => prev.map((it) => (it.id === id ? { ...it, featuredImageUrl: media.url } : it)));
+      setCoverMsg((prev) => ({ ...prev, [id]: "Cover saved." }));
+    } catch (error) {
+      setCoverMsg((prev) => ({
+        ...prev,
+        [id]: error instanceof ApiError ? error.message : "Could not save cover.",
+      }));
+    } finally {
+      setCoverFor(null);
     }
   };
 
@@ -132,19 +178,45 @@ function AdminContentList() {
                 key={item.id}
                 className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
               >
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-heading">{item.title}</p>
                   <p className="text-xs text-muted">
                     {item.contentType} · {item.status}
+                    {item.featuredImageUrl ? " · cover ✓" : ""}
                   </p>
+                  {coverMsg[item.id] ? (
+                    <p className="mt-0.5 text-xs text-success">{coverMsg[item.id]}</p>
+                  ) : null}
+                  {coverFor === item.id ? (
+                    <div className="mt-2">
+                      <MediaUpload
+                        accessToken={accessToken ?? ""}
+                        kind="CONTENT_IMAGE"
+                        contentId={item.id}
+                        label="Pick cover image"
+                        onUploaded={(media) => void saveCover(item.id, media)}
+                      />
+                    </div>
+                  ) : null}
                 </div>
-                <Link
-                  href={`/admin/content/${item.id}/steps`}
-                  className="inline-flex items-center gap-1 text-sm font-medium text-primary-700 underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
-                >
-                  Steps
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                </Link>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setCoverFor((cur) => (cur === item.id ? null : item.id))}
+                    className="inline-flex items-center gap-1 text-sm font-medium text-body underline-offset-2 hover:text-primary-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+                    aria-expanded={coverFor === item.id}
+                  >
+                    <ImagePlus className="size-4" aria-hidden="true" />
+                    {item.featuredImageUrl ? "Change cover" : "Set cover"}
+                  </button>
+                  <Link
+                    href={`/admin/content/${item.id}/steps`}
+                    className="inline-flex items-center gap-1 text-sm font-medium text-primary-700 underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+                  >
+                    Steps
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </Link>
+                </div>
               </li>
             ))}
           </ul>

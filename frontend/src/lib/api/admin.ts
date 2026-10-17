@@ -1,5 +1,5 @@
 import { apiRequest } from "./client";
-import type { ContentDetail, ContentStep, PageResponse, ContentSummary } from "./types";
+import type { ContentDetail, ContentStep, PageResponse, ContentSummary, MediaDto, AudioDetailDto } from "./types";
 
 /**
  * Admin content-studio endpoints (agents.md 2.15). Every call needs the
@@ -31,6 +31,15 @@ export const adminContentApi = {
     return apiRequest<ContentDetail>(`/api/v1/admin/content/${id}`, { accessToken });
   },
 
+  /** Full update (used to set featuredImageUrl after a media upload). */
+  update(accessToken: string, id: number | string, body: unknown): Promise<ContentDetail> {
+    return apiRequest<ContentDetail>(`/api/v1/admin/content/${id}`, {
+      method: "PUT",
+      accessToken,
+      body,
+    });
+  },
+
   publish(accessToken: string, id: number | string): Promise<ContentDetail> {
     return apiRequest<ContentDetail>(`/api/v1/admin/content/${id}/publish`, {
       method: "POST",
@@ -42,6 +51,40 @@ export const adminContentApi = {
     return apiRequest<ContentDetail>(`/api/v1/admin/content/${id}/unpublish`, {
       method: "POST",
       accessToken,
+    });
+  },
+};
+
+/**
+ * Admin media upload (Cloudinary pipeline). Client-side checks mirror the
+ * backend limits (MediaProperties) so an over-limit file is rejected in the
+ * browser before a wasted upload — the server always re-validates.
+ */
+export type MediaUploadKind = "CONTENT_IMAGE" | "VIDEO" | "AUDIO";
+
+export const MEDIA_LIMITS: Record<MediaUploadKind, { maxBytes: number; accept: string }> = {
+  CONTENT_IMAGE: { maxBytes: 5 * 1024 * 1024, accept: "image/jpeg,image/png,image/webp,image/avif" },
+  VIDEO: { maxBytes: 100 * 1024 * 1024, accept: "video/mp4,video/webm,video/quicktime" },
+  AUDIO: { maxBytes: 50 * 1024 * 1024, accept: "audio/mpeg,audio/mp4,audio/ogg,audio/wav" },
+};
+
+export const adminMediaApi = {
+  /** Multipart upload → safe MediaDto (id + delivery URL + metadata). */
+  upload(
+    accessToken: string,
+    file: File,
+    kind: MediaUploadKind,
+    contentId?: number | string,
+  ): Promise<MediaDto> {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("kind", kind);
+    if (contentId != null) form.append("contentId", String(contentId));
+    return apiRequest<MediaDto>("/api/v1/admin/media", {
+      method: "POST",
+      accessToken,
+      body: form,
+      isFormData: true,
     });
   },
 };
@@ -114,5 +157,56 @@ export const adminStepApi = {
       method: "DELETE",
       accessToken,
     }) as Promise<void>;
+  },
+};
+
+/**
+ * Admin audio-studio endpoints (agents.md 2.12). Upload audio/cover files via
+ * `adminMediaApi.upload` first (kind AUDIO / CONTENT_IMAGE), then attach the
+ * returned asset id here. Publication is an explicit server-checked action.
+ */
+export const adminAudioApi = {
+  list(accessToken: string): Promise<PageResponse<AudioDetailDto>> {
+    return apiRequest<PageResponse<AudioDetailDto>>("/api/v1/admin/audio", { accessToken });
+  },
+
+  create(accessToken: string, body: unknown): Promise<AudioDetailDto> {
+    return apiRequest<AudioDetailDto>("/api/v1/admin/audio", { method: "POST", accessToken, body });
+  },
+
+  get(accessToken: string, id: number | string): Promise<AudioDetailDto> {
+    return apiRequest<AudioDetailDto>(`/api/v1/admin/audio/${id}`, { accessToken });
+  },
+
+  update(accessToken: string, id: number | string, body: unknown): Promise<AudioDetailDto> {
+    return apiRequest<AudioDetailDto>(`/api/v1/admin/audio/${id}`, { method: "PUT", accessToken, body });
+  },
+
+  /** Attach an uploaded AUDIO media asset as this track's stream source. */
+  attachAudio(accessToken: string, id: number | string, assetId: number): Promise<AudioDetailDto> {
+    return apiRequest<AudioDetailDto>(`/api/v1/admin/audio/${id}/audio-asset?assetId=${assetId}`, {
+      method: "POST",
+      accessToken,
+    });
+  },
+
+  /** Attach an uploaded CONTENT_IMAGE asset as this track's cover art. */
+  attachCover(accessToken: string, id: number | string, assetId: number): Promise<AudioDetailDto> {
+    return apiRequest<AudioDetailDto>(`/api/v1/admin/audio/${id}/cover-asset?assetId=${assetId}`, {
+      method: "POST",
+      accessToken,
+    });
+  },
+
+  publish(accessToken: string, id: number | string): Promise<AudioDetailDto> {
+    return apiRequest<AudioDetailDto>(`/api/v1/admin/audio/${id}/publish`, { method: "POST", accessToken });
+  },
+
+  unpublish(accessToken: string, id: number | string): Promise<AudioDetailDto> {
+    return apiRequest<AudioDetailDto>(`/api/v1/admin/audio/${id}/unpublish`, { method: "POST", accessToken });
+  },
+
+  archive(accessToken: string, id: number | string): Promise<AudioDetailDto> {
+    return apiRequest<AudioDetailDto>(`/api/v1/admin/audio/${id}/archive`, { method: "POST", accessToken });
   },
 };

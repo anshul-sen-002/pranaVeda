@@ -276,6 +276,25 @@ export const BMI_DISCLAIMER =
   "account for muscle mass, body composition, age, or fitness, is not a measure of " +
   "overall health, and is never a diagnosis.";
 
+/** Upsert payload for the wellness profile (backend WellnessProfileRequest). All optional. */
+export interface WellnessProfileRequest {
+  dateOfBirth?: string | null;
+  heightValue?: number | null;
+  heightUnit?: HeightUnit | null;
+  weightValue?: number | null;
+  weightUnit?: WeightUnit | null;
+  experienceLevel?: Difficulty | null;
+  preferredSessionMinutes?: number | null;
+  practiceTime?: PracticeTime | null;
+  sleepQuality?: number | null;
+  energyLevel?: number | null;
+  moodScore?: number | null;
+  flexibilityScore?: number | null;
+  timezone?: string | null;
+  constraintsNotes?: string | null;
+  aiPersonalizationConsent?: boolean | null;
+}
+
 /* ------------------------------------------------------------------ */
 /* Routines (mirrors backend RoutineDto / RoutineSummaryDto)          */
 /* ------------------------------------------------------------------ */
@@ -356,6 +375,26 @@ export interface AudioDetailDto {
   tags: string[];
   creator: string | null;
   license: string | null;
-  publishedAt: string;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  publishedAt: string | null;
+}
+
+/* ------------------------------------------------------------------ */
+/* Media (mirrors backend MediaDto / MediaKind)                        */
+/* ------------------------------------------------------------------ */
+
+export type MediaKind = "PROFILE_IMAGE" | "CONTENT_IMAGE" | "VIDEO" | "AUDIO";
+
+/** Safe view of a stored asset (backend MediaDto). Never exposes storage keys. */
+export interface MediaDto {
+  id: number;
+  kind: MediaKind;
+  /** Cloudinary secure delivery URL. */
+  url: string;
+  format: string | null;
+  bytes: number | null;
+  width: number | null;
+  height: number | null;
+  durationSecs: number | null;
 }
 

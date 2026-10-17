@@ -113,6 +113,7 @@ public class AudioService {
                 splitTags(track.getTags()),
                 track.getCreator(),
                 track.getLicense(),
+                track.getStatus(),
                 track.getPublishedAt());
     }
 

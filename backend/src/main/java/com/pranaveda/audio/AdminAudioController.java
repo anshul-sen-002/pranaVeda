@@ -37,7 +37,7 @@ public class AdminAudioController {
     }
 
     @GetMapping
-    public PageResponse<AudioTrackSummary> list() {
+    public PageResponse<AudioDetailDto> list() {
         return service.list();
     }
 

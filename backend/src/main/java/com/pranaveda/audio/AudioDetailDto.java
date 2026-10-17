@@ -21,5 +21,6 @@ public record AudioDetailDto(
         java.util.List<String> tags,
         String creator,
         String license,
+        AudioStatus status,
         java.time.Instant publishedAt) {
 }

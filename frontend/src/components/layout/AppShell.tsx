@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Bell, BookOpen, CalendarDays, ChevronDown, ClipboardList, History,
+  Bell, BookOpen, CalendarDays, ChevronDown, ClipboardList,
   Home, Leaf, ListMusic, Settings, Sparkles, Trophy, User,
 } from "lucide-react";
 
@@ -22,7 +22,6 @@ const NAV = [
   { href: "/yoga", label: "Yoga Asanas", icon: User },
   { href: "/calm-music", label: "Library", icon: BookOpen },
   { href: "/dashboard/saved", label: "Saved", icon: ClipboardList },
-  { href: "/dashboard/history", label: "History", icon: History },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
