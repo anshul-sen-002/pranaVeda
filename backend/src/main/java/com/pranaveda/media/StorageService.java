@@ -23,6 +23,17 @@ public interface StorageService {
      */
     StoredMedia upload(byte[] bytes, String folder, String publicId, String resourceType);
 
+    /**
+     * Upload variant that also generates eager (pre-computed) derivatives.
+     * Used for size-capped delivery: the public UI never needs the raw
+     * 12 MP original, so a width-capped derivative is generated at upload
+     * time and served instead, keeping Cloudinary storage + bandwidth low.
+     */
+    default StoredMedia upload(byte[] bytes, String folder, String publicId, String resourceType,
+                               java.util.List<java.util.Map<String, Object>> eager) {
+        return upload(bytes, folder, publicId, resourceType);
+    }
+
     /** Deletes a previously stored object. Missing objects are ignored. */
     void delete(String publicId, String resourceType);
 

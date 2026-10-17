@@ -1,9 +1,12 @@
 package com.pranaveda.media;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
+
+import javax.imageio.ImageIO;
 
 import com.pranaveda.common.error.BadRequestException;
 import com.pranaveda.common.error.ForbiddenException;
@@ -54,8 +57,24 @@ public class MediaService {
         if (kind == MediaKind.PROFILE_IMAGE) {
             throw new BadRequestException("Profile photos are uploaded through /me/profile-photo.");
         }
+        if (kind == MediaKind.CONTENT_IMAGE && contentId != null) {
+            requireContentExists(contentId);
+        }
         byte[] bytes = readAndValidate(file, kind);
-        StoredMedia stored = storage.upload(bytes, folderFor(kind), generatePublicId(kind), resourceTypeFor(kind));
+        StoredMedia stored;
+        if (kind == MediaKind.CONTENT_IMAGE) {
+            // Eager width-capped derivative: cards render ~800 px wide at most,
+            // so the delivery URL serves the capped variant, not the raw upload.
+            java.util.Map<String, Object> capped = new java.util.LinkedHashMap<>();
+            capped.put("width", 1600);
+            capped.put("crop", "limit");
+            capped.put("fetch_format", "auto");
+            capped.put("quality", "auto:good");
+            stored = storage.upload(bytes, folderFor(kind), generatePublicId(kind),
+                    resourceTypeFor(kind), java.util.List.of(capped));
+        } else {
+            stored = storage.upload(bytes, folderFor(kind), generatePublicId(kind), resourceTypeFor(kind));
+        }
 
         MediaAsset asset = new MediaAsset();
         asset.setKind(kind);
@@ -71,6 +90,13 @@ public class MediaService {
         asset.setContentId(contentId);
         asset.setCreatedBy(createdBy);
         return MediaDto.from(media.save(asset));
+    }
+
+    /** Rejects linking an upload to content that does not exist. */
+    private void requireContentExists(Long contentId) {
+        if (!contentRepository.existsById(contentId)) {
+            throw new BadRequestException("No content item exists with id " + contentId + ".");
+        }
     }
 
     /** Signed-in user: replaces (or sets) their profile photo. */
@@ -238,10 +264,58 @@ public class MediaService {
             throw new BadRequestException("Content type '" + contentType + "' is not accepted for "
                 + kind + ". Allowed: " + allowedTypesFor(kind) + ".");
         }
+        byte[] bytes;
         try {
-            return file.getBytes();
+            bytes = file.getBytes();
         } catch (Exception ex) {
             throw new BadRequestException("Could not read the uploaded file.");
+        }
+        // Deep checks BEFORE bytes reach Cloudinary (quota protection).
+        if (kind == MediaKind.PROFILE_IMAGE || kind == MediaKind.CONTENT_IMAGE) {
+            validateImagePixels(bytes);
+        }
+        return bytes;
+    }
+
+    /**
+     * Rejects images whose dimensions exceed the configured caps. A 50 MB phone
+     * photo or a stitched panorama can be millions of pixels - Cloudinary bills
+     * storage and transformations on the real payload, not just the byte count.
+     * Uses ImageIO's header probe (no full decode) via a byte-array stream.
+     */
+    private void validateImagePixels(byte[] bytes) {
+        int width;
+        int height;
+        try (ByteArrayInputStream in = new ByteArrayInputStream(bytes)) {
+            var readers = ImageIO.getImageReaders(ImageIO.createImageInputStream(in));
+            if (!readers.hasNext()) {
+                throw new BadRequestException("The uploaded file is not a readable image.");
+            }
+            var reader = readers.next();
+            try (var stream = ImageIO.createImageInputStream(new ByteArrayInputStream(bytes))) {
+                reader.setInput(stream, true, true);
+                width = reader.getWidth(0);
+                height = reader.getHeight(0);
+            } finally {
+                reader.dispose();
+            }
+        } catch (BadRequestException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new BadRequestException("The uploaded file is not a readable image.");
+        }
+        if (width <= 0 || height <= 0) {
+            throw new BadRequestException("The uploaded file is not a readable image.");
+        }
+        int maxEdge = properties.maxImageDimension();
+        if (width > maxEdge || height > maxEdge) {
+            throw new BadRequestException("Image is too large: " + width + "x" + height
+                + " px exceeds the " + maxEdge + " px edge limit.");
+        }
+        long pixels = (long) width * (long) height;
+        if (pixels > properties.maxImagePixels()) {
+            throw new BadRequestException("Image has too many pixels (" + pixels
+                + "); the limit is " + properties.maxImagePixels() + ".");
         }
     }
 

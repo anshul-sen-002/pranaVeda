@@ -62,16 +62,30 @@ public class CloudinaryStorageService implements StorageService {
 
     @Override
     public StoredMedia upload(byte[] bytes, String folder, String publicId, String resourceType) {
+        return upload(bytes, folder, publicId, resourceType, null);
+    }
+
+    /**
+     * Uploads with an optional eager transformation so Cloudinary stores and
+     * serves a size-capped derivative instead of the raw original where the
+     * caller asks for one (quota protection: the delivery URL points at the
+     * capped variant). When {@code eager} is null the plain upload path runs.
+     */
+    @Override
+    public StoredMedia upload(byte[] bytes, String folder, String publicId, String resourceType,
+                              java.util.List<java.util.Map<String, Object>> eager) {
         String scopedId = combine(folder, publicId);
         try {
+            java.util.Map<String, Object> params = new java.util.LinkedHashMap<>();
+            params.put("public_id", scopedId);
+            params.put("resource_type", resourceType);
+            params.put("overwrite", true);
+            params.put("invalidate", true);
+            if (eager != null && !eager.isEmpty()) {
+                params.put("eager", eager);
+            }
             @SuppressWarnings("unchecked")
-            Map<String, Object> result = client().uploader().upload(
-                bytes,
-                ObjectUtils.asMap(
-                    "public_id", scopedId,
-                    "resource_type", resourceType,
-                    "overwrite", true,
-                    "invalidate", true));
+            Map<String, Object> result = client().uploader().upload(bytes, params);
             return toStoredMedia(result);
         } catch (ApiException ex) {
             throw ex;

@@ -14,6 +14,9 @@ public record MediaProperties(
         long maxImageBytes,
         long maxVideoBytes,
         long maxAudioBytes,
+        int maxImageDimension,
+        long maxImagePixels,
+        int maxAudioSeconds,
         List<String> allowedImageTypes,
         List<String> allowedVideoTypes,
         List<String> allowedAudioTypes) {
@@ -27,6 +30,15 @@ public record MediaProperties(
         }
         if (maxAudioBytes <= 0) {
             maxAudioBytes = 50L * 1024 * 1024; // 50 MB
+        }
+        if (maxImageDimension <= 0) {
+            maxImageDimension = 4096;
+        }
+        if (maxImagePixels <= 0) {
+            maxImagePixels = 12_000_000L; // ~12 MP
+        }
+        if (maxAudioSeconds <= 0) {
+            maxAudioSeconds = 3600; // 1 hour
         }
         if (allowedImageTypes == null || allowedImageTypes.isEmpty()) {
             allowedImageTypes = List.of("image/jpeg", "image/png", "image/webp", "image/avif");
