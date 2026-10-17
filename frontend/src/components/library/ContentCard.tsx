@@ -1,83 +1,86 @@
 import Link from "next/link";
-import { ArrowRight, Clock } from "lucide-react";
+import { ArrowRight, Clock, Heart } from "lucide-react";
+import { useState } from "react";
 
 import { cn } from "@/lib/cn";
+import { CoverImage } from "@/components/media/CoverImage";
 import { CONTENT_TYPE_META, DIFFICULTY_META } from "@/lib/library/contentMeta";
 import type { ContentSummary } from "@/lib/api/types";
 
 /**
- * Library card matching mockup 1: image with type chip (top-left) and
- * difficulty + duration pills overlaid at the bottom, then title,
- * sanskrit name, summary, and a "Read more" link. Public browsing — no login.
+ * Yoga card matching screenshot 2: backend `featuredImageUrl` with the
+ * shared fallback tile, favourite button, category chip, title, benefit
+ * line, duration + difficulty row, and a detail arrow.
  */
 export function ContentCard({ item }: { item: ContentSummary }) {
   const type = CONTENT_TYPE_META[item.contentType];
-  const difficulty = DIFFICULTY_META[item.difficulty];
+  const difficulty = item.difficulty ? DIFFICULTY_META[item.difficulty] : null;
   const TypeIcon = type.icon;
+  const [saved, setSaved] = useState(false);
 
   return (
-    <Link
-      href={`/yoga/${item.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-border-soft bg-surface transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-[0_16px_40px_-24px_rgba(23,137,199,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
-    >
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-primary-50">
-        {item.featuredImageUrl ? (
-          <img
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border-soft bg-surface transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-[0_16px_40px_-24px_rgba(23,137,199,0.5)]">
+      <Link
+        href={`/yoga/${item.slug}`}
+        aria-label={`${item.title}${item.sanskritName ? ` (${item.sanskritName})` : ""}`}
+        className="flex flex-1 flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+      >
+        <div className="relative aspect-[16/10] w-full bg-primary-50">
+          <CoverImage
             src={item.featuredImageUrl}
             alt=""
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            imgClassName="transition-transform duration-500 group-hover:scale-105"
           />
-        ) : (
-          <div className="flex h-full items-center justify-center text-primary-300">
-            <TypeIcon className="size-12" aria-hidden="true" />
-          </div>
-        )}
-
-        {/* Type chip — top-left */}
-        <span
-          className={cn(
-            "absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-surface/95 px-2.5 py-1 text-xs font-medium shadow-sm backdrop-blur",
-            type.chip,
-          )}
-        >
-          <TypeIcon className="size-3.5" aria-hidden="true" />
-          {type.label}
-        </span>
-
-        {/* Difficulty + duration pills — bottom of the image */}
-        <div className="absolute right-3 bottom-3 left-3 flex flex-wrap items-center gap-1.5">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-surface/95 px-2.5 py-1 text-xs font-medium shadow-sm backdrop-blur">
-            <span className={cn("size-1.5 rounded-full", difficulty.dot)} aria-hidden="true" />
-            {difficulty.label}
+          <span
+            className={cn(
+              "absolute top-3 left-3 inline-flex items-center gap-1 rounded-full bg-surface/95 px-2.5 py-1 text-xs font-medium shadow-sm backdrop-blur",
+              type.chip,
+            )}
+          >
+            <TypeIcon className="size-3.5" aria-hidden="true" />
+            {item.categories[0]?.name ?? type.label}
           </span>
-          {item.durationMinutes ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-surface/95 px-2.5 py-1 text-xs font-medium text-muted shadow-sm backdrop-blur">
-              <Clock className="size-3.5" aria-hidden="true" />
-              {item.durationMinutes} min
-            </span>
-          ) : null}
         </div>
-      </div>
 
-      <div className="flex flex-1 flex-col p-5">
-        <h3 className="text-lg font-semibold text-heading transition-colors group-hover:text-primary-700">
-          {item.title}
-        </h3>
-        {item.sanskritName ? (
-          <p className="mt-0.5 text-xs text-muted italic">{item.sanskritName}</p>
-        ) : null}
+        <div className="flex flex-1 flex-col p-5 pr-14">
+          <h3 className="text-[15px] font-semibold text-heading transition-colors group-hover:text-primary-700">
+            {item.title}
+            {item.sanskritName ? <span className="font-normal text-muted"> ({item.sanskritName})</span> : null}
+          </h3>
+          <p className="mt-1.5 line-clamp-2 flex-1 text-[13px] leading-relaxed text-muted">{item.summary}</p>
+          <p className="mt-3 flex items-center gap-3 text-xs text-muted">
+            <span className="inline-flex items-center gap-1">
+              <Clock className="size-3.5" aria-hidden="true" />
+              {item.durationMinutes ? `${item.durationMinutes} min` : "Self-paced"}
+            </span>
+            {difficulty ? (
+              <span className="inline-flex items-center gap-1.5">
+                <span className={cn("size-1.5 rounded-full", difficulty.dot)} aria-hidden="true" />
+                {difficulty.label}
+              </span>
+            ) : null}
+          </p>
+        </div>
+      </Link>
 
-        <p className="mt-2 line-clamp-3 flex-1 text-sm text-muted">{item.summary}</p>
-
-        <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary-700">
-          Read more
-          <ArrowRight
-            className="size-4 transition-transform group-hover:translate-x-0.5"
-            aria-hidden="true"
-          />
-        </span>
-      </div>
-    </Link>
+      <button
+        type="button"
+        onClick={() => setSaved((s) => !s)}
+        aria-pressed={saved}
+        aria-label={saved ? `Remove ${item.title} from saved` : `Save ${item.title}`}
+        className={cn(
+          "absolute top-3 right-3 inline-flex size-9 items-center justify-center rounded-full bg-surface/95 shadow-sm backdrop-blur transition-colors hover:text-primary-700",
+          saved ? "text-primary-600" : "text-muted",
+        )}
+      >
+        <Heart className={cn("size-4", saved && "fill-current")} aria-hidden="true" />
+      </button>
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute right-4 bottom-4 inline-flex size-9 items-center justify-center rounded-full bg-primary-100/80 text-primary-700"
+      >
+        <ArrowRight className="size-4" />
+      </span>
+    </article>
   );
 }

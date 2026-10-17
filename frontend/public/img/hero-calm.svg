@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" role="img" aria-label="Still lake with balanced stones and lotus at sunrise" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="hsky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#EAF6FC"/><stop offset=".55" stop-color="#BFE4F7"/><stop offset="1" stop-color="#FFE9D2"/>
+    </linearGradient>
+    <linearGradient id="hsea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7DD1F8"/><stop offset="1" stop-color="#1789C7"/>
+    </linearGradient>
+    <radialGradient id="hsun" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#FFF3DE"/><stop offset=".55" stop-color="#F5B942"/><stop offset="1" stop-color="#F5B942" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="250" fill="url(#hsky)"/>
+  <circle cx="600" cy="180" r="90" fill="url(#hsun)"/>
+  <circle cx="600" cy="180" r="48" fill="#FFF7E8"/>
+  <path d="M0 250 L170 130 L340 250Z M220 250 L360 110 L500 250Z M820 250 L990 120 L1160 250Z" fill="#9DB9C6" opacity=".55"/>
+  <rect y="244" width="1200" height="136" fill="url(#hsea)"/>
+  <ellipse cx="600" cy="256" rx="200" ry="12" fill="#fff" opacity=".4"/>
+  <ellipse cx="300" cy="300" rx="150" ry="9" fill="#fff" opacity=".25"/>
+  <ellipse cx="900" cy="330" rx="170" ry="9" fill="#fff" opacity=".25"/>
+  <g fill="#0A3D59">
+    <ellipse cx="880" cy="200" rx="44" ry="12"/>
+    <ellipse cx="886" cy="184" rx="34" ry="10"/>
+    <ellipse cx="890" cy="170" rx="24" ry="8"/>
+  </g>
+  <g fill="none" stroke="#fff" stroke-width="5" opacity=".8">
+    <path d="M180 120 c 20 -26 52 -26 72 0 c -20 26 -52 26 -72 0z"/>
+    <path d="M216 96 c 12 -26 12 -52 0 -72 c -12 20 -12 46 0 72z"/>
+  </g>
+</svg>

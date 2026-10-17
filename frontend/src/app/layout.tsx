@@ -22,7 +22,11 @@ export const metadata: Metadata = {
   description:
     "Explore asanas, guided breathing, and calming soundscapes. Sign in to save routines, track streaks, and personalise your wellness journey.",
   // Brand favicon served from the shared public asset (pranaveda.png).
-  icons: { icon: [{ url: "/pranaveda.png", type: "image/png" }] },
+  // `metadata.icons` emits <link rel="icon"> for modern browsers; the
+  // explicit <link> tags below act as a fallback for browsers that ignore
+  // metadata-generated icons. `?v=` busts the notoriously sticky favicon
+  // cache — bump it whenever the brand mark changes.
+  icons: [{ url: "/icon.png?v=1", type: "image/png", sizes: "any" }],
 };
 
 /**
@@ -43,6 +47,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* Brand favicon served from the shared public asset (pranaveda.png). */}
+        <link rel="icon" href="/icon.png?v=1" type="image/png" sizes="any" />
+        <link rel="shortcut icon" href="/icon.png?v=1" type="image/png" />
+        <link rel="apple-touch-icon" href="/icon.png?v=1" />
+      </head>
       <body className="min-h-full flex flex-col">
         {/*
           AuthProvider wraps everything so `useAuth()` works on any page.
