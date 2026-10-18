@@ -3,8 +3,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 
 import { AdminGuard } from "@/components/admin/AdminGuard";
+import { AppShell } from "@/components/layout/AppShell";
 import { MediaUploadStudio } from "@/components/admin/MediaUploadStudio";
 import { Alert } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { adminAudioApi } from "@/lib/api/admin";
 import { ApiError } from "@/lib/api/client";
@@ -23,7 +25,9 @@ const CATEGORY_LABEL: Record<AudioCategory, string> = {
 export default function AdminAudioPage() {
   return (
     <AdminGuard>
-      <AdminAudioStudio />
+      <AppShell quote="Add calming audio to the library.">
+        <AdminAudioStudio />
+      </AppShell>
     </AdminGuard>
   );
 }
@@ -106,7 +110,7 @@ function AdminAudioStudio() {
   };
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
       <h1 className="text-2xl font-bold text-heading">Calm music studio</h1>
       <p className="mt-1 text-sm text-muted">
         Create a track, upload audio + cover to Cloudinary, attach the assets, then publish.
@@ -227,6 +231,6 @@ function AdminAudioStudio() {
           </ul>
         )}
       </section>
-    </main>
+    </div>
   );
 }

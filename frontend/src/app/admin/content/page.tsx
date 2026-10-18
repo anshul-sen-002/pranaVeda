@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, ImagePlus, Loader2, Plus } from "lucide-react";
 
 import { AdminGuard } from "@/components/admin/AdminGuard";
+import { AppShell } from "@/components/layout/AppShell";
 import { MediaUploadStudio } from "@/components/admin/MediaUploadStudio";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -23,7 +24,9 @@ import type { ContentSummary, ContentType, MediaDto } from "@/lib/api/types";
 export default function AdminContentPage() {
   return (
     <AdminGuard>
-      <AdminContentList />
+      <AppShell quote="Create, edit, publish yoga poses and articles.">
+        <AdminContentList />
+      </AppShell>
     </AdminGuard>
   );
 }
@@ -118,7 +121,7 @@ function AdminContentList() {
   };
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
       <h1 className="text-2xl font-bold text-heading">Content studio</h1>
       <p className="mt-1 text-sm text-muted">
         Create a pose, add ordered images with narration, then publish.
@@ -220,6 +223,6 @@ function AdminContentList() {
           </ul>
         )}
       </section>
-    </main>
+    </div>
   );
 }

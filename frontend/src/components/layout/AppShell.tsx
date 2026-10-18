@@ -4,8 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-  BookOpen, CalendarDays, ChevronDown, ClipboardList,
-  Home, Leaf, ListMusic, Menu, Settings, Sparkles, Trophy, User, Wind, X,
+  BarChart3, BookOpen, CalendarDays, ChevronDown, ClipboardList,
+  CloudUpload, FileMusic, Home, Layers, Leaf, ListMusic, Menu,
+  Settings, Sparkles, Trophy, User, Wind, X,
 } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
@@ -25,6 +26,15 @@ const NAV = [
   { href: "/calm-music", label: "Library", icon: BookOpen },
   { href: "/dashboard/saved", label: "Saved", icon: ClipboardList },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
+];
+
+/** Admin-only nav links, shown when the user has role ADMIN. */
+const ADMIN_NAV = [
+  { href: "/admin/content", label: "Content Studio", icon: Layers },
+  { href: "/admin/audio", label: "Audio Studio", icon: FileMusic },
+  { href: "/admin/media", label: "Media Studio", icon: CloudUpload },
+  { href: "/admin/categories", label: "Categories & Tags", icon: ClipboardList },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
 ];
 
 /** Bottom tab bar on phones: 5 compact destinations, 44px targets. */
@@ -69,6 +79,7 @@ export function AppShell({ children, quote }: { children: React.ReactNode; quote
   const pathname = usePathname();
   const { user } = useAuth();
   const displayName = user?.displayName?.trim() || "Administrator";
+  const isAdmin = user?.role === "ADMIN";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isActive = (href: string) => (href === "/dashboard" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`));
 
@@ -105,12 +116,16 @@ export function AppShell({ children, quote }: { children: React.ReactNode; quote
         </div>
         <nav aria-label="Primary" className="mt-1 flex-1 space-y-0.5 overflow-y-auto px-3">
           {NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} onNavigate={() => setDrawerOpen(false)} />))}
+          {isAdmin ? (<><div className="mx-3.5 my-2 border-t border-border-soft" /><p className="px-3.5 pb-1 text-[11px] font-semibold tracking-widest text-muted uppercase">Admin</p>{ADMIN_NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} onNavigate={() => setDrawerOpen(false)} />))}</>) : null}
         </nav>
         <div className="shrink-0 px-3"><QuoteCard quote={quote} /></div>
       </aside>
       <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-border-soft bg-surface/70 px-4 py-5 lg:flex">
         <Link href="/" className="rounded-lg px-2" aria-label="PranaVeda home"><Logo /></Link>
-        <nav aria-label="Primary" className="mt-6 flex-1 space-y-1 overflow-y-auto">{NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} />))}</nav>
+        <nav aria-label="Primary" className="mt-6 flex-1 space-y-1 overflow-y-auto">
+          {NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} />))}
+          {isAdmin ? (<><div className="mx-3.5 my-2 border-t border-border-soft" /><p className="px-3.5 pb-1 text-[11px] font-semibold tracking-widest text-muted uppercase">Admin</p>{ADMIN_NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} />))}</>) : null}
+        </nav>
         <QuoteCard quote={quote} />
       </aside>
       <AppMain pathname={pathname} displayName={displayName} onMenu={() => setDrawerOpen(true)}>
