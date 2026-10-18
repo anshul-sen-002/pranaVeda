@@ -45,18 +45,18 @@ export function PoseDetail({ detail }: { detail: ContentDetail }) {
   const [activeImg, setActiveImg] = useState(0);
   const [openStep, setOpenStep] = useState(0);
   return (
-    <article className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted mb-6">
-        <Link href="/yoga" className="inline-flex items-center gap-1 font-medium text-primary-700 underline-offset-4 hover:underline">
+    <article className="mx-auto max-w-6xl px-3 py-5 sm:px-8 sm:py-8">
+      <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1.5 text-xs text-muted sm:mb-6">
+        <Link href="/yoga" className="inline-flex min-h-9 items-center gap-1 font-medium text-primary-700 underline-offset-4 hover:underline">
           <ArrowLeft className="size-3.5" aria-hidden="true" /> Yoga Poses
         </Link>
         <span aria-hidden="true">›</span>
         <span className="truncate text-body">{item.title}</span>
       </nav>
-      <div className="grid gap-6 lg:grid-cols-[0.6fr_0.4fr]">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-[0.6fr_0.4fr]">
         {/* Left: hero image + thumbnails */}
         <div className="min-w-0">
-          <div className="relative overflow-hidden rounded-2xl border border-border-soft bg-primary-50 aspect-[4/5] sm:aspect-none h-[500px] sm:h-auto">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-border-soft bg-primary-50 sm:aspect-[4/5] sm:h-[500px] sm:rounded-2xl sm:aspect-none sm:h-auto">
             <LeafSprig className="pointer-events-none absolute bottom-2 left-2 h-24 w-16 text-primary-200" />
             {gallery[activeImg] ? (
               <img src={gallery[activeImg]} alt={`${item.title} demonstration`} className="h-full w-full object-cover" />
@@ -67,11 +67,11 @@ export function PoseDetail({ detail }: { detail: ContentDetail }) {
             )}
           </div>
           {gallery.length > 1 ? (
-            <div className="mt-3 grid grid-cols-5 gap-2" aria-label="Pose images">
+            <div className="scrollbar-none mt-2.5 flex gap-2 overflow-x-auto pb-0.5 sm:mt-3 sm:grid sm:grid-cols-5" aria-label="Pose images">
               {gallery.map((url, i) => (
                 <button key={i} type="button" onClick={() => setActiveImg(i)} aria-pressed={activeImg === i} aria-label={`View image ${i + 1}`}
-                  className={cn("overflow-hidden rounded-xl border-2", activeImg === i ? "border-primary-500" : "border-transparent opacity-70 hover:opacity-100")}>
-                  <img src={url} alt="" aria-hidden="true" className="aspect-square w-full object-cover" loading="lazy" />
+                  className={cn("size-16 shrink-0 overflow-hidden rounded-xl border-2 sm:aspect-square sm:size-auto sm:w-full", activeImg === i ? "border-primary-500" : "border-transparent opacity-70 hover:opacity-100")}>
+                  <img src={url} alt="" aria-hidden="true" className="h-full w-full object-cover" loading="lazy" />
                 </button>
               ))}
             </div>

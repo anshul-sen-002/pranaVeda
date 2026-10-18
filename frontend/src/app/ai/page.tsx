@@ -59,6 +59,7 @@ function AiChat() {
     } finally {
       setSending(false);
     }
+  };
 
   return (
     <div className="mx-auto flex h-[calc(100dvh-9rem)] max-w-3xl flex-col">
@@ -130,4 +131,3 @@ function Bubble({ role, content }: { role: AiMessage["role"]; content: string })
     </div>
   );
 }
-  };

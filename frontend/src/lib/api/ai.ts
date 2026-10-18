@@ -21,6 +21,13 @@ export interface AiChatResponse {
   messages: AiMessage[];
 }
 
+export interface AiConversationSummary {
+  id: number;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 /** Longest prompt we send (mirrors the backend @Size(max = 4000)). */
 export const AI_MAX_MESSAGE_CHARS = 4000;
 

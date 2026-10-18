@@ -20,15 +20,15 @@ export function StatCard({
 }) {
   const inner = (
     <>
-      <span className="flex size-10 items-center justify-center rounded-2xl bg-primary-100 text-primary-700">
+      <span className="flex size-9 items-center justify-center rounded-xl bg-primary-100 text-primary-700 sm:size-10">
         {icon}
       </span>
-      <span className="mt-3 text-2xl font-semibold text-heading">{value}</span>
-      <span className="text-sm font-medium text-body">{label}</span>
-      <span className="mt-0.5 text-xs text-muted">{hint}</span>
+      <span className="mt-2 text-xl font-semibold text-heading sm:mt-3 sm:text-2xl">{value}</span>
+      <span className="text-[13px] font-medium text-body sm:text-sm">{label}</span>
+      <span className="mt-0.5 line-clamp-2 text-[11px] text-muted sm:text-xs">{hint}</span>
     </>
   );
-  const cls = "flex flex-col rounded-3xl border border-border-soft bg-surface p-5 transition-colors";
+  const cls = "mobile-compact flex flex-col rounded-3xl border border-border-soft bg-surface p-3.5 transition-colors sm:p-5";
   return href ? (
     <Link href={href} className={cn(cls, "hover:border-primary-200 hover:bg-primary-50/40")}>
       {inner}

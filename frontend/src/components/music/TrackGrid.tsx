@@ -44,8 +44,8 @@ export function TrackGrid({
 
   return (
     <>
-      <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center">
-        <div className="scrollbar-none flex flex-1 items-center gap-2 overflow-x-auto" role="group" aria-label="Filter tracks">
+      <div className="mt-3 flex flex-col gap-2.5 sm:mt-4 sm:flex-row sm:items-center lg:gap-3">
+        <div className="scrollbar-none -mx-0.5 flex flex-1 items-center gap-1.5 overflow-x-auto px-0.5 py-0.5 sm:gap-2" role="group" aria-label="Filter tracks">
           {filters.map((f) => (
             <button
               key={f.value}
@@ -53,7 +53,7 @@ export function TrackGrid({
               onClick={() => onFilter(f.value)}
               aria-pressed={filter === f.value}
               className={cn(
-                "inline-flex h-9 shrink-0 items-center rounded-full px-4 text-[13px] font-medium transition-colors",
+                "inline-flex min-h-10 shrink-0 items-center rounded-full px-3.5 text-[13px] font-medium transition-colors",
                 filter === f.value ? "bg-primary-600 text-white" : "bg-surface text-body hover:bg-primary-50 hover:text-primary-700",
               )}
             >
@@ -61,7 +61,7 @@ export function TrackGrid({
             </button>
           ))}
         </div>
-        <div className="relative lg:w-56 lg:shrink-0">
+        <div className="relative sm:w-56 sm:shrink-0 lg:w-56">
           <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted" aria-hidden="true" />
           <input
             type="search"
@@ -69,7 +69,7 @@ export function TrackGrid({
             onChange={(e) => onQuery(e.target.value)}
             placeholder="Search music…"
             aria-label="Search music"
-            className="h-10 w-full rounded-full border border-border-soft bg-surface pr-4 pl-10 text-sm text-heading placeholder:text-muted focus:border-primary-300 focus:ring-2 focus:ring-primary-200 focus:outline-none"
+            className="h-11 w-full rounded-full border border-border-soft bg-surface pr-4 pl-10 text-sm text-heading placeholder:text-muted focus:border-primary-300 focus:ring-2 focus:ring-primary-200 focus:outline-none"
           />
         </div>
       </div>
@@ -145,31 +145,31 @@ function TrackResults({
     );
   }
   return (
-    <div className="mt-4 grid gap-4 sm:grid-cols-2" role="list" aria-label="Tracks">
+    <div className="mt-3 grid gap-2.5 sm:mt-4 sm:gap-4 sm:grid-cols-2" role="list" aria-label="Tracks">
       {visible.map((t) => {
         const active = currentId === t.id && playing;
         return (
-          <article key={t.id} role="listitem" className="flex gap-3.5 rounded-2xl border border-border-soft bg-surface p-3.5 transition-shadow hover:shadow-[0_14px_36px_-24px_rgba(23,137,199,0.5)]">
-            <div className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-primary-50">
+          <article key={t.id} role="listitem" className="mobile-compact flex gap-2.5 rounded-2xl border border-border-soft bg-surface p-2.5 transition-shadow hover:shadow-[0_14px_36px_-24px_rgba(23,137,199,0.5)] sm:gap-3.5 sm:p-3.5">
+            <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-primary-50 sm:size-24">
               <CoverImage src={t.coverImageUrl} alt="" />
             </div>
             <div className="flex min-w-0 flex-1 flex-col">
-              <span className={cn("w-fit rounded-full px-2.5 py-0.5 text-[11px] font-semibold", categoryChip[t.category])}>
+              <span className={cn("w-fit rounded-full px-2 py-0.5 text-[10px] font-semibold sm:px-2.5 sm:text-[11px]", categoryChip[t.category])}>
                 {categoryLabel[t.category]}
               </span>
-              <h3 className="mt-1.5 truncate text-sm font-semibold text-heading">{t.title}</h3>
-              <p className="text-xs text-muted">♪ {minutesOf(t)}</p>
-              <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted">{t.description}</p>
+              <h3 className="mt-1 truncate text-[13px] font-semibold text-heading sm:mt-1.5 sm:text-sm">{t.title}</h3>
+              <p className="text-[11px] text-muted sm:text-xs">♪ {minutesOf(t)}</p>
+              <p className="mt-0.5 line-clamp-1 text-[11px] leading-relaxed text-muted sm:line-clamp-2 sm:text-xs">{t.description}</p>
             </div>
             <div className="flex shrink-0 flex-col items-center justify-between py-0.5">
-              <button type="button" aria-label={`More options for ${t.title}`} className="inline-flex size-8 items-center justify-center rounded-full text-muted hover:bg-primary-50 hover:text-primary-700">
+              <button type="button" aria-label={`More options for ${t.title}`} className="hidden size-8 items-center justify-center rounded-full text-muted hover:bg-primary-50 hover:text-primary-700 sm:inline-flex">
                 <EllipsisVertical className="size-4" aria-hidden="true" />
               </button>
               <button
                 type="button"
                 onClick={() => onToggle(t)}
                 aria-label={active ? `Pause ${t.title}` : `Play ${t.title}`}
-                className="inline-flex size-10 items-center justify-center rounded-full border border-primary-200 text-primary-600 transition-colors hover:bg-primary-600 hover:text-white"
+                className="inline-flex size-11 items-center justify-center rounded-full border border-primary-200 text-primary-600 transition-colors hover:bg-primary-600 hover:text-white sm:size-10"
               >
                 {active ? <Pause className="size-4" aria-hidden="true" /> : <Play className="size-4" aria-hidden="true" />}
               </button>

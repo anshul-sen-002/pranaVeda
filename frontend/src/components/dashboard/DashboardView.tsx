@@ -8,6 +8,7 @@ import { ChallengePanel } from "@/components/dashboard/ChallengePanel";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { SavedPanel, WellnessPanel } from "@/components/dashboard/SavedWellnessPanels";
+import { WeeklyChart } from "@/components/dashboard/WeeklyChart";
 import { SessionsPanel } from "@/components/dashboard/SessionsPanel";
 import { DashboardError, DashboardSkeleton, StatCard } from "@/components/dashboard/dashboardUi";
 import { useAuth } from "@/hooks/useAuth";
@@ -78,9 +79,9 @@ function DashboardBody() {
   const firstName = user?.displayName?.trim().split(/\s+/)[0];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 sm:space-y-6">
       <DashboardHero firstName={firstName} practisedToday={streak.practisedToday} />
-      <section aria-label="Practice overview" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section aria-label="Practice overview" className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
         <StatCard
           icon={<Flame className="size-5" aria-hidden="true" />}
           value={String(streak.currentStreak)}
@@ -91,14 +92,17 @@ function DashboardBody() {
         <StatCard icon={<CalendarCheck2 className="size-5" aria-hidden="true" />} value={String(practice.sessionsLast7Days)} label="sessions this week" hint={`${practice.totalSessions} total`} />
         <StatCard icon={<Bookmark className="size-5" aria-hidden="true" />} value={String(dashboard.savedCount)} label="saved practices" hint="Your library" href="/dashboard/saved" />
       </section>
-      <div className="grid gap-6 lg:grid-cols-2">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
         <ChallengePanel challenge={dashboard.challenges[0] ?? null} onChanged={refresh} />
         <SessionsPanel sessions={sessions} onLogged={refresh} />
       </div>
-      <div className="grid gap-6 lg:grid-cols-2">
+      <WeeklyChart sessions={sessions} />
+      <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
         <SavedPanel dashboard={dashboard} />
         <WellnessPanel wellness={wellness} routines={routines} />
       </div>
+    </div>
     </div>
   );
 }

@@ -76,6 +76,28 @@ canvas {
   max-width: 100%;
 }
 
+/* Hide scrollbars for horizontal chip rails while keeping scroll. */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safe-area padding for fixed bottom bars on notched phones. */
+.safe-area-bottom {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+/* Compact mobile surfaces: slightly tighter cards under 640px. */
+@media (max-width: 639px) {
+  .mobile-compact {
+    border-radius: 1.25rem;
+  }
+}
+
+
 /* Long words (emails, URLs, tokens) wrap instead of forcing sideways scroll. */
 p,
 li,

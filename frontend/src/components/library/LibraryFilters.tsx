@@ -1,6 +1,7 @@
 "use client";
 
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { useState } from "react";
+import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
 
 import { cn } from "@/lib/cn";
 import { CONTENT_TYPES, DIFFICULTIES, DURATIONS, GOALS } from "@/lib/library/params";
@@ -60,6 +61,8 @@ function chipLabel(
 export function LibraryFilters(props: LibraryFiltersProps) {
   const { params, qInput, onQInput, categories, tags, onPatch, onToggleTag, onReset } =
     props;
+  // Collapsed on phones so the toolbar stays one calm row; open on sm+ by default.
+  const [open, setOpen] = useState(false);
   const activeTagSlugs = new Set(params.tags ?? []);
   const hasActive =
     !!params.q ||
@@ -69,26 +72,46 @@ export function LibraryFilters(props: LibraryFiltersProps) {
     !!params.category ||
     !!params.durationMax ||
     activeTagSlugs.size > 0;
+  const activeCount =
+    (params.type ? 1 : 0) +
+    (params.difficulty ? 1 : 0) +
+    (params.goal ? 1 : 0) +
+    (params.category ? 1 : 0) +
+    (params.durationMax ? 1 : 0) +
+    activeTagSlugs.size;
   const chipKeys = ["type", "difficulty", "goal", "category", "durationMax"];
 
   return (
-    <div className="space-y-4 rounded-2xl border border-border-soft bg-surface p-4 sm:p-5">
-      <div className="relative">
-        <Search
-          className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted"
-          aria-hidden="true"
-        />
-        <input
-          type="search"
-          value={qInput}
-          onChange={(e) => onQInput(e.target.value)}
-          placeholder="Search asanas, articles, videos…"
-          aria-label="Search the yoga library"
-          className="w-full rounded-xl border border-border-soft bg-surface py-2 pr-3 pl-9 text-sm text-heading placeholder:text-muted focus:border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-200"
-        />
+    <div className="mobile-compact space-y-3 rounded-2xl border border-border-soft bg-surface p-3 sm:space-y-4 sm:p-5">
+      <div className="flex items-center gap-2">
+        <div className="relative min-w-0 flex-1">
+          <Search
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted"
+            aria-hidden="true"
+          />
+          <input
+            type="search"
+            value={qInput}
+            onChange={(e) => onQInput(e.target.value)}
+            placeholder="Search asanas…"
+            aria-label="Search the yoga library"
+            className="h-11 w-full rounded-xl border border-border-soft bg-surface pr-3 pl-9 text-sm text-heading placeholder:text-muted focus:border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-200"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-xl border border-border-soft px-3.5 text-sm font-medium text-heading sm:hidden"
+        >
+          <SlidersHorizontal className="size-4" aria-hidden="true" />
+          Filters{activeCount > 0 ? ` (${activeCount})` : ""}
+          <ChevronDown className={cn("size-4 text-muted transition-transform", open && "rotate-180")} aria-hidden="true" />
+        </button>
       </div>
+      <div className={cn(!open && "hidden", "space-y-3 sm:block sm:space-y-4")}>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
         <label className="block">
           <span className="mb-1 block text-xs font-medium text-muted">Type</span>
           <select
@@ -179,7 +202,7 @@ export function LibraryFilters(props: LibraryFiltersProps) {
       </div>
 
       {tags.length > 0 && (
-        <div className="flex flex-wrap gap-2">
+        <div className="scrollbar-none -mx-1 flex gap-2 overflow-x-auto px-1 py-0.5 sm:flex-wrap">
           {tags.map((t) => {
             const on = activeTagSlugs.has(t.slug);
             return (
@@ -189,7 +212,7 @@ export function LibraryFilters(props: LibraryFiltersProps) {
                 onClick={() => onToggleTag(t.slug)}
                 aria-pressed={on}
                 className={cn(
-                  "rounded-full border px-3 py-1 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300",
+                  "min-h-9 shrink-0 rounded-full border px-3.5 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300",
                   on
                     ? "border-primary-300 bg-primary-100 text-primary-800"
                     : "border-border-soft bg-surface text-muted hover:border-primary-200 hover:text-heading",

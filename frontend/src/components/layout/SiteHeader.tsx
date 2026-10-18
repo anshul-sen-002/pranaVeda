@@ -76,6 +76,7 @@ export function SiteHeader() {
         <div className="hidden items-center gap-7 md:flex">
           <HeaderLink href="/yoga">Yoga</HeaderLink>
           <HeaderLink href="/calm-music">Calm Music</HeaderLink>
+          <HeaderLink href="/breathing">Breathing</HeaderLink>
           <HeaderLink href="/about">About</HeaderLink>
         </div>
 
@@ -125,6 +126,7 @@ export function SiteHeader() {
             {[
               { href: "/yoga", label: "Yoga" },
               { href: "/calm-music", label: "Calm Music" },
+              { href: "/breathing", label: "Breathing" },
               { href: "/about", label: "About" },
               ...(signedIn
                 ? [{ href: "/dashboard", label: "Dashboard" }]
