@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import { CheckCircle2, CloudUpload, FileImage, FileMusic, FileVideo, Loader2, X } from "lucide-react";
+import { CheckCircle2, CloudUpload, FileImage, FileMusic, FileVideo, X } from "lucide-react";
 import { adminMediaApi, MEDIA_LIMITS, type MediaUploadKind } from "@/lib/api/admin";
 import { ApiError } from "@/lib/api/client";
 import type { MediaDto } from "@/lib/api/types";
@@ -20,8 +20,8 @@ interface PendingFile {
   status: "ready" | "uploading" | "done" | "error";
   progress: number; media?: MediaDto; error?: string;
 }
-export function MediaUploadStudio({ accessToken, contentId, onUploaded, className }: { accessToken: string; contentId?: number | string; onUploaded?: (media: MediaDto) => void; className?: string }) {
-  const [kind, setKind] = useState<MediaUploadKind>("CONTENT_IMAGE");
+export function MediaUploadStudio({ accessToken, contentId, defaultKind = "CONTENT_IMAGE", onUploaded, className }: { accessToken: string; contentId?: number | string; defaultKind?: MediaUploadKind; onUploaded?: (media: MediaDto) => void; className?: string }) {
+  const [kind, setKind] = useState<MediaUploadKind>(defaultKind);
   const [items, setItems] = useState<PendingFile[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -114,7 +114,7 @@ export function MediaUploadStudio({ accessToken, contentId, onUploaded, classNam
                   {item.status === "ready" || (item.status === "error" && !item.media) ? (
                     <button type="button" onClick={() => void uploadOne(item.key)} className="mt-1.5 inline-flex min-h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-primary-600 text-[11px] font-semibold text-white"><CloudUpload className="size-3.5" aria-hidden="true" />{item.status === "error" ? "Retry" : "Upload"}</button>
                   ) : item.status === "uploading" ? (
-                    <p className="mt-1.5 flex min-h-9 items-center justify-center gap-1.5 text-[11px] font-medium text-muted"><Loader2 className="size-3.5 animate-spin" aria-hidden="true" />Uploading…</p>
+                    <p className="mt-1.5 flex min-h-9 items-center justify-center gap-1.5 text-[11px] font-medium text-muted"><DotLoader text="Uploading…" inline size="sm" /></p>
                   ) : item.media ? (
                     <p className="mt-1 truncate text-[10px] text-success">✓ id {item.media.id} · ready to attach</p>
                   ) : null}

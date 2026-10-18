@@ -8,6 +8,7 @@ import { AdminGuard } from "@/components/admin/AdminGuard";
 import { AppShell } from "@/components/layout/AppShell";
 import { MediaUploadStudio } from "@/components/admin/MediaUploadStudio";
 import { Alert } from "@/components/ui/Alert";
+import { DotLoader } from "@/components/motion/DotLoader";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/hooks/useAuth";
@@ -169,8 +170,7 @@ function AdminContentList() {
         ) : null}
         {loading ? (
           <p className="mt-4 flex items-center gap-2 text-sm text-muted">
-            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-            Loading…
+            <DotLoader text="Loading…" inline size="sm" />
           </p>
         ) : items.length === 0 && !listError ? (
           <p className="mt-4 text-sm text-muted">No content yet. Create the first pose above.</p>
@@ -195,6 +195,7 @@ function AdminContentList() {
                       <MediaUploadStudio
                         accessToken={accessToken ?? ""}
                         contentId={item.id}
+                        defaultKind="CONTENT_IMAGE"
                         onUploaded={(media) => void saveCover(item.id, media)}
                       />
                     </div>

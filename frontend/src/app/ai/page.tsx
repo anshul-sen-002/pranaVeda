@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Loader2, Send, Sparkles, User } from "lucide-react";
+import { Send, Sparkles, User } from "lucide-react";
 
 import { MemberGuard } from "@/components/auth/MemberGuard";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { LotusMark } from "@/components/brand/LotusMark";
 import { useAuth } from "@/hooks/useAuth";
 import { aiApi, AI_MAX_MESSAGE_CHARS, type AiMessage } from "@/lib/api/ai";
-import { ApiError } from "@/lib/api/client";
+import { DotLoader } from "@/components/motion/DotLoader";
 import { cn } from "@/lib/cn";
 
 const SUGGESTIONS = [
@@ -93,8 +93,7 @@ function AiChat() {
         )}
         {sending ? (
           <div className="flex items-center gap-2 px-2 text-sm text-muted">
-            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-            Thinking…
+            <DotLoader text="Thinking…" inline size="sm" />
           </div>
         ) : null}
         {error ? <p className="rounded-xl bg-danger/5 px-3 py-2 text-sm text-danger" role="alert">{error}</p> : null}

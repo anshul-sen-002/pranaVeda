@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { AuthCheckingScreen } from "@/components/auth/AuthCheckingScreen";
 import { useAuth } from "@/hooks/useAuth";
 
 /**
@@ -24,6 +23,6 @@ export function MemberGuard({ children }: { children: ReactNode }) {
     }
   }, [status, router, pathname]);
 
-  if (status !== "authenticated") return <AuthCheckingScreen />;
+  if (status !== "authenticated") return null;
   return <>{children}</>;
 }

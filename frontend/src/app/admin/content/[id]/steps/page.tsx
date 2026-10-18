@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { ArrowDown, ArrowUp, ImagePlus, Loader2, Sparkles, Trash2 } from "lucide-react";
 
 import { AdminGuard } from "@/components/admin/AdminGuard";
+import { DotLoader } from "@/components/motion/DotLoader";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
@@ -159,7 +160,7 @@ function StepsEditor() {
     return (
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
         <p className="flex items-center gap-2 text-sm text-muted">
-          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+          <DotLoader text="Loading steps…" inline size="sm" />
           Loading steps…
         </p>
       </main>

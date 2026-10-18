@@ -4,7 +4,7 @@ import { DotLoader } from "@/components/motion/DotLoader";
 export default function YogaLoading() {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
-      <DotLoader alt="Loading yoga library" />
+      <DotLoader text="Loading yoga library" />
     </div>
   );
 }

@@ -78,7 +78,9 @@ function QuoteCard({ quote }: { quote?: string }) {
 export function AppShell({ children, quote }: { children: React.ReactNode; quote?: string }) {
   const pathname = usePathname();
   const { user } = useAuth();
-  const displayName = user?.displayName?.trim() || "Administrator";
+  // Fall back to the email, never to a fake role label: a USER account must not
+  // appear to be an "Administrator" just because it has no display name.
+  const displayName = user?.displayName?.trim() || user?.email || "Account";
   const isAdmin = user?.role === "ADMIN";
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isActive = (href: string) => (href === "/dashboard" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`));
@@ -114,7 +116,7 @@ export function AppShell({ children, quote }: { children: React.ReactNode; quote
           <Link href="/" className="rounded-lg px-1" aria-label="PranaVeda home" onClick={() => setDrawerOpen(false)}><Logo /></Link>
           <button type="button" onClick={() => setDrawerOpen(false)} className="inline-flex size-11 items-center justify-center rounded-full text-body hover:bg-primary-50" aria-label="Close menu"><X className="size-5" aria-hidden="true" /></button>
         </div>
-        <nav aria-label="Primary" className="mt-1 flex-1 space-y-0.5 overflow-y-auto px-3">
+        <nav aria-label="Primary" className="scrollbar-none mt-1 flex-1 space-y-0.5 overflow-y-auto px-3">
           {NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} onNavigate={() => setDrawerOpen(false)} />))}
           {isAdmin ? (<><div className="mx-3.5 my-2 border-t border-border-soft" /><p className="px-3.5 pb-1 text-[11px] font-semibold tracking-widest text-muted uppercase">Admin</p>{ADMIN_NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} onNavigate={() => setDrawerOpen(false)} />))}</>) : null}
         </nav>
@@ -122,7 +124,7 @@ export function AppShell({ children, quote }: { children: React.ReactNode; quote
       </aside>
       <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-border-soft bg-surface/70 px-4 py-5 lg:flex">
         <Link href="/" className="rounded-lg px-2" aria-label="PranaVeda home"><Logo /></Link>
-        <nav aria-label="Primary" className="mt-6 flex-1 space-y-1 overflow-y-auto">
+        <nav aria-label="Primary" className="scrollbar-none mt-6 flex-1 space-y-1 overflow-y-auto">
           {NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} />))}
           {isAdmin ? (<><div className="mx-3.5 my-2 border-t border-border-soft" /><p className="px-3.5 pb-1 text-[11px] font-semibold tracking-widest text-muted uppercase">Admin</p>{ADMIN_NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} />))}</>) : null}
         </nav>

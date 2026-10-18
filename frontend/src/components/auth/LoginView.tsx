@@ -1,7 +1,6 @@
 "use client";
 
 import { AuthLayout } from "@/components/auth/AuthLayout";
-import { AuthCheckingScreen } from "@/components/auth/AuthCheckingScreen";
 import { AuthRedirect } from "@/components/auth/AuthRedirect";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,7 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 export function LoginView() {
   const { status } = useAuth();
 
-  if (status === "loading") return <AuthCheckingScreen />;
+  if (status === "loading") return null;
 
   return (
     <AuthLayout>

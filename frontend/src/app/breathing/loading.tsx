@@ -4,7 +4,7 @@ import { DotLoader } from "@/components/motion/DotLoader";
 export default function BreathingLoading() {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
-      <DotLoader alt="Preparing breathing studio" />
+      <DotLoader text="Preparing breathing studio" />
     </div>
   );
 }

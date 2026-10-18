@@ -11,6 +11,7 @@ import {
 } from "react";
 
 import { authApi } from "@/lib/api/auth";
+import { resetSharedRefresh, sharedRefresh } from "@/lib/api/sessionRefresh";
 import type { LoginRequest, RegisterRequest, UserSummary } from "@/lib/api/types";
 
 /**
@@ -58,10 +59,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserSummary | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
-  // Guarantees only one refresh call runs at a time. Without this, a page with
-  // several parallel requests could fire 5 refreshes and trip the backend's
-  // token-reuse detection, which would revoke the whole session.
-  const inFlight = useRef<Promise<void> | null>(null);
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -72,29 +69,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const bootstrap = useCallback((): Promise<void> => {
-    if (inFlight.current) return inFlight.current;
-
-    const run = (async () => {
-      try {
-        const session = await authApi.refresh();
-        if (!mounted.current) return;
+    // Shared with the fetch layer (useAuthedFetch): one in-flight refresh for
+    // the whole tab, so concurrent callers cannot race and trip the backend's
+    // token-reuse detection (which would revoke the session).
+    return sharedRefresh().then((session) => {
+      if (!mounted.current) return;
+      if (session) {
         setAccessToken(session.accessToken);
         setUser(session.user);
         setStatus("authenticated");
-      } catch {
-        if (!mounted.current) return;
-        // 401 (or any failure) simply means "no valid session". This is a
-        // normal outcome for first-time visitors, not an error condition.
+      } else {
+        // null simply means "no valid session" (never signed in, expired, or
+        // revoked). Normal outcome for first-time visitors, not an error.
         setAccessToken(null);
         setUser(null);
         setStatus("anonymous");
-      } finally {
-        inFlight.current = null;
       }
-    })();
-
-    inFlight.current = run;
-    return run;
+    });
   }, []);
 
   // Server-side validation of the session on every app load.
@@ -139,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const revalidate = useCallback(async () => {
-    inFlight.current = null;
+    resetSharedRefresh();
     await bootstrap();
   }, [bootstrap]);
 

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
+import { DotLoader } from "@/components/motion/DotLoader";
 import { useAuthedFetch } from "@/hooks/useAuthedFetch";
 import { meApi } from "@/lib/api/me";
 import { ApiError } from "@/lib/api/client";
@@ -48,7 +49,7 @@ export function JoinChallengeButton({ onJoined }: { onJoined: () => void }) {
       <div>
         {error ? <p role="alert" className="mb-2 text-sm text-danger">{error}</p> : null}
         <button type="button" onClick={() => void discover()} disabled={pending} className={btn}>
-          {pending ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
+          {pending ? <DotLoader inline size="sm" /> : null}
           Find the 7-day challenge
         </button>
       </div>

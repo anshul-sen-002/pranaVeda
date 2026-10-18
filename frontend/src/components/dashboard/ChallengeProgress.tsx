@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 import { Alert } from "@/components/ui/Alert";
+import { DotLoader } from "@/components/motion/DotLoader";
 import { useAuthedFetch } from "@/hooks/useAuthedFetch";
 import { meApi } from "@/lib/api/me";
 import { ApiError } from "@/lib/api/client";
@@ -95,7 +96,7 @@ export function ChallengeProgress({
         className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-gradient-primary px-6 text-sm font-medium text-white disabled:opacity-60"
       >
         {pending ? (
-          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+          <DotLoader inline size="sm" />
         ) : (
           <CheckCircle2 className="size-4" aria-hidden="true" />
         )}

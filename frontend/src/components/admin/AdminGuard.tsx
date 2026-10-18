@@ -2,8 +2,6 @@
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-
-import { AuthCheckingScreen } from "@/components/auth/AuthCheckingScreen";
 import { useAuth } from "@/hooks/useAuth";
 import type { ReactNode } from "react";
 
@@ -25,8 +23,6 @@ export function AdminGuard({ children }: { children: ReactNode }) {
     }
   }, [status, user, router, pathname]);
 
-  if (status !== "authenticated" || !user || user.role !== "ADMIN") {
-    return <AuthCheckingScreen />;
-  }
+  if (status !== "authenticated" || !user || user.role !== "ADMIN") return null;
   return <>{children}</>;
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { AuthLayout } from "@/components/auth/AuthLayout";
-import { AuthCheckingScreen } from "@/components/auth/AuthCheckingScreen";
 import { AuthRedirect } from "@/components/auth/AuthRedirect";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,7 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 export function RegisterView({ redirectTo = "/dashboard" }: { redirectTo?: string }) {
   const { status } = useAuth();
 
-  if (status === "loading") return <AuthCheckingScreen />;
+  if (status === "loading") return null;
 
   return (
     <AuthLayout>

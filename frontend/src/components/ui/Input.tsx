@@ -52,7 +52,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
           className={cn(
-            "h-12 w-full rounded-xl border bg-surface text-heading transition-colors duration-200",
+            "h-11 w-full rounded-xl border bg-surface text-base text-heading transition-colors duration-200 sm:h-12",
             "placeholder:text-muted",
             "focus:outline-none focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-200",
             icon ? "pl-11" : "pl-4",

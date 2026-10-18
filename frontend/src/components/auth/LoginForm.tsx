@@ -59,20 +59,20 @@ export function LoginForm() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <h1 className="text-2xl font-semibold tracking-tight text-heading sm:text-3xl">
+        <h1 className="text-xl font-semibold tracking-tight text-heading sm:text-3xl">
           Welcome back
         </h1>
-        <p className="mt-2 text-sm text-body">
+        <p className="mt-1.5 text-sm text-body sm:mt-2">
           Sign in to continue your wellness journey.
         </p>
       </motion.header>
 
       {/* Form-level errors are announced here rather than next to a field. */}
-      <div aria-live="polite" className="mt-6">
+      <div aria-live="polite" className="mt-4 sm:mt-6">
         {formError ? <Alert tone="error">{formError}</Alert> : null}
       </div>
 
-      <div className="mt-6 space-y-5">
+      <div className="mt-4 space-y-4 sm:mt-6 sm:space-y-5">
         <Input
           label="Email"
           type="email"
@@ -106,7 +106,7 @@ export function LoginForm() {
         </Button>
       </div>
 
-      <p className="mt-7 text-center text-sm text-body">
+      <p className="mt-5 text-center text-sm text-body sm:mt-7">
         New to PranaVeda?{" "}
         <Link
           href="/register"

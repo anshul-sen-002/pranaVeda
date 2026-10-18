@@ -3,13 +3,20 @@ import { useState } from "react";
 import { CloudUpload, FileImage, FileMusic, FileVideo, Info, Shield } from "lucide-react";
 
 import { AdminGuard } from "@/components/admin/AdminGuard";
+import { AppShell } from "@/components/layout/AppShell";
 import { MediaUploadStudio } from "@/components/admin/MediaUploadStudio";
 import { DotLoader } from "@/components/motion/DotLoader";
 import { useAuth } from "@/hooks/useAuth";
 import type { MediaDto } from "@/lib/api/types";
 
 export default function AdminMediaPage() {
-  return <AdminGuard><MediaStudio /></AdminGuard>;
+  return (
+    <AdminGuard>
+      <AppShell quote="Upload once, attach everywhere: covers, yoga media, audio.">
+        <MediaStudio />
+      </AppShell>
+    </AdminGuard>
+  );
 }
 
 function MediaStudio() {
@@ -17,10 +24,10 @@ function MediaStudio() {
   const [recent, setRecent] = useState<MediaDto[]>([]);
   const onUploaded = (media: MediaDto) => setRecent((prev) => [media, ...prev].slice(0, 20));
   if (!accessToken) {
-    return <main className="flex min-h-[60vh] items-center justify-center"><DotLoader alt="Loading" /></main>;
+    return <main className="flex min-h-[60vh] items-center justify-center"><DotLoader text="Loading" /></main>;
   }
   return (
-    <main className="mx-auto max-w-4xl px-5 py-8">
+    <div className="mx-auto max-w-4xl px-5 py-8">
       <header className="overflow-hidden rounded-3xl border border-border-soft bg-gradient-to-br from-primary-50 via-surface-tint to-primary-100 p-5 sm:p-6">
         <div className="flex items-start gap-4">
           <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary-100 text-primary-700">
@@ -29,8 +36,9 @@ function MediaStudio() {
           <div>
             <h1 className="text-xl font-semibold tracking-tight text-heading sm:text-2xl">Media Studio</h1>
             <p className="mt-1 max-w-lg text-sm leading-relaxed text-body sm:text-base">
-              Upload images, videos, and audio to Cloudinary. Files get a delivery URL + asset id
-              ready to attach to content or audio tracks.
+              Upload images, videos, and audio to Cloudinary. Each upload returns a delivery URL
+              + asset id: attach it from the Content Studio (featured cover / pose media) or the
+              Audio Studio (stream file / cover art).
             </p>
           </div>
         </div>
@@ -65,6 +73,10 @@ function MediaStudio() {
       {recent.length > 0 ? (
         <section className="mt-6" aria-label="Recent uploads">
           <h2 className="text-sm font-semibold text-heading">This session ({recent.length})</h2>
+          <p className="mt-1 text-xs text-muted">
+            Copy an asset id from a row and attach it where it belongs: content covers in the
+            Content Studio, stream files + covers in the Audio Studio.
+          </p>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {recent.map((m) => (
               <li key={m.id} className="flex items-center gap-3 rounded-2xl border border-border-soft bg-surface p-3">
@@ -81,6 +93,6 @@ function MediaStudio() {
           </ul>
         </section>
       ) : null}
-    </main>
+    </div>
   );
 }

@@ -213,6 +213,7 @@ function AdminAudioStudio() {
                       <MediaUploadStudio
                         accessToken={accessToken ?? ""}
                         contentId={t.id}
+                        defaultKind="AUDIO"
                         onUploaded={(media) => void attach(t.id, media.id, "audio")}
                       />
                     </div>
@@ -221,6 +222,7 @@ function AdminAudioStudio() {
                       <MediaUploadStudio
                         accessToken={accessToken ?? ""}
                         contentId={t.id}
+                        defaultKind="CONTENT_IMAGE"
                         onUploaded={(media) => void attach(t.id, media.id, "cover")}
                       />
                     </div>

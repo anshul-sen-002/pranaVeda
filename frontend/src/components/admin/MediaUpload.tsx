@@ -1,10 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { CheckCircle2, CloudUpload, Loader2 } from "lucide-react";
+import { CheckCircle2, CloudUpload } from "lucide-react";
 
 import { adminMediaApi, MEDIA_LIMITS, type MediaUploadKind } from "@/lib/api/admin";
 import { ApiError } from "@/lib/api/client";
+import { DotLoader } from "@/components/motion/DotLoader";
 import type { MediaDto } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 
@@ -81,7 +82,7 @@ export function MediaUpload({
         )}
       >
         {busy ? (
-          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+          <DotLoader text="Uploading…" inline size="sm" />
         ) : done ? (
           <CheckCircle2 className="size-4 text-success" aria-hidden="true" />
         ) : (

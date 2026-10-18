@@ -59,13 +59,13 @@ export function AuthLayout({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto grid max-w-6xl items-center gap-8 px-5 pt-2 pb-14 lg:grid-cols-2 lg:gap-10">
+      <main className="relative z-10 mx-auto grid max-w-6xl items-center gap-6 px-4 pt-0 pb-10 sm:gap-8 sm:px-5 sm:pt-2 sm:pb-14 lg:grid-cols-2 lg:gap-10">
         {/* ------------- Hero panel ------------- */}
         <section className="text-center lg:text-left">
           <motion.h1
             {...fadeUp}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-3xl leading-[1.1] font-semibold tracking-tight text-balance text-heading sm:text-4xl xl:text-5xl"
+            className="text-2xl leading-[1.15] font-semibold tracking-tight text-balance text-heading sm:text-4xl xl:text-5xl"
           >
             Find your balance
             <br />
@@ -86,15 +86,18 @@ export function AuthLayout({ children }: { children: ReactNode }) {
           <motion.p
             {...fadeUp}
             transition={{ duration: 0.5, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
-            className="mx-auto mt-4 max-w-sm text-base leading-relaxed text-body lg:mx-0"
+            className="mx-auto mt-2.5 max-w-sm text-sm leading-relaxed text-body sm:mt-4 sm:text-base lg:mx-0"
           >
             Build a calmer, stronger, healthier you — one breath at a time.
           </motion.p>
 
+          {/* Illustration is decorative — hidden on small screens so the form
+              sits near the top and stays fully visible without scrolling. */}
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            className="hidden sm:block"
           >
             <MeditationIllustration className="mx-auto mt-6 w-full max-w-[19rem] sm:max-w-sm lg:max-w-md" />
           </motion.div>
@@ -125,9 +128,9 @@ export function AuthLayout({ children }: { children: ReactNode }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="rounded-3xl border border-white/70 bg-white/90 p-7 shadow-[0_24px_70px_-40px_rgba(10,61,89,0.45)] backdrop-blur-sm sm:p-9"
+            className="rounded-2xl border border-white/70 bg-white/90 p-5 shadow-[0_24px_70px_-40px_rgba(10,61,89,0.45)] backdrop-blur-sm sm:rounded-3xl sm:p-9"
           >
-            <div className="mb-7 flex justify-center">
+            <div className="mb-5 flex justify-center sm:mb-7">
               <Logo />
             </div>
             {children}

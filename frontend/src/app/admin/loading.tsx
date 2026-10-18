@@ -4,7 +4,7 @@ import { DotLoader } from "@/components/motion/DotLoader";
 export default function AdminLoading() {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
-      <DotLoader alt="Loading admin studio" />
+      <DotLoader text="Loading admin studio" />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
+import { DotLoader } from "@/components/motion/DotLoader";
 import { useAuthedFetch } from "@/hooks/useAuthedFetch";
 import { meApi } from "@/lib/api/me";
 import { ApiError } from "@/lib/api/client";
@@ -59,7 +60,7 @@ export function LogSessionInline({ onLogged }: { onLogged: () => void }) {
           disabled={pending}
           className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-gradient-primary px-5 text-sm font-medium text-white disabled:opacity-60"
         >
-          {pending ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
+          {pending ? <DotLoader inline size="sm" /> : null}
           Log
         </button>
       </div>

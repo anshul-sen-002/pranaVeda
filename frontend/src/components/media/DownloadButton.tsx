@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import { Download, Loader2 } from "lucide-react";
+import { Download } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { DotLoader } from "@/components/motion/DotLoader";
 import { mediaApi } from "@/lib/api/extras";
 import { ApiError } from "@/lib/api/client";
 
@@ -29,7 +30,7 @@ export function DownloadButton({ mediaId, label }: { mediaId: number; label?: st
   return (
     <span className="inline-flex flex-col gap-1">
       <button type="button" onClick={() => void go()} disabled={busy} className="inline-flex min-h-10 items-center gap-2 rounded-full border border-border-soft bg-surface px-4 text-sm font-medium text-heading hover:border-primary-300 hover:text-primary-700 disabled:opacity-50">
-        {busy ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : <Download className="size-4" aria-hidden="true" />}{busy ? "Preparing…" : (label ?? "Download")}
+        {busy ? <DotLoader inline size="sm" /> : <Download className="size-4" aria-hidden="true" />}{busy ? "Preparing…" : (label ?? "Download")}
       </button>
       {error ? <span className="text-xs text-danger" role="alert">{error}</span> : null}
     </span>
