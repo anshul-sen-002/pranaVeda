@@ -8,7 +8,6 @@ import com.pranaveda.common.error.ConflictException;
 import com.pranaveda.common.error.ErrorCode;
 import com.pranaveda.common.error.UnauthorizedException;
 import com.pranaveda.mail.EmailService;
-import com.pranaveda.notification.NotificationService;
 import com.pranaveda.security.CurrentUserPrincipal;
 import com.pranaveda.security.JwtService;
 import com.pranaveda.user.Role;
@@ -41,7 +40,6 @@ class AuthServiceTest {
     private PasswordEncoder passwordEncoder;
     private RefreshTokenService refreshTokenService;
     private JwtService jwtService;
-    private NotificationService notificationService;
     private EmailService emailService;
     private AuthService authService;
 
@@ -52,10 +50,9 @@ class AuthServiceTest {
         passwordEncoder = mock(PasswordEncoder.class);
         refreshTokenService = mock(RefreshTokenService.class);
         jwtService = mock(JwtService.class);
-        notificationService = mock(NotificationService.class);
         emailService = mock(EmailService.class);
         authService = new AuthService(userService, users, passwordEncoder, refreshTokenService,
-                jwtService, notificationService, emailService);
+                jwtService, emailService);
 
         when(jwtService.createAccessToken(anyLong(), anyString(), any(Role.class))).thenReturn("access-jwt");
         when(jwtService.accessTtlSeconds()).thenReturn(900L);

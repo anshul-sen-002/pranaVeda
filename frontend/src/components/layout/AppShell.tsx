@@ -10,7 +10,6 @@ import {
 
 import { Logo } from "@/components/brand/Logo";
 import { LotusMark } from "@/components/brand/LotusMark";
-import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/cn";
 
@@ -132,7 +131,6 @@ function AppMain({ pathname, displayName, onMenu, children }: { pathname: string
             <Link href="/" className="rounded-lg p-1.5 lg:hidden" aria-label="PranaVeda home"><Logo markOnly /></Link>
           </div>
           <div className="flex items-center gap-1.5">
-            <NotificationBell />
             <span className="hidden h-6 w-px bg-border-soft sm:block" aria-hidden="true" />
             <span className="inline-flex items-center gap-2 rounded-full py-1 pr-1 pl-1" aria-label={`Account: ${displayName}`}><span className="flex size-8 items-center justify-center rounded-full bg-primary-100 text-primary-700"><User className="size-4" aria-hidden="true" /></span><span className="hidden max-w-28 truncate text-sm font-medium text-body sm:inline">{displayName}</span></span>
           </div>

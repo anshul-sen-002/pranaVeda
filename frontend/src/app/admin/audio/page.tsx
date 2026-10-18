@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 
 import { AdminGuard } from "@/components/admin/AdminGuard";
-import { MediaUpload } from "@/components/admin/MediaUpload";
+import { MediaUploadStudio } from "@/components/admin/MediaUploadStudio";
 import { Alert } from "@/components/ui/Alert";
 import { useAuth } from "@/hooks/useAuth";
 import { adminAudioApi } from "@/lib/api/admin";
@@ -206,19 +206,17 @@ function AdminAudioStudio() {
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
                     <div>
                       <p className="mb-1 text-xs font-semibold text-heading">Audio file</p>
-                      <MediaUpload
+                      <MediaUploadStudio
                         accessToken={accessToken ?? ""}
-                        kind="AUDIO"
-                        label="Pick audio file"
+                        contentId={t.id}
                         onUploaded={(media) => void attach(t.id, media.id, "audio")}
                       />
                     </div>
                     <div>
                       <p className="mb-1 text-xs font-semibold text-heading">Cover art</p>
-                      <MediaUpload
+                      <MediaUploadStudio
                         accessToken={accessToken ?? ""}
-                        kind="CONTENT_IMAGE"
-                        label="Pick cover image"
+                        contentId={t.id}
                         onUploaded={(media) => void attach(t.id, media.id, "cover")}
                       />
                     </div>

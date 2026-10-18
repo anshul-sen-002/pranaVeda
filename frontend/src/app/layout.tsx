@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-
+import { DotLoader } from "@/components/motion/DotLoader";
 import { AuthProvider } from "@/providers/AuthProvider";
-import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -54,11 +53,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/icon.png?v=1" />
       </head>
       <body className="min-h-full flex flex-col">
-        {/*
-          AuthProvider wraps everything so `useAuth()` works on any page.
-          It performs the background session check (POST /auth/refresh) once,
-          on mount, for the whole app.
-        */}
+        {/* Global loading screen — covers the app while AuthProvider resolves the session. */}
+        <DotLoader />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

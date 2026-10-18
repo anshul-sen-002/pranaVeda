@@ -7,8 +7,6 @@ import com.pranaveda.common.error.ConflictException;
 import com.pranaveda.common.error.NotFoundException;
 import com.pranaveda.common.error.UnauthorizedException;
 import com.pranaveda.mail.EmailService;
-import com.pranaveda.notification.NotificationService;
-import com.pranaveda.notification.NotificationType;
 import com.pranaveda.security.CurrentUserPrincipal;
 import com.pranaveda.security.JwtService;
 import com.pranaveda.user.Role;
@@ -39,7 +37,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
-    private final NotificationService notificationService;
     private final EmailService emailService;
 
     public AuthService(UserService userService,
@@ -47,14 +44,12 @@ public class AuthService {
                        PasswordEncoder passwordEncoder,
                        RefreshTokenService refreshTokenService,
                        JwtService jwtService,
-                       NotificationService notificationService,
                        EmailService emailService) {
         this.userService = userService;
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.refreshTokenService = refreshTokenService;
         this.jwtService = jwtService;
-        this.notificationService = notificationService;
         this.emailService = emailService;
     }
 
@@ -65,7 +60,7 @@ public class AuthService {
         }
         User user = userService.create(request.email(), request.password(), request.displayName(), Role.USER);
         RefreshTokenService.IssuedRefreshToken refresh = refreshTokenService.issue(user.getId());
-        welcome(user);
+        emailService.sendWelcomeEmail(user.getEmail(), user.getDisplayName());
         return session(user, refresh.token());
     }
 
@@ -113,32 +108,15 @@ public class AuthService {
         return new IssuedSession(response, refreshToken);
     }
 
-    /** Best-effort welcome notification; never breaks registration. */
-    private void welcome(User user) {
-        try {
-            notificationService.create(user.getId(), NotificationType.WELCOME,
-                "Welcome to PranaVeda",
-                "Hi " + user.getDisplayName()
-                    + ", your calm practice space is ready. Explore yoga, guided audio, and your personal dashboard.",
-                "/dashboard");
-        } catch (RuntimeException ex) {
-            log.warn("Failed to create welcome notification for user {}", user.getId(), ex);
-        }
-    }
-
-    /** Best-effort sign-in alert (in-app + email); never breaks login. */
+    /** Best-effort sign-in alert (email only — no in-app notifications).
+     * Never throws; failures are logged only.
+     */
     private void onSignIn(User user, String ip) {
         try {
             String when = OffsetDateTime.now(ZoneOffset.UTC).toString();
-            notificationService.create(user.getId(), NotificationType.LOGIN_ALERT,
-                "New sign-in to your account",
-                "We noticed a sign-in to your PranaVeda account"
-                    + (ip != null && !ip.isBlank() ? " from " + ip : "")
-                    + ". If this wasn't you, please change your password.",
-                null);
             emailService.sendLoginAlert(user.getEmail(), user.getDisplayName(), when, ip);
         } catch (RuntimeException ex) {
-            log.warn("Failed to record sign-in alert for user {}", user.getId(), ex);
+            log.warn("Failed to send sign-in alert for user {}", user.getId(), ex);
         }
     }
 }

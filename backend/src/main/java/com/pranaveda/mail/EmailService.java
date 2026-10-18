@@ -83,6 +83,38 @@ public class EmailService {
         send(toEmail, subject, html);
     }
 
+    /** "Welcome to PranaVeda" email sent after registration (agents.md 2.3).
+     * Never throws; failures are logged only so registration always succeeds.
+     */
+    @Async("mailExecutor")
+    public void sendWelcomeEmail(String toEmail, String displayName) {
+        if (!properties.isEnabled()) {
+            return;
+        }
+        String name = (displayName == null || displayName.isBlank()) ? "there" : displayName.trim();
+        String subject = "Welcome to PranaVeda — your calm practice space is ready";
+        String html = """
+            <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;
+                        padding:24px;color:#223240">
+              <h2 style="color:#1789c7;margin:0 0 12px">Hi %s,</h2>
+              <p style="line-height:1.6;margin:0 0 12px">
+                Welcome to PranaVeda — your calm space for yoga, guided audio, and personal wellness.
+              </p>
+              <p style="line-height:1.6;margin:0 0 12px">
+                Explore yoga poses, calming soundscapes, and guided breathing — no account needed
+                to browse. Sign in to save practices, track streaks, and build your own routines.
+              </p>
+              <p style="line-height:1.6;margin:0 0 12px">
+                Start here: <a href="https://pranaveda.example/yoga" style="color:#1789c7">Yoga Library</a>
+              </p>
+              <p style="color:#93a3ae;font-size:12px;margin:16px 0 0">
+                PranaVeda &mdash; a calm space for yoga and wellness.
+              </p>
+            </div>
+            """.formatted(escape(name));
+        send(toEmail, subject, html);
+    }
+
     private void send(String toEmail, String subject, String html) {
         JavaMailSender mailSender = mailSenderProvider.getIfAvailable();
         if (mailSender == null) {

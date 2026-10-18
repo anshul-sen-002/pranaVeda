@@ -10,8 +10,9 @@ import {
   type ReactNode,
 } from "react";
 
-import { authApi } from "@/lib/api/auth";
+import { DotLoader } from "@/components/motion/DotLoader";
 import type { LoginRequest, RegisterRequest, UserSummary } from "@/lib/api/types";
+import { authApi } from "@/lib/api/auth";
 
 /**
  * Auth state machine.
@@ -156,6 +157,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }),
     [status, user, accessToken, login, register, logout, applyRefreshedToken, revalidate],
   );
+
+  // During server-side validation, show the global dot-loader instead of a blank.
+  if (status === "loading" && typeof window === "undefined") {
+    return <DotLoader />;
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

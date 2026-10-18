@@ -259,6 +259,7 @@ export function LibraryFilters(props: LibraryFiltersProps) {
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 }

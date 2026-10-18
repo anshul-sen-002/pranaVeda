@@ -1,31 +1,6 @@
 import { apiRequest } from "./client";
 import type { PageResponse } from "./types";
 
-export interface NotificationDto {
-  id: number;
-  type: string;
-  title: string;
-  body: string;
-  actionUrl: string | null;
-  read: boolean;
-  createdAt: string;
-}
-
-export const notificationsApi = {
-  list(accessToken: string): Promise<NotificationDto[]> {
-    return apiRequest<NotificationDto[]>("/api/v1/me/notifications", { accessToken });
-  },
-  unreadCount(accessToken: string): Promise<{ unreadCount: number }> {
-    return apiRequest<{ unreadCount: number }>("/api/v1/me/notifications/unread-count", { accessToken });
-  },
-  markRead(accessToken: string, id: number): Promise<void> {
-    return apiRequest<void>(`/api/v1/me/notifications/${id}/read`, { method: "POST", accessToken }) as Promise<void>;
-  },
-  markAllRead(accessToken: string): Promise<{ unreadCount: number }> {
-    return apiRequest<{ unreadCount: number }>("/api/v1/me/notifications/read-all", { method: "POST", accessToken });
-  },
-};
-
 export interface MediaDownloadDto {
   url: string;
   filename: string;

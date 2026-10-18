@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, ImagePlus, Loader2, Plus } from "lucide-react";
 
 import { AdminGuard } from "@/components/admin/AdminGuard";
-import { MediaUpload } from "@/components/admin/MediaUpload";
+import { MediaUploadStudio } from "@/components/admin/MediaUploadStudio";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -189,11 +189,9 @@ function AdminContentList() {
                   ) : null}
                   {coverFor === item.id ? (
                     <div className="mt-2">
-                      <MediaUpload
+                      <MediaUploadStudio
                         accessToken={accessToken ?? ""}
-                        kind="CONTENT_IMAGE"
                         contentId={item.id}
-                        label="Pick cover image"
                         onUploaded={(media) => void saveCover(item.id, media)}
                       />
                     </div>
