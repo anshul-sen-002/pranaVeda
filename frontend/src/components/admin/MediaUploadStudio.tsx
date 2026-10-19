@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { CheckCircle2, CloudUpload, FileImage, FileMusic, FileVideo, X } from "lucide-react";
+import { DotLoader } from "@/components/motion/DotLoader";
 import { adminMediaApi, MEDIA_LIMITS, type MediaUploadKind } from "@/lib/api/admin";
 import { ApiError } from "@/lib/api/client";
 import type { MediaDto } from "@/lib/api/types";
@@ -20,7 +21,7 @@ interface PendingFile {
   status: "ready" | "uploading" | "done" | "error";
   progress: number; media?: MediaDto; error?: string;
 }
-export function MediaUploadStudio({ accessToken, contentId, defaultKind = "CONTENT_IMAGE", onUploaded, className }: { accessToken: string; contentId?: number | string; defaultKind?: MediaUploadKind; onUploaded?: (media: MediaDto) => void; className?: string }) {
+export function MediaUploadStudio({ accessToken, contentId, defaultKind = "CONTENT_IMAGE", lockKind = false, onUploaded, className }: { accessToken: string; contentId?: number | string; defaultKind?: MediaUploadKind; lockKind?: boolean; onUploaded?: (media: MediaDto) => void; className?: string }) {
   const [kind, setKind] = useState<MediaUploadKind>(defaultKind);
   const [items, setItems] = useState<PendingFile[]>([]);
   const [dragOver, setDragOver] = useState(false);
@@ -68,18 +69,20 @@ export function MediaUploadStudio({ accessToken, contentId, defaultKind = "CONTE
   };
   return (
     <div className={cn("mobile-compact rounded-2xl border border-border-soft bg-surface p-3 sm:rounded-3xl sm:p-5", className)}>
-      <div className="grid grid-cols-3 gap-1 rounded-2xl bg-surface-tint p-1" role="tablist" aria-label="Media type">
-        {(Object.keys(KIND_META) as MediaUploadKind[]).map((k) => {
-          const meta = KIND_META[k];
-          const active = kind === k;
-          return (
-            <button key={k} type="button" role="tab" aria-selected={active} onClick={() => setKind(k)}
-              className={cn("inline-flex min-h-10 flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] font-semibold sm:min-h-11 sm:flex-row sm:gap-1.5 sm:text-xs", active ? "bg-surface text-primary-700 shadow-sm" : "text-muted")}>
-              <meta.Icon className="size-4" aria-hidden="true" />{meta.label}
-            </button>
-          );
-        })}
-      </div>
+      {lockKind ? null : (
+        <div className="grid grid-cols-3 gap-1 rounded-2xl bg-surface-tint p-1" role="tablist" aria-label="Media type">
+          {(Object.keys(KIND_META) as MediaUploadKind[]).map((k) => {
+            const meta = KIND_META[k];
+            const active = kind === k;
+            return (
+              <button key={k} type="button" role="tab" aria-selected={active} onClick={() => setKind(k)}
+                className={cn("inline-flex min-h-10 flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] font-semibold sm:min-h-11 sm:flex-row sm:gap-1.5 sm:text-xs", active ? "bg-surface text-primary-700 shadow-sm" : "text-muted")}>
+                <meta.Icon className="size-4" aria-hidden="true" />{meta.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
       <button type="button" onClick={() => inputRef.current?.click()} onDragOver={(e) => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files.length > 0) addFiles(e.dataTransfer.files); }}
         className={cn("mt-3 flex w-full flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed px-4 py-6 text-center sm:py-10", dragOver ? "border-primary-400 bg-primary-50" : "border-border-soft hover:border-primary-300 hover:bg-primary-50/50")}>
         <span className="flex size-11 items-center justify-center rounded-full bg-primary-100 text-primary-700"><CloudUpload className="size-5" aria-hidden="true" /></span>

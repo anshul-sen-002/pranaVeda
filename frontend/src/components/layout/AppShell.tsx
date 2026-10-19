@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BarChart3, BookOpen, CalendarDays, ChevronDown, ClipboardList,
-  CloudUpload, FileMusic, Home, Layers, Leaf, ListMusic, Menu,
-  Settings, Sparkles, Trophy, User, Wind, X,
+  CloudUpload, FileMusic, Flower2, HelpCircle, History, Home, Layers, Leaf, LogOut, Menu,
+  Settings, Sparkles, Trophy, User, Wind, X, Bell,
 } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
@@ -17,13 +17,14 @@ import { cn } from "@/lib/cn";
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/dashboard/history", label: "Sessions", icon: CalendarDays },
-  { href: "/dashboard/routines", label: "Routines", icon: ListMusic },
+  { href: "/dashboard/routines", label: "Routines", icon: Flower2 },
   { href: "/dashboard/challenges", label: "Challenges", icon: Trophy },
   { href: "/dashboard/wellness", label: "Wellness", icon: Leaf },
   { href: "/ai", label: "AI Assistant", icon: Sparkles },
   { href: "/breathing", label: "Breathing", icon: Wind },
   { href: "/yoga", label: "Yoga Asanas", icon: User },
   { href: "/calm-music", label: "Library", icon: BookOpen },
+  { href: "/ai/history", label: "History", icon: History },
   { href: "/dashboard/saved", label: "Saved", icon: ClipboardList },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
@@ -64,11 +65,12 @@ function NavLink({ href, label, Icon, active, onNavigate }: { href: string; labe
 }
 function QuoteCard({ quote }: { quote?: string }) {
   return (
-    <div className="relative mt-4 overflow-hidden rounded-2xl border border-border-soft bg-primary-50/60 p-4">
+    <div className="relative mt-4 overflow-hidden rounded-2xl bg-gradient-to-b from-primary-50/80 to-primary-100/50 p-4">
       <LotusMark className="size-8 text-primary-300" />
       <p className="mt-2 text-sm leading-relaxed text-body">
         &ldquo;{quote ?? "Good music soothes the mind, heals the heart."}&rdquo;
       </p>
+      <span className="mt-2 block h-0.5 w-6 rounded bg-primary-300" aria-hidden="true" />
       <LotusMark className="pointer-events-none absolute -right-8 -bottom-10 size-36 text-primary-200/50" />
     </div>
   );
@@ -139,6 +141,24 @@ export function AppShell({ children, quote }: { children: React.ReactNode; quote
 
 
 function AppMain({ pathname, displayName, onMenu, children }: { pathname: string; displayName: string; onMenu: () => void; children: React.ReactNode }) {
+  const { status, user, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMenuOpen(false); };
+    const onClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("mousedown", onClick);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", onClick);
+    };
+  }, [menuOpen]);
+
   return (
     <div className="flex min-w-0 flex-1 flex-col">
       <header className="sticky top-0 z-30 border-b border-border-soft/70 bg-surface/85 backdrop-blur-md">
@@ -147,9 +167,73 @@ function AppMain({ pathname, displayName, onMenu, children }: { pathname: string
             <button type="button" onClick={onMenu} className="inline-flex size-11 items-center justify-center rounded-full text-body transition-colors hover:bg-primary-50 lg:hidden" aria-controls="mobile-drawer" aria-label="Open navigation"><Menu className="size-5" aria-hidden="true" /></button>
             <Link href="/" className="rounded-lg p-1.5 lg:hidden" aria-label="PranaVeda home"><Logo markOnly /></Link>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Bell — visual only for now; no notification backend exists yet. */}
+            <button
+              type="button"
+              aria-label="Notifications (none yet)"
+              className="relative inline-flex size-10 items-center justify-center rounded-full text-body transition-colors hover:bg-primary-50 hover:text-primary-700"
+            >
+              <Bell className="size-5" aria-hidden="true" />
+              <span className="absolute top-2 right-2.5 size-1.5 rounded-full bg-primary-500" aria-hidden="true" />
+            </button>
             <span className="hidden h-6 w-px bg-border-soft sm:block" aria-hidden="true" />
-            <span className="inline-flex items-center gap-2 rounded-full py-1 pr-1 pl-1" aria-label={`Account: ${displayName}`}><span className="flex size-8 items-center justify-center rounded-full bg-primary-100 text-primary-700"><User className="size-4" aria-hidden="true" /></span><span className="hidden max-w-28 truncate text-sm font-medium text-body sm:inline">{displayName}</span></span>
+            <div ref={menuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setMenuOpen((v) => !v)}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                aria-label={`Account: ${displayName}`}
+                className="inline-flex items-center gap-2 rounded-full py-1 pr-1 pl-1 transition-colors hover:bg-primary-50"
+              >
+                <span className="flex size-8 items-center justify-center rounded-full bg-primary-100 text-primary-700"><User className="size-4" aria-hidden="true" /></span>
+                <span className="hidden max-w-28 truncate text-sm font-medium text-body sm:inline">{displayName}</span>
+                <ChevronDown className={cn("hidden size-4 text-muted transition-transform sm:inline", menuOpen && "rotate-180")} aria-hidden="true" />
+              </button>
+              {menuOpen ? (
+                <div role="menu" className="absolute right-0 z-40 mt-2 w-64 overflow-hidden rounded-2xl border border-border-soft bg-surface py-1.5 shadow-[0_20px_50px_-20px_rgba(23,137,199,0.5)]">
+                  {/* Screenshot-style header: avatar + name + email + role pill */}
+                  <div className="flex items-center gap-3 px-4 pt-2 pb-3">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-700">
+                      <User className="size-5" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-heading">{displayName}</p>
+                      <p className="truncate text-xs text-muted">{user?.email ?? "—"}</p>
+                      <span className="mt-1 inline-flex rounded-full bg-primary-100 px-2 py-0.5 text-[11px] font-medium text-primary-700">
+                        {user?.role === "ADMIN" ? "Administrator" : "Member"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="border-t border-border-soft" aria-hidden="true" />
+                  <Link href="/dashboard/wellness" role="menuitem" onClick={() => setMenuOpen(false)} className="mt-1 flex items-center gap-2.5 px-4 py-2.5 text-sm text-body transition-colors hover:bg-primary-50 hover:text-heading">
+                    <User className="size-4" aria-hidden="true" /> Profile
+                  </Link>
+                  <Link href="/dashboard/settings" role="menuitem" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-body transition-colors hover:bg-primary-50 hover:text-heading">
+                    <Settings className="size-4" aria-hidden="true" /> Settings
+                  </Link>
+                  <Link href="/safety" role="menuitem" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-body transition-colors hover:bg-primary-50 hover:text-heading">
+                    <HelpCircle className="size-4" aria-hidden="true" /> Help &amp; Support
+                  </Link>
+                  <div className="border-t border-border-soft" aria-hidden="true" />
+                  {status === "authenticated" ? (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => { setMenuOpen(false); void logout(); }}
+                      className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-body transition-colors hover:bg-primary-50 hover:text-heading"
+                    >
+                      <LogOut className="size-4" aria-hidden="true" /> Log Out
+                    </button>
+                  ) : (
+                    <Link href="/login" role="menuitem" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-body transition-colors hover:bg-primary-50 hover:text-heading">
+                      <User className="size-4" aria-hidden="true" /> Sign in
+                    </Link>
+                  )}
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </header>

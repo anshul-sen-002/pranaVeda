@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { motion } from "motion/react";
-import { BarChart3, Compass, Flower2, Heart, Menu, Play } from "lucide-react";
+import { BarChart3, Compass, Flower2, Heart, Play } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
 import { MeditationIllustration } from "@/components/brand/MeditationIllustration";
@@ -33,12 +33,13 @@ export function AuthLayout({ children }: { children: ReactNode }) {
       <Leaf className="pointer-events-none absolute -top-12 -left-14 size-44 text-primary-200/60" />
       <Leaf className="pointer-events-none absolute -right-16 bottom-[-4rem] size-56 rotate-180 text-primary-200/40" />
 
-      {/* Brand header */}
+      {/* Brand header — screenshot: YOGA left, Explore yoga, "A healthier you" right */}
       <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
         <div className="flex items-center gap-6">
           <Link
             href="/"
             className="rounded-lg transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:outline-none"
+            aria-label="PranaVeda home"
           >
             <Logo />
           </Link>
@@ -50,27 +51,24 @@ export function AuthLayout({ children }: { children: ReactNode }) {
             Explore yoga
           </Link>
         </div>
-        <div className="flex items-center gap-3 text-sm text-muted">
-          <span className="hidden items-center gap-1.5 sm:inline-flex">
-            <Heart className="size-4 fill-primary-500 text-primary-500" aria-hidden="true" />
-            A healthier you
-          </span>
-          <Menu className="size-5" aria-hidden="true" />
-        </div>
+        <p className="flex items-center gap-1.5 text-sm text-muted">
+          <Heart className="size-4 text-muted" aria-hidden="true" />
+          A healthier you
+        </p>
       </header>
 
       <main className="relative z-10 mx-auto grid max-w-6xl items-center gap-6 px-4 pt-0 pb-10 sm:gap-8 sm:px-5 sm:pt-2 sm:pb-14 lg:grid-cols-2 lg:gap-10">
-        {/* ------------- Hero panel ------------- */}
+        {/* ------------- Welcome panel ------------- */}
         <section className="text-center lg:text-left">
           <motion.h1
             {...fadeUp}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="text-2xl leading-[1.15] font-semibold tracking-tight text-balance text-heading sm:text-4xl xl:text-5xl"
+            className="text-4xl leading-[1.1] font-semibold tracking-tight text-balance text-heading sm:text-5xl"
           >
             Find your balance
             <br />
             with{" "}
-            <span className="relative inline-block text-primary-600">
+            <span className="relative inline-block text-primary-500">
               yoga
               <svg
                 viewBox="0 0 120 12"
@@ -102,17 +100,17 @@ export function AuthLayout({ children }: { children: ReactNode }) {
             <MeditationIllustration className="mx-auto mt-6 w-full max-w-[19rem] sm:max-w-sm lg:max-w-md" />
           </motion.div>
 
-          {/* Feature badges — desktop only, to keep mobile focused on the form */}
-          <ul className="mt-8 hidden lg:grid lg:grid-cols-3 lg:gap-4">
+          {/* Feature badges — screenshot row: icon circle + title + copy */}
+          <ul className="mt-8 hidden sm:grid sm:grid-cols-3 sm:gap-4">
             {FEATURES.map(({ icon: Icon, title, copy }, i) => (
               <motion.li
                 key={title}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.25 + i * 0.08 }}
-                className="flex flex-col items-center gap-2 rounded-2xl bg-white/60 p-4 text-center"
+                className="flex flex-col items-center gap-1.5 text-center"
               >
-                <span className="flex size-11 items-center justify-center rounded-full bg-primary-100 text-primary-700">
+                <span className="flex size-12 items-center justify-center rounded-full bg-primary-100/80 text-primary-600">
                   <Icon className="size-5" aria-hidden="true" />
                 </span>
                 <span className="text-sm font-semibold text-heading">{title}</span>
@@ -128,10 +126,11 @@ export function AuthLayout({ children }: { children: ReactNode }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="rounded-2xl border border-white/70 bg-white/90 p-5 shadow-[0_24px_70px_-40px_rgba(10,61,89,0.45)] backdrop-blur-sm sm:rounded-3xl sm:p-9"
+            className="rounded-3xl border border-white/70 bg-white/95 p-6 shadow-[0_24px_70px_-40px_rgba(10,61,89,0.45)] backdrop-blur-sm sm:p-10"
           >
-            <div className="mb-5 flex justify-center sm:mb-7">
+            <div className="mb-6 flex items-center justify-center gap-2.5 sm:mb-8">
               <Logo />
+              <span className="text-lg font-semibold tracking-[0.22em] text-heading">YOGA</span>
             </div>
             {children}
           </motion.div>

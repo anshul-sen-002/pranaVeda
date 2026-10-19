@@ -26,9 +26,9 @@ const SIZE_CLASSES: Record<string, string> = {
 };
 
 const FALLBACK_CLASSES: Record<string, string> = {
-  sm: "size-6 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600",
-  md: "size-10 sm:size-12 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600",
-  lg: "size-14 sm:size-16 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600",
+  sm: "inline-block size-6 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600",
+  md: "inline-block size-10 sm:size-12 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600",
+  lg: "inline-block size-14 sm:size-16 animate-spin rounded-full border-2 border-primary-200 border-t-primary-600",
 };
 
 /**
@@ -83,23 +83,23 @@ export function DotLoader({
 
   if (inline) {
     return (
-      <div
+      <span
         aria-live="polite"
         role="status"
-        className={cn("flex items-center gap-2 text-xs font-medium text-body", className)}
+        className={cn("inline-flex items-center gap-2 text-xs font-medium text-body", className)}
       >
         {animationData ? (
           <Lottie src={animationData} loop autoplay className={sizeClass} aria-hidden="true" />
         ) : (
-          <div className={fallbackClass} aria-hidden="true" />
+          <span className={fallbackClass} aria-hidden="true" />
         )}
         <span>{text}</span>
-      </div>
+      </span>
     );
   }
 
   return (
-    <div
+    <span
       aria-live="polite"
       role="status"
       className={cn("flex flex-col items-center justify-center gap-3", className)}
@@ -107,9 +107,9 @@ export function DotLoader({
       {animationData ? (
         <Lottie src={animationData} loop autoplay className={sizeClass} aria-hidden="true" />
       ) : (
-        <div className={fallbackClass} aria-hidden="true" />
+        <span className={fallbackClass} aria-hidden="true" />
       )}
       <span className="text-sm font-medium text-body">{text}</span>
-    </div>
+    </span>
   );
 }

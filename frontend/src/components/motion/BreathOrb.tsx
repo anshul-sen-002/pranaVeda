@@ -54,16 +54,6 @@ export function BreathOrb({ className }: { className?: string }) {
           <Logo markOnly />
         </motion.div>
       </div>
-
-      {/* floating breath cue */}
-      <motion.p
-        aria-hidden="true"
-        animate={reduceMotion ? undefined : { y: [0, -6, 0] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full border border-border-soft bg-surface/90 px-4 py-1.5 text-xs font-medium tracking-wide whitespace-nowrap text-primary-700 shadow-sm backdrop-blur"
-      >
-        inhale · exhale
-      </motion.p>
     </div>
   );
 }
