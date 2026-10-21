@@ -58,8 +58,9 @@ export function AuthLayout({ children }: { children: ReactNode }) {
       </header>
 
       <main className="relative z-10 mx-auto grid max-w-6xl items-center gap-6 px-4 pt-0 pb-10 sm:gap-8 sm:px-5 sm:pt-2 sm:pb-14 lg:grid-cols-2 lg:gap-10">
-        {/* ------------- Welcome panel ------------- */}
-        <section className="text-center lg:text-left">
+        {/* ------------- Welcome panel (desktop only — mobile shows the form
+            first, matching the calm single-column mockup) ------------- */}
+        <section className="hidden text-center lg:block lg:text-left">
           <motion.h1
             {...fadeUp}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -130,7 +131,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
           >
             <div className="mb-6 flex items-center justify-center gap-2.5 sm:mb-8">
               <Logo />
-              <span className="text-lg font-semibold tracking-[0.22em] text-heading">YOGA</span>
+              <span className="hidden text-lg font-semibold tracking-[0.22em] text-heading sm:inline">YOGA</span>
             </div>
             {children}
           </motion.div>

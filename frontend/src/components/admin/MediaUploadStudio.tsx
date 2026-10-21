@@ -30,12 +30,20 @@ export function MediaUploadStudio({ accessToken, contentId, defaultKind = "CONTE
 
   const addFiles = (files: FileList | File[]) => {
     const arr = Array.from(files);
+    const accepted = limits.accept ? limits.accept.split(",").map((t) => t.trim()) : [];
     setItems((prev) => {
       const next = [...prev];
       for (const file of arr) {
         const key = `${file.name}-${file.size}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
         if (file.size > limits.maxBytes) {
           next.push({ key, file, previewUrl: null, status: "error", progress: 0, error: `${file.name}: too large.` });
+          continue;
+        }
+        // Drag & drop bypasses the picker's `accept` filter, so validate the
+        // MIME type here too and reject mismatched files before any upload.
+        if (accepted.length > 0 && !accepted.includes(file.type)) {
+          next.push({ key, file, previewUrl: null, status: "error", progress: 0,
+            error: `${file.name}: unsupported type${file.type ? ` "${file.type}"` : ""}. Allowed: ${accepted.map((t) => t.replace(/^[a-z]+\//, "")).join(", ")}.` });
           continue;
         }
         next.push({ key, file, previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : null, status: "ready", progress: 0 });
@@ -117,7 +125,7 @@ export function MediaUploadStudio({ accessToken, contentId, defaultKind = "CONTE
                   {item.status === "ready" || (item.status === "error" && !item.media) ? (
                     <button type="button" onClick={() => void uploadOne(item.key)} className="mt-1.5 inline-flex min-h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-primary-600 text-[11px] font-semibold text-white"><CloudUpload className="size-3.5" aria-hidden="true" />{item.status === "error" ? "Retry" : "Upload"}</button>
                   ) : item.status === "uploading" ? (
-                    <p className="mt-1.5 flex min-h-9 items-center justify-center gap-1.5 text-[11px] font-medium text-muted"><DotLoader text="Uploading…" inline size="sm" /></p>
+                    <div className="mt-1.5 flex min-h-9 items-center justify-center gap-1.5 text-[11px] font-medium text-muted"><DotLoader text="Uploading…" inline size="sm" /></div>
                   ) : item.media ? (
                     <p className="mt-1 truncate text-[10px] text-success">✓ id {item.media.id} · ready to attach</p>
                   ) : null}

@@ -76,6 +76,27 @@ export function PoseDetail({ detail }: { detail: ContentDetail }) {
               ))}
             </div>
           ) : null}
+
+          {/* Guided practice video (agents.md 2.4: published videos stream
+              without an account; downloads stay behind the media permission). */}
+          {item.featuredVideoUrl ? (
+            <section className="mt-4 sm:mt-6" aria-label="Guided practice video">
+              <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-heading">
+                <Volume2 className="size-4 text-primary-600" aria-hidden="true" />
+                Watch the practice
+              </h2>
+              <video
+                src={item.featuredVideoUrl}
+                poster={item.featuredImageUrl ?? undefined}
+                controls
+                preload="metadata"
+                playsInline
+                className="aspect-video w-full rounded-2xl border border-border-soft bg-black"
+              >
+                Your browser does not support the video element.
+              </video>
+            </section>
+          ) : null}
         </div>
 
         {/* Right: title, sanskrit, badges, description */}

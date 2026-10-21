@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import { listContent } from "@/lib/api/content";
 import { parseParams, toSearchParams, CONTENT_TYPES, DIFFICULTIES } from "@/lib/library/params";
-import type { ContentListParams, ContentSummary, PageResponse } from "@/lib/api/types";
+import type { ContentListParams, ContentType, ContentSummary, PageResponse } from "@/lib/api/types";
 import { ContentCard } from "./ContentCard";
 import { ContentCardSkeleton } from "./ContentCardSkeleton";
 
@@ -24,13 +24,20 @@ const SORT_OPTIONS: { value: ContentListParams["sort"]; label: string }[] = [
  * Yoga Poses listing (mockup 1): search + sort row, filter chips,
  * card grid, numbered pagination. URL stays the single source of truth
  * for filter state (shareable links, working back button).
+ *
+ * `fixedType` pins the listing to one content type (e.g. the public
+ * "Yoga Videos" page). The type is merged into every request and the
+ * type filter chips are hidden so the page can never drift off-type.
  */
-export function LibraryView() {
+export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
   const query = sp.toString();
-  const params = useMemo(() => parseParams(new URLSearchParams(query)), [query]);
+  const params = useMemo(() => {
+    const parsed = parseParams(new URLSearchParams(query));
+    return fixedType ? { ...parsed, type: fixedType } : parsed;
+  }, [query, fixedType]);
   const key = useMemo(() => toSearchParams(params).toString(), [params]);
   const [qInput, setQInput] = useState(() => params.q ?? "");
   const [reload, setReload] = useState(0);
@@ -98,7 +105,7 @@ export function LibraryView() {
   return (
     <div>
       {/* Search + sort row */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center px-3 sm:px-6 pt-3 pb-2">
         <div className="relative flex-1">
           <Search
             className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted"
@@ -136,7 +143,7 @@ export function LibraryView() {
       </div>
 
       {/* Filter chips */}
-      <div className="scrollbar-none mt-4 flex flex-wrap items-center gap-2" role="group" aria-label="Filter poses">
+      <div className="scrollbar-none mt-4 flex flex-wrap items-center gap-2 px-3 sm:px-6" role="group" aria-label="Filter poses">
         <Chip active={!params.difficulty && !params.type} label="All" onClick={() => patch({ difficulty: undefined, type: undefined })} />
         {DIFFICULTIES.map((d) => (
           <Chip
@@ -147,7 +154,7 @@ export function LibraryView() {
           />
         ))}
         <span className="mx-1 hidden h-5 w-px bg-border-soft sm:block" aria-hidden="true" />
-        {CONTENT_TYPES.map((t) => (
+        {fixedType ? null : CONTENT_TYPES.map((t) => (
           <Chip
             key={t.value}
             active={params.type === t.value}

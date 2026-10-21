@@ -99,6 +99,31 @@ public class MediaService {
         }
     }
 
+    /**
+     * ADMIN: deletes any non-profile media asset from both Cloudinary and the
+     * {@code media_assets} row (agents.md 2.15 cleanup). Profile photos are
+     * excluded - they are owned by a user and managed through
+     * {@code /me/profile-photo}. Callers that delete a parent entity (audio
+     * track, content item) should route through this so the stored object never
+     * outlives its metadata. Cloudinary deletion is best-effort; the DB row is
+     * removed regardless so the platform never shows a dangling asset.
+     *
+     * @param mediaAssetId asset to delete
+     */
+    @Transactional
+    public void deleteAdminAsset(long mediaAssetId) {
+        MediaAsset asset = media.findById(mediaAssetId)
+                .orElseThrow(() -> new NotFoundException("Media asset not found."));
+        if (asset.getKind() == MediaKind.PROFILE_IMAGE) {
+            throw new BadRequestException(
+                "Profile photos are deleted through the owner's profile, not the media studio.");
+        }
+        if (asset.getPublicId() != null) {
+            storage.delete(asset.getPublicId(), resourceTypeFor(asset.getKind())); // best-effort
+        }
+        media.delete(asset);
+    }
+
     /** Signed-in user: replaces (or sets) their profile photo. */
     @Transactional
     public ProfilePhotoDto setProfilePhoto(MultipartFile file) {

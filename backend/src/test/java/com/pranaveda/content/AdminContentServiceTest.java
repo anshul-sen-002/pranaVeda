@@ -4,11 +4,16 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import com.pranaveda.bookmark.BookmarkRepository;
 import com.pranaveda.category.Category;
 import com.pranaveda.category.CategoryRepository;
 import com.pranaveda.category.Tag;
 import com.pranaveda.category.TagRepository;
 import com.pranaveda.common.error.BadRequestException;
+import com.pranaveda.media.MediaAsset;
+import com.pranaveda.media.MediaKind;
+import com.pranaveda.media.MediaRepository;
+import com.pranaveda.media.MediaService;
 import com.pranaveda.common.error.ConflictException;
 import com.pranaveda.common.error.ErrorCode;
 import com.pranaveda.common.error.NotFoundException;
@@ -48,6 +53,9 @@ class AdminContentServiceTest {
     private CategoryRepository categoryRepository;
     private TagRepository tagRepository;
     private ContentStepRepository stepRepository;
+    private MediaRepository mediaRepository;
+    private MediaService mediaService;
+    private BookmarkRepository bookmarks;
     private AdminContentService service;
 
     @BeforeEach
@@ -57,8 +65,11 @@ class AdminContentServiceTest {
         categoryRepository = mock(CategoryRepository.class);
         tagRepository = mock(TagRepository.class);
         stepRepository = mock(ContentStepRepository.class);
+        mediaRepository = mock(MediaRepository.class);
+        mediaService = mock(MediaService.class);
+        bookmarks = mock(BookmarkRepository.class);
         service = new AdminContentService(contentRepository, facetRepository, categoryRepository,
-            tagRepository, stepRepository);
+            tagRepository, stepRepository, mediaRepository, mediaService, bookmarks);
 
         authenticateAsAdmin();
         when(contentRepository.save(any(ContentItem.class))).thenAnswer(invocation -> {
@@ -69,6 +80,8 @@ class AdminContentServiceTest {
         when(facetRepository.findByContentId(anyLong())).thenReturn(List.of());
         when(facetRepository.findByContentIdIn(anyCollection())).thenReturn(List.of());
         when(stepRepository.findByContentIdOrderByStepOrderAsc(anyLong())).thenReturn(List.of());
+        when(mediaRepository.findByContentIdAndKind(anyLong(), any(MediaKind.class)))
+            .thenReturn(List.of());
     }
 
     @AfterEach
@@ -262,7 +275,7 @@ class AdminContentServiceTest {
                                                List<String> tagSlugs, List<String> goals, List<String> targetAreas) {
         return new AdminContentRequest(title, slug, "Summary", "Description", null, null,
             ContentType.ASANA, Difficulty.BEGINNER, 10, null, null, null, null, null, null, null,
-            null, null, categorySlugs, tagSlugs, goals, targetAreas);
+            null, null, null, categorySlugs, tagSlugs, goals, targetAreas);
     }
 
     private static ContentItem draft(long id) {

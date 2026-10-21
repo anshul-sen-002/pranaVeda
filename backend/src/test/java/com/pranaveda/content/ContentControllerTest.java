@@ -169,7 +169,7 @@ class ContentControllerTest {
 
     private static ContentSummary summary() {
         return new ContentSummary(1L, "mountain-pose", "Mountain Pose", "Stand tall.",
-            ContentType.ASANA, Difficulty.BEGINNER, 10, null, null, null, ContentStatus.PUBLISHED,
+            ContentType.ASANA, Difficulty.BEGINNER, 10, null, null, null, null, ContentStatus.PUBLISHED,
             List.of(), List.of(), List.of(), Instant.parse("2026-01-01T00:00:00Z"));
     }
 

@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ImagePlus, Loader2, Plus } from "lucide-react";
+import { ArrowRight, ImagePlus, Loader2, Plus, Video } from "lucide-react";
 
 import { AdminGuard } from "@/components/admin/AdminGuard";
 import { AppShell } from "@/components/layout/AppShell";
@@ -40,6 +40,9 @@ function AdminContentList() {
   const [listError, setListError] = useState<string | null>(null);
   const [coverFor, setCoverFor] = useState<number | null>(null);
   const [coverMsg, setCoverMsg] = useState<Record<number, string>>({});
+  const [videoFor, setVideoFor] = useState<number | null>(null);
+  const [videoMsg, setVideoMsg] = useState<Record<number, string>>({});
+  const [deletingContent, setDeletingContent] = useState<Set<number>>(new Set());
 
   const [title, setTitle] = useState("");
   const [type, setType] = useState<ContentType>("ASANA");
@@ -51,14 +54,30 @@ function AdminContentList() {
     try {
       const page = await adminContentApi.list(accessToken, { size: 50 });
       setItems(page.content);
+      setListError(null);
     } catch (error) {
       setListError(error instanceof ApiError ? error.message : "Could not load content.");
+    } finally {
+      setLoading(false);
     }
   }, [accessToken]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const removeContent = async (id: number) => {
+    if (!window.confirm("Delete this content and all its media?")) return;
+    setDeletingContent((prev) => new Set([...prev, id]));
+    try {
+      await adminContentApi.remove(accessToken!, id);
+      setItems((prev) => prev.filter((it) => it.id !== id));
+    } catch (error) {
+      alert(error instanceof ApiError ? error.message : "Delete failed.");
+    } finally {
+      setDeletingContent((prev) => { const n = new Set(prev); n.delete(id); return n; });
+    }
+  };
 
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,6 +115,7 @@ function AdminContentList() {
         difficulty: s.difficulty ?? undefined,
         durationMinutes: s.durationMinutes ?? undefined,
         featuredImageUrl: media.url,
+        featuredVideoUrl: s.featuredVideoUrl ?? undefined,
         instructions: detail.instructions ?? undefined,
         breathingNotes: detail.breathingNotes ?? undefined,
         modifications: detail.modifications ?? undefined,
@@ -118,6 +138,49 @@ function AdminContentList() {
       }));
     } finally {
       setCoverFor(null);
+    }
+  };
+
+  /** Merge the new video URL into the existing content and PUT it back. */
+  const saveVideo = async (id: number, media: MediaDto) => {
+    if (!accessToken) return;
+    try {
+      const detail = await adminContentApi.get(accessToken, id);
+      const s = detail.summary;
+      await adminContentApi.update(accessToken, id, {
+        title: s.title,
+        slug: s.slug,
+        summary: s.summary ?? "",
+        description: detail.description ?? undefined,
+        commonName: s.commonName ?? undefined,
+        sanskritName: s.sanskritName ?? undefined,
+        contentType: s.contentType,
+        difficulty: s.difficulty ?? undefined,
+        durationMinutes: s.durationMinutes ?? undefined,
+        featuredImageUrl: s.featuredImageUrl ?? undefined,
+        featuredVideoUrl: media.url,
+        instructions: detail.instructions ?? undefined,
+        breathingNotes: detail.breathingNotes ?? undefined,
+        modifications: detail.modifications ?? undefined,
+        safetyPrecautions: detail.safetyPrecautions ?? undefined,
+        benefits: detail.benefits ?? undefined,
+        evidenceNotes: detail.evidenceNotes ?? undefined,
+        seoTitle: detail.seoTitle ?? undefined,
+        seoDescription: detail.seoDescription ?? undefined,
+        categorySlugs: s.categories.map((c) => c.slug),
+        tagSlugs: s.tags.map((t) => t.slug),
+        goals: s.goals,
+        targetAreas: detail.targetAreas,
+      });
+      setItems((prev) => prev.map((it) => (it.id === id ? { ...it, featuredVideoUrl: media.url } : it)));
+      setVideoMsg((prev) => ({ ...prev, [id]: "Video saved — it appears on Yoga Videos once published." }));
+    } catch (error) {
+      setVideoMsg((prev) => ({
+        ...prev,
+        [id]: error instanceof ApiError ? error.message : "Could not save video.",
+      }));
+    } finally {
+      setVideoFor(null);
     }
   };
 
@@ -169,9 +232,9 @@ function AdminContentList() {
           </div>
         ) : null}
         {loading ? (
-          <p className="mt-4 flex items-center gap-2 text-sm text-muted">
+          <div className="mt-4 flex items-center gap-2 text-sm text-muted">
             <DotLoader text="Loading…" inline size="sm" />
-          </p>
+          </div>
         ) : items.length === 0 && !listError ? (
           <p className="mt-4 text-sm text-muted">No content yet. Create the first pose above.</p>
         ) : (
@@ -186,9 +249,13 @@ function AdminContentList() {
                   <p className="text-xs text-muted">
                     {item.contentType} · {item.status}
                     {item.featuredImageUrl ? " · cover ✓" : ""}
+                    {item.featuredVideoUrl ? " · video ✓" : ""}
                   </p>
                   {coverMsg[item.id] ? (
                     <p className="mt-0.5 text-xs text-success">{coverMsg[item.id]}</p>
+                  ) : null}
+                  {videoMsg[item.id] ? (
+                    <p className="mt-0.5 text-xs text-success">{videoMsg[item.id]}</p>
                   ) : null}
                   {coverFor === item.id ? (
                     <div className="mt-2">
@@ -196,7 +263,19 @@ function AdminContentList() {
                         accessToken={accessToken ?? ""}
                         contentId={item.id}
                         defaultKind="CONTENT_IMAGE"
+                        lockKind
                         onUploaded={(media) => void saveCover(item.id, media)}
+                      />
+                    </div>
+                  ) : null}
+                  {videoFor === item.id ? (
+                    <div className="mt-2">
+                      <MediaUploadStudio
+                        accessToken={accessToken ?? ""}
+                        contentId={item.id}
+                        defaultKind="VIDEO"
+                        lockKind
+                        onUploaded={(media) => void saveVideo(item.id, media)}
                       />
                     </div>
                   ) : null}
@@ -211,6 +290,15 @@ function AdminContentList() {
                     <ImagePlus className="size-4" aria-hidden="true" />
                     {item.featuredImageUrl ? "Change cover" : "Set cover"}
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setVideoFor((cur) => (cur === item.id ? null : item.id))}
+                    className="inline-flex items-center gap-1 text-sm font-medium text-body underline-offset-2 hover:text-primary-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+                    aria-expanded={videoFor === item.id}
+                  >
+                    <Video className="size-4" aria-hidden="true" />
+                    {item.featuredVideoUrl ? "Change video" : "Set video"}
+                  </button>
                   <Link
                     href={`/admin/content/${item.id}/steps`}
                     className="inline-flex items-center gap-1 text-sm font-medium text-primary-700 underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
@@ -218,6 +306,14 @@ function AdminContentList() {
                     Steps
                     <ArrowRight className="size-4" aria-hidden="true" />
                   </Link>
+                  <button
+                    type="button"
+                    onClick={() => void removeContent(item.id)}
+                    disabled={deletingContent.has(item.id)}
+                    className="rounded-full border border-destructive/40 px-3 py-1 text-xs font-medium text-destructive disabled:opacity-60"
+                  >
+                    {deletingContent.has(item.id) ? "Deleting…" : "Delete"}
+                  </button>
                 </div>
               </li>
             ))}

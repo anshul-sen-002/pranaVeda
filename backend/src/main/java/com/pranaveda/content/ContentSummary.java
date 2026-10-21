@@ -18,6 +18,7 @@ public record ContentSummary(
     String commonName,
     String sanskritName,
     String featuredImageUrl,
+    String featuredVideoUrl,
     ContentStatus status,
     List<CategoryDto> categories,
     List<TagDto> tags,

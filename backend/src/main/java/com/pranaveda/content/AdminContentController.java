@@ -3,6 +3,8 @@ package com.pranaveda.content;
 import com.pranaveda.common.dto.PageResponse;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -79,5 +81,12 @@ public class AdminContentController {
     @PostMapping("/{id}/archive")
     public ContentDetail archive(@PathVariable long id) {
         return service.archive(id);
+    }
+
+    /** ADMIN: deletes the content item, its Cloudinary media, and member bookmarks. */
+    @org.springframework.web.bind.annotation.DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -25,6 +25,7 @@ public final class ContentMapper {
             item.getCommonName(),
             item.getSanskritName(),
             item.getFeaturedImageUrl(),
+            item.getFeaturedVideoUrl(),
             item.getStatus(),
             item.getCategories().stream().map(CategoryDto::from)
                 .sorted(Comparator.comparing(CategoryDto::name)).toList(),

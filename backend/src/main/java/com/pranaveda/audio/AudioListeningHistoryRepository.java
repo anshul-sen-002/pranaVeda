@@ -23,4 +23,7 @@ public interface AudioListeningHistoryRepository extends JpaRepository<AudioList
     void deleteByUserId(Long userId);
 
     void deleteByIdAndUserId(Long id, Long userId);
+
+    /** Bulk cleanup when a track is deleted (admin audio delete). */
+    void deleteByTrackId(Long trackId);
 }

@@ -52,8 +52,11 @@ function StepsEditor() {
     setError(e instanceof ApiError ? e.message : "Something went wrong. Please try again.");
 
   const refresh = useCallback(async () => {
+    if (!accessToken) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    if (!accessToken) return;
     try {
       const [detail, list] = await Promise.all([
         adminContentApi.get(accessToken, contentId),
@@ -63,8 +66,11 @@ function StepsEditor() {
       setStatus(detail.summary.status);
       setSteps(list);
       setDrafts(Object.fromEntries(list.map((s) => [s.id, s.instruction ?? ""])));
+      setError(null);
     } catch (e) {
       fail(e);
+    } finally {
+      setLoading(false);
     }
   }, [accessToken, contentId]);
 
@@ -159,10 +165,9 @@ function StepsEditor() {
   if (loading) {
     return (
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <p className="flex items-center gap-2 text-sm text-muted">
+        <div className="flex items-center gap-2 text-sm text-muted">
           <DotLoader text="Loading steps…" inline size="sm" />
-          Loading steps…
-        </p>
+        </div>
       </main>
     );
   }

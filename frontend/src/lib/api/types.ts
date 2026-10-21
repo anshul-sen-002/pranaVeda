@@ -84,6 +84,8 @@ export interface ContentSummary {
   commonName: string | null;
   sanskritName: string | null;
   featuredImageUrl: string | null;
+  /** Optional guided-practice video (Cloudinary delivery URL). */
+  featuredVideoUrl: string | null;
   status: ContentStatus;
   categories: CategoryDto[];
   tags: TagDto[];

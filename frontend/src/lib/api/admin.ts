@@ -53,6 +53,14 @@ export const adminContentApi = {
       accessToken,
     });
   },
+
+  /** ADMIN: deletes the content item, its Cloudinary media, and member bookmarks. */
+  remove(accessToken: string, id: number | string): Promise<void> {
+    return apiRequest<void>(`/api/v1/admin/content/${id}`, {
+      method: "DELETE",
+      accessToken,
+    }) as Promise<void>;
+  },
 };
 
 /**
@@ -208,5 +216,10 @@ export const adminAudioApi = {
 
   archive(accessToken: string, id: number | string): Promise<AudioDetailDto> {
     return apiRequest<AudioDetailDto>(`/api/v1/admin/audio/${id}/archive`, { method: "POST", accessToken });
+  },
+
+  /** ADMIN: deletes the track, its Cloudinary media, and member references. */
+  remove(accessToken: string, id: number | string): Promise<void> {
+    return apiRequest<void>(`/api/v1/admin/audio/${id}`, { method: "DELETE", accessToken }) as Promise<void>;
   },
 };

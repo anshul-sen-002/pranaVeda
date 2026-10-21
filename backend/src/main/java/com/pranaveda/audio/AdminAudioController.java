@@ -80,4 +80,11 @@ public class AdminAudioController {
     public AudioDetailDto archive(@PathVariable long id) {
         return service.archive(id);
     }
+
+    /** ADMIN: deletes the track, its Cloudinary media, and member references. */
+    @org.springframework.web.bind.annotation.DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

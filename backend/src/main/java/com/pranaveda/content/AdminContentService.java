@@ -8,6 +8,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import com.pranaveda.bookmark.BookmarkRepository;
+import com.pranaveda.bookmark.BookmarkTarget;
 import com.pranaveda.category.Category;
 import com.pranaveda.category.CategoryRepository;
 import com.pranaveda.category.Tag;
@@ -17,6 +19,10 @@ import com.pranaveda.common.error.BadRequestException;
 import com.pranaveda.common.error.ConflictException;
 import com.pranaveda.common.error.NotFoundException;
 import com.pranaveda.common.util.SlugUtil;
+import com.pranaveda.media.MediaAsset;
+import com.pranaveda.media.MediaKind;
+import com.pranaveda.media.MediaRepository;
+import com.pranaveda.media.MediaService;
 import com.pranaveda.security.CurrentUserPrincipal;
 
 import org.springframework.data.domain.PageRequest;
@@ -38,17 +44,43 @@ public class AdminContentService {
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
     private final ContentStepRepository stepRepository;
+    private final MediaRepository mediaRepository;
+    private final MediaService mediaService;
+    private final BookmarkRepository bookmarks;
 
     public AdminContentService(ContentRepository contentRepository,
                                ContentItemFacetRepository facetRepository,
                                CategoryRepository categoryRepository,
                                TagRepository tagRepository,
-                               ContentStepRepository stepRepository) {
+                               ContentStepRepository stepRepository,
+                               MediaRepository mediaRepository,
+                               MediaService mediaService,
+                               BookmarkRepository bookmarks) {
         this.contentRepository = contentRepository;
         this.facetRepository = facetRepository;
         this.categoryRepository = categoryRepository;
         this.tagRepository = tagRepository;
         this.stepRepository = stepRepository;
+        this.mediaRepository = mediaRepository;
+        this.mediaService = mediaService;
+        this.bookmarks = bookmarks;
+    }
+
+    /**
+     * ADMIN: deletes a content item and all of its stored media (agents.md 2.15
+     * cleanup). Removes the featured image and every guided-step image from
+     * Cloudinary + {@code media_assets}, then the content row, and finally all
+     * member bookmarks pointing at it. Cloudinary deletion is best-effort.
+     */
+    @Transactional
+    public void delete(long id) {
+        ContentItem item = getItem(id);
+        List<MediaAsset> assets = mediaRepository.findByContentIdAndKind(id, MediaKind.CONTENT_IMAGE);
+        for (MediaAsset asset : assets) {
+            mediaService.deleteAdminAsset(asset.getId());
+        }
+        bookmarks.deleteByTargetTypeAndTargetId(BookmarkTarget.CONTENT, id);
+        contentRepository.delete(item);
     }
 
     @Transactional(readOnly = true)
@@ -170,6 +202,7 @@ public class AdminContentService {
         item.setDifficulty(request.difficulty());
         item.setDurationMinutes(request.durationMinutes());
         item.setFeaturedImageUrl(trimToNull(request.featuredImageUrl()));
+        item.setFeaturedVideoUrl(trimToNull(request.featuredVideoUrl()));
         item.setInstructions(trimToNull(request.instructions()));
         item.setBreathingNotes(trimToNull(request.breathingNotes()));
         item.setModifications(trimToNull(request.modifications()));

@@ -83,6 +83,15 @@ public class ContentItem {
     @Column(name = "featured_image_url", length = 500)
     private String featuredImageUrl;
 
+    /**
+     * Optional guided-practice video attached by an admin (Cloudinary delivery
+     * URL). Public streaming only - downloads stay behind the media-download
+     * permission (agents.md 2.7). Shown on the detail page and the public
+     * "Yoga Videos" listing.
+     */
+    @Column(name = "featured_video_url", length = 500)
+    private String featuredVideoUrl;
+
     @Column(name = "instructions")
     private String instructions;
 
@@ -243,6 +252,14 @@ public class ContentItem {
 
     public void setFeaturedImageUrl(String featuredImageUrl) {
         this.featuredImageUrl = featuredImageUrl;
+    }
+
+    public String getFeaturedVideoUrl() {
+        return featuredVideoUrl;
+    }
+
+    public void setFeaturedVideoUrl(String featuredVideoUrl) {
+        this.featuredVideoUrl = featuredVideoUrl;
     }
 
     public String getInstructions() {

@@ -16,7 +16,7 @@ export function MusicView() {
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
   const { tracks, loading, error } = useTracks(filter);
-  const { queue, current, playing, elapsed, duration, play, toggle } = usePlayer();
+  const { current, playing, elapsed, duration, play, toggle } = usePlayer();
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(query.trim().toLowerCase()), 300);
@@ -100,14 +100,11 @@ export function MusicView() {
       </div>
 
       <NowPlayingRail
-        queue={queue}
         current={current}
         playing={playing}
         elapsed={elapsed}
         duration={duration}
         onToggle={toggle}
-        onSelect={(t) => play(t)}
-        onClear={() => { /* queue rebuilds on the next Play All */ }}
         minutesOf={minutesOf}
       />
     </div>

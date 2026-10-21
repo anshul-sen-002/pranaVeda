@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Clock, Heart } from "lucide-react";
+import { ArrowRight, Clock, Heart, Play } from "lucide-react";
 import { useState } from "react";
 
 import { cn } from "@/lib/cn";
@@ -40,6 +40,12 @@ export function ContentCard({ item }: { item: ContentSummary }) {
             <TypeIcon className="size-3 shrink-0 sm:size-3.5" aria-hidden="true" />
             <span className="truncate">{item.categories[0]?.name ?? type.label}</span>
           </span>
+          {item.featuredVideoUrl ? (
+            <span className="absolute right-2 bottom-2 inline-flex items-center gap-1 rounded-full bg-surface/95 px-2 py-0.5 text-[11px] font-medium shadow-sm backdrop-blur sm:right-3 sm:bottom-3 sm:px-2.5 sm:py-1 sm:text-xs">
+              <Play className="size-3 shrink-0 fill-current text-primary-600" aria-hidden="true" />
+              Play video
+            </span>
+          ) : null}
         </div>
 
         <div className="flex flex-1 flex-col p-3.5 pr-12 sm:p-5 sm:pr-14">

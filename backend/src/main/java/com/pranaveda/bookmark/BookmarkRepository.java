@@ -20,6 +20,9 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long>, JpaSp
     /** Derived delete - idempotent, no-op when absent. */
     void deleteByUserIdAndTargetTypeAndTargetId(Long userId, BookmarkTarget targetType, Long targetId);
 
+    /** Bulk cleanup when a target is deleted (admin content/audio delete). */
+    void deleteByTargetTypeAndTargetId(BookmarkTarget targetType, Long targetId);
+
     /** Count of a user's saved items (for the dashboard headline). */
     long countByUserId(Long userId);
 }

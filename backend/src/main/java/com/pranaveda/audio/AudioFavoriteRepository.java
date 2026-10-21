@@ -25,6 +25,9 @@ public interface AudioFavoriteRepository extends JpaRepository<AudioFavorite, Lo
 
     void deleteByUserIdAndTrackId(Long userId, Long trackId);
 
+    /** Bulk cleanup when a track is deleted (admin audio delete). */
+    void deleteByTrackId(Long trackId);
+
     /** Ids of the member's favorited tracks, for a page-load "isFavorite" check. */
     List<AudioFavorite> findByUserId(Long userId);
 }

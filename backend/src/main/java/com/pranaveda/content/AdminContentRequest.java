@@ -24,6 +24,7 @@ public record AdminContentRequest(
     Difficulty difficulty,
     @Min(1) @Max(1440) Integer durationMinutes,
     @Size(max = 500) String featuredImageUrl,
+    @Size(max = 500) String featuredVideoUrl,
     String instructions,
     String breathingNotes,
     String modifications,

@@ -43,6 +43,7 @@ function AdminAudioStudio() {
   const [createError, setCreateError] = useState<string | null>(null);
   const [uploadFor, setUploadFor] = useState<number | null>(null);
   const [msg, setMsg] = useState<Record<number, string>>({});
+  const [deletingTrack, setDeletingTrack] = useState<Set<number>>(new Set());
 
   const load = useCallback(async () => {
     if (!accessToken) return;
@@ -95,6 +96,19 @@ function AdminAudioStudio() {
       setMsg((prev) => ({ ...prev, [id]: err instanceof ApiError ? err.message : "Could not attach asset." }));
     } finally {
       setUploadFor(null);
+    }
+  };
+
+  const removeTrack = async (id: number) => {
+    if (!window.confirm("Delete this track and all its media?")) return;
+    setDeletingTrack((prev) => new Set([...prev, id]));
+    try {
+      await adminAudioApi.remove(accessToken!, id);
+      setTracks((prev) => prev.filter((t) => t.id !== id));
+    } catch (error) {
+      alert(error instanceof ApiError ? error.message : "Delete failed.");
+    } finally {
+      setDeletingTrack((prev) => { const n = new Set(prev); n.delete(id); return n; });
     }
   };
 
@@ -205,6 +219,14 @@ function AdminAudioStudio() {
                       </button>
                     )}
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => void removeTrack(t.id)}
+                    disabled={deletingTrack.has(t.id)}
+                    className="rounded-full border border-destructive/40 px-3 py-1 text-xs font-medium text-destructive disabled:opacity-60"
+                  >
+                    {deletingTrack.has(t.id) ? "Deleting…" : "Delete"}
+                  </button>
                 </div>
                 {uploadFor === t.id ? (
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -212,7 +234,6 @@ function AdminAudioStudio() {
                       <p className="mb-1 text-xs font-semibold text-heading">Audio file</p>
                       <MediaUploadStudio
                         accessToken={accessToken ?? ""}
-                        contentId={t.id}
                         defaultKind="AUDIO"
                         lockKind
                         onUploaded={(media) => void attach(t.id, media.id, "audio")}
@@ -222,7 +243,6 @@ function AdminAudioStudio() {
                       <p className="mb-1 text-xs font-semibold text-heading">Cover art</p>
                       <MediaUploadStudio
                         accessToken={accessToken ?? ""}
-                        contentId={t.id}
                         defaultKind="CONTENT_IMAGE"
                         lockKind
                         onUploaded={(media) => void attach(t.id, media.id, "cover")}

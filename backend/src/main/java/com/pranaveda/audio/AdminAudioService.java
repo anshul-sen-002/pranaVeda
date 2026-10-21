@@ -2,6 +2,8 @@ package com.pranaveda.audio;
 
 import java.util.List;
 
+import com.pranaveda.bookmark.BookmarkRepository;
+import com.pranaveda.bookmark.BookmarkTarget;
 import com.pranaveda.common.dto.PageResponse;
 import com.pranaveda.common.error.BadRequestException;
 import com.pranaveda.common.error.ConflictException;
@@ -10,6 +12,7 @@ import com.pranaveda.common.util.SlugUtil;
 import com.pranaveda.media.MediaAsset;
 import com.pranaveda.media.MediaKind;
 import com.pranaveda.media.MediaRepository;
+import com.pranaveda.media.MediaService;
 import com.pranaveda.security.CurrentUserPrincipal;
 
 import jakarta.validation.Valid;
@@ -19,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Admin audio studio: full track lifecycle (create/update/publish/unpublish/
- * archive) plus media attachment. Asset ids are validated against our own
+ * archive/delete) plus media attachment. Asset ids are validated against our own
  * media_assets rows - kind-checked (AUDIO vs CONTENT_IMAGE) - so an admin
  * cannot attach a profile photo or a foreign object by guessing ids.
  */
@@ -28,10 +31,20 @@ public class AdminAudioService {
 
     private final AudioTrackRepository tracks;
     private final MediaRepository media;
+    private final MediaService mediaService;
+    private final AudioFavoriteRepository favorites;
+    private final AudioListeningHistoryRepository history;
+    private final BookmarkRepository bookmarks;
 
-    public AdminAudioService(AudioTrackRepository tracks, MediaRepository media) {
+    public AdminAudioService(AudioTrackRepository tracks, MediaRepository media,
+                             MediaService mediaService, AudioFavoriteRepository favorites,
+                             AudioListeningHistoryRepository history, BookmarkRepository bookmarks) {
         this.tracks = tracks;
         this.media = media;
+        this.mediaService = mediaService;
+        this.favorites = favorites;
+        this.history = history;
+        this.bookmarks = bookmarks;
     }
 
     @Transactional(readOnly = true)
@@ -93,6 +106,34 @@ public class AdminAudioService {
         AudioTrack track = require(id);
         track.setStatus(AudioStatus.ARCHIVED);
         return detail(tracks.save(track));
+    }
+
+    /**
+     * ADMIN: deletes a track and all of its stored media (agents.md 2.15
+     * cleanup). The audio file and cover are removed from Cloudinary and the
+     * {@code media_assets} rows, then the track row, and finally every member
+     * reference (favorites, listening history, bookmarks) so no dangling id is
+     * left behind. Cloudinary deletion is best-effort - a transient storage
+     * failure still removes the DB rows so the platform never shows a ghost
+     * track, and the operator is left a log line to reconcile.
+     */
+    @Transactional
+    public void delete(long id) {
+        AudioTrack track = require(id);
+        // Remove stored objects + metadata first (audio file and cover art).
+        if (track.getAudioAssetId() != null) {
+            mediaService.deleteAdminAsset(track.getAudioAssetId());
+        }
+        if (track.getCoverAssetId() != null
+                && !track.getCoverAssetId().equals(track.getAudioAssetId())) {
+            mediaService.deleteAdminAsset(track.getCoverAssetId());
+        }
+        // Clear every member reference to this track so saved lists and history
+        // never point at a deleted row.
+        favorites.deleteByTrackId(id);
+        history.deleteByTrackId(id);
+        bookmarks.deleteByTargetTypeAndTargetId(BookmarkTarget.AUDIO, id);
+        tracks.delete(track);
     }
 
     @Transactional

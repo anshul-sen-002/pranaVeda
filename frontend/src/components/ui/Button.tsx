@@ -2,7 +2,6 @@
 
 import { forwardRef, type ButtonHTMLAttributes } from "react";
 
-import { DotLoader } from "@/components/motion/DotLoader";
 import { cn } from "@/lib/cn";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost";
@@ -64,7 +63,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       className={buttonClasses(variant, size, fullWidth, className)}
       {...props}
     >
-      {loading ? <DotLoader inline size="sm" text="" /> : null}
+      {loading ? <Spinner /> : null}
       {children}
     </button>
   );

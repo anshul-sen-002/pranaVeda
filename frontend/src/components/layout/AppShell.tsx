@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   BarChart3, BookOpen, CalendarDays, ChevronDown, ClipboardList,
   CloudUpload, FileMusic, Flower2, HelpCircle, History, Home, Layers, Leaf, LogOut, Menu,
-  Settings, Sparkles, Trophy, User, Wind, X, Bell,
+  Settings, Sparkles, Trophy, User, Video, Wind, X, Bell,
 } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
@@ -23,6 +23,7 @@ const NAV = [
   { href: "/ai", label: "AI Assistant", icon: Sparkles },
   { href: "/breathing", label: "Breathing", icon: Wind },
   { href: "/yoga", label: "Yoga Asanas", icon: User },
+  { href: "/videos", label: "Yoga Videos", icon: Video },
   { href: "/calm-music", label: "Library", icon: BookOpen },
   { href: "/ai/history", label: "History", icon: History },
   { href: "/dashboard/saved", label: "Saved", icon: ClipboardList },
@@ -238,28 +239,38 @@ function AppMain({ pathname, displayName, onMenu, children }: { pathname: string
         </div>
       </header>
       <main className="min-w-0 flex-1 px-3 pt-4 pb-24 sm:px-6 sm:py-6 lg:pb-10">{children}</main>
-      {/* Bottom tab bar — phones only, accounts for the mini-player above it. */}
-      <nav aria-label="Quick navigation" className="safe-area-bottom fixed inset-x-0 bottom-0 z-40 border-t border-border-soft bg-surface/95 pt-1.5 backdrop-blur-md lg:hidden">
-        <ul className="mx-auto grid max-w-md grid-cols-5 px-2">
-          {TABS.map(({ href, label, Icon }) => {
-            const active = href === "/dashboard" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
-            return (
-              <li key={href}>
-                <Link
-                  href={href}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl text-[11px] font-medium transition-colors",
-                    active ? "text-primary-700" : "text-muted",
-                  )}
-                >
-                  <Icon className={cn("size-5", active && "scale-110")} aria-hidden="true" />
-                  {label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+      {/* Bottom tab bar — phones only, pill-shaped like the mobile app. */}
+      <nav aria-label="Quick navigation" className="fixed inset-x-0 bottom-[3px] z-40 lg:hidden">
+        <div className="mx-auto max-w-md w-full rounded-[1.5rem] border border-border-soft bg-white backdrop-blur-md shadow-lg p-2.5">
+          <ul className="flex justify-around items-center">
+            {TABS.map(({ href, label, Icon }) => {
+              const active = href === "/dashboard" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    aria-current={active ? "page" : undefined}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-1 min-h-[44px] px-3 py-1.5 rounded-xl text-[11px] font-medium transition-colors",
+                      active ? "bg-primary-100 text-primary-600" : "text-muted hover:text-primary-600",
+                    )}
+                  >
+                    <Icon
+                      className={cn(
+                        "size-5 shrink-0",
+                        active ? "text-primary-600" : "text-muted",
+                      )}
+                      aria-hidden="true"
+                    />
+                    <span className={cn("text-[11px] font-medium", active ? "text-primary-600" : "text-muted")}>
+                      {label}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </nav>
     </div>
   );
