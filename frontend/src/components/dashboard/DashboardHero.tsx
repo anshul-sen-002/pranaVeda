@@ -9,7 +9,7 @@ import { LotusMark } from "@/components/brand/LotusMark";
 export function DashboardHero({ firstName, practisedToday }: { firstName?: string; practisedToday: boolean }) {
   const name = firstName?.trim() || "Administrator";
   return (
-    <section className="mobile-compact relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#3fb6ef] via-[#1fa9ed] to-[#1668b4] px-4 py-5 text-white sm:px-8 sm:py-7" aria-labelledby="dashboard-greeting">
+    <section className="mobile-compact relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#45c0f5] via-[#1fa9ed] to-[#1668b4] px-4 py-6 text-white sm:px-8 sm:py-8" aria-labelledby="dashboard-greeting">
       <LotusMark className="pointer-events-none absolute -right-8 -bottom-12 size-44 text-white/20 sm:-right-10 sm:-bottom-14 sm:size-56" />
       <LotusMark className="pointer-events-none absolute top-4 right-40 hidden size-16 text-white/15 md:block" />
       <p className="relative text-[13px] text-white/85 sm:text-sm">

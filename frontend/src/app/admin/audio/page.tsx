@@ -130,7 +130,7 @@ function AdminAudioStudio() {
         Create a track, upload audio + cover to Cloudinary, attach the assets, then publish.
       </p>
 
-      <form onSubmit={create} className="mt-6 rounded-2xl border border-border-soft bg-surface p-5 space-y-4">
+      <form onSubmit={create} className="mt-6 rounded-2xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5 space-y-4">
         <h2 className="text-base font-semibold text-heading">New track</h2>
         {createError ? <Alert>{createError}</Alert> : null}
         <div className="grid gap-4 sm:grid-cols-[1fr_220px]">

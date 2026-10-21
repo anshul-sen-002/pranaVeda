@@ -10,7 +10,7 @@ import type { ChallengeProgressDto } from "@/lib/api/types";
 /** Challenge panel: live progress or a gentle join prompt. */
 export function ChallengePanel({ challenge, onChanged }: { challenge: ChallengeProgressDto | null; onChanged: () => void }) {
   return (
-    <section aria-labelledby="challenge-heading" className="flex flex-col rounded-3xl border border-border-soft bg-surface p-6">
+    <section aria-labelledby="challenge-heading" className="flex flex-col rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-6">
       <div className="flex items-center gap-2.5">
         <span className="flex size-10 items-center justify-center rounded-2xl bg-primary-100 text-primary-700">
           <Award className="size-5" aria-hidden="true" />

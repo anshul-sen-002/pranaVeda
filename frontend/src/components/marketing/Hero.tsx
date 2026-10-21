@@ -27,7 +27,7 @@ export function Hero() {
   const firstName = user?.displayName?.trim().split(/\s+/)[0];
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative overflow-hidden bg-gradient-to-b from-primary-50/40 via-surface-tint to-primary-100/40">
       {/* Decorative calm backdrop */}
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <motion.div

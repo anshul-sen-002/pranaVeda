@@ -176,7 +176,7 @@ export function GuidedPractice({ steps, poseTitle }: GuidedPracticeProps) {
   return (
     <section
       aria-label={`Guided practice: ${poseTitle}`}
-      className="rounded-2xl border border-border-soft bg-surface p-5 sm:p-6"
+      className="rounded-2xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5 sm:p-6"
     >
       {!active ? (
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

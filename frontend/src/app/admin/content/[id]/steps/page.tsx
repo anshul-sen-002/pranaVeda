@@ -195,7 +195,7 @@ function StepsEditor() {
       </div>
 
       {/* Upload one image as the next ordered step. */}
-      <section className="mt-6 rounded-2xl border border-border-soft bg-surface p-5">
+      <section className="mt-6 rounded-2xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5">
         <h2 className="flex items-center gap-2 text-base font-semibold text-heading">
           <ImagePlus className="size-5 text-primary-600" aria-hidden="true" />
           Add a step image
@@ -229,7 +229,7 @@ function StepsEditor() {
       </section>
 
       {/* AI narration drafts for admin review (OpenRouter, server-side key). */}
-      <section className="mt-6 rounded-2xl border border-border-soft bg-surface p-5">
+      <section className="mt-6 rounded-2xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5">
         <h2 className="flex items-center gap-2 text-base font-semibold text-heading">
           <Sparkles className="size-5 text-primary-600" aria-hidden="true" />
           AI narration

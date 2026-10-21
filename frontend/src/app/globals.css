@@ -3,32 +3,32 @@
 /*
  * =====================================================================
  * PranaVeda theme - source of truth is docs/design-tokens.md
- * Primary identity: calm sky-blue with cyan-to-blue gradients.
+ * Primary identity: calm forest/sage green (matching approved mockups).
  * =====================================================================
  */
 @theme {
-  /* Primary - sky blue scale */
-  --color-primary-50: #eff9fe;
-  --color-primary-100: #d9f1fd;
-  --color-primary-200: #b3e3fb;
-  --color-primary-300: #7dd1f8;
-  --color-primary-400: #45c0f5;
-  --color-primary-500: #1fa9ed;
-  --color-primary-600: #1789c7;
-  --color-primary-700: #126c9e;
-  --color-primary-800: #0e5278;
-  --color-primary-900: #0a3d59;
+  /* Primary - forest/sage green scale */
+  --color-primary-50: #f0f7f4;
+  --color-primary-100: #dcebe3;
+  --color-primary-200: #bcd6c9;
+  --color-primary-300: #8fc1ad;
+  --color-primary-400: #5fa887;
+  --color-primary-500: #2f8b66;
+  --color-primary-600: #1d6f54;
+  --color-primary-700: #14543f;
+  --color-primary-800: #0d3c2d;
+  --color-primary-900: #07251d;
 
   /* Surfaces & neutrals */
   --color-surface: #ffffff;
-  --color-surface-tint: #eaf6fc;
-  --color-surface-tint-2: #d6ecf7;
-  --color-border-soft: #e3eef6;
+  --color-surface-tint: #f8fbf9;
+  --color-surface-tint-2: #eef7f2;
+  --color-border-soft: #d9eae2;
 
   /* Text */
-  --color-heading: #223240;
-  --color-body: #5a6b78;
-  --color-muted: #93a3ae;
+  --color-heading: #1a2e25;
+  --color-body: #4a5e55;
+  --color-muted: #8aa39a;
 
   /* Supporting accents (used sparingly) */
   --color-accent-coral: #e8746a;
@@ -38,7 +38,7 @@
   --color-danger: #e06a6a;
 
   /* Primary CTA gradient */
-  --background-image-gradient-primary: linear-gradient(135deg, #45c0f5 0%, #1789c7 100%);
+  --background-image-gradient-primary: linear-gradient(135deg, #2f8b66 0%, #1d6f54 100%);
 
   --font-sans: var(--font-geist-sans);
 
@@ -113,7 +113,8 @@ html {
 }
 
 body {
-  background-color: var(--color-surface-tint);
+  background: linear-gradient(135deg, #f0f7f4 0%, #eef7f2 55%, #f8fbf9 100%);
+  background-attachment: fixed;
   color: var(--color-body);
   font-family: var(--font-sans), system-ui, sans-serif;
   /* Respect OS reduced-motion (agents.md 6). Framer Motion honours this too. */
@@ -147,3 +148,15 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* ====================================================================
+   THEME UTILITIES
+   ====================================================================
+   Tailwind v4 generates every colour utility from the @theme block
+   above, including opacity variants such as `bg-primary-50/50`
+   (emitted as the escaped selector `.bg-primary-50\/50`).
+
+   Do NOT hand-write these classes here: an unescaped `/` is not
+   valid in a CSS class selector and breaks the stylesheet build.
+   ====================================================================*/
+

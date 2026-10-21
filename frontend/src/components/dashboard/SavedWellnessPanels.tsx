@@ -11,7 +11,7 @@ import type { DashboardDto, RoutineSummaryDto, WellnessProfileDto } from "@/lib/
 /** Recently-saved preview with graceful handling of unavailable items. */
 export function SavedPanel({ dashboard }: { dashboard: DashboardDto }) {
   return (
-    <section aria-labelledby="saved-heading" className="rounded-3xl border border-border-soft bg-surface p-6">
+    <section aria-labelledby="saved-heading" className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-6">
       <div className="flex items-center justify-between">
         <h2 id="saved-heading" className="flex items-center gap-2 font-semibold text-heading">
           <Bookmark className="size-5 text-primary-600" aria-hidden="true" />
@@ -55,7 +55,7 @@ export function SavedPanel({ dashboard }: { dashboard: DashboardDto }) {
 /** Wellness snapshot + routine shortcuts. */
 export function WellnessPanel({ wellness, routines }: { wellness: WellnessProfileDto | null; routines: RoutineSummaryDto[] }) {
   return (
-    <section aria-labelledby="wellness-heading" className="rounded-3xl border border-border-soft bg-surface p-6">
+    <section aria-labelledby="wellness-heading" className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-6">
       <div className="flex items-center justify-between">
         <h2 id="wellness-heading" className="flex items-center gap-2 font-semibold text-heading">
           <Sparkles className="size-5 text-primary-600" aria-hidden="true" />

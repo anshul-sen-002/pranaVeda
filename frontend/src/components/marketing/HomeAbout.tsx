@@ -66,7 +66,7 @@ export function HomeAbout() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.4 }}
               transition={{ duration: 0.45, delay: i * 0.07 }}
-              className="relative overflow-hidden rounded-2xl border border-border-soft bg-surface p-5 sm:p-6"
+              className="relative overflow-hidden rounded-2xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5 sm:p-6"
             >
               <StoneStack className="pointer-events-none absolute right-4 bottom-4 h-14 w-12 text-primary-200" />
               <span className="inline-flex size-10 items-center justify-center rounded-xl bg-primary-50 text-primary-600">

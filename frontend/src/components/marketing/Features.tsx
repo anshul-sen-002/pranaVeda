@@ -65,7 +65,7 @@ const features: Feature[] = [
  */
 export function Features() {
   return (
-    <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+    <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24 bg-gradient-to-b from-transparent via-primary-50/30 to-transparent">
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         whileInView={{ opacity: 1, y: 0 }}

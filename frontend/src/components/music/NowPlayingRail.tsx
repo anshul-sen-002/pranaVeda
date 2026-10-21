@@ -25,7 +25,7 @@ export function NowPlayingRail({
   const pct = duration ? Math.min(100, (elapsed / duration) * 100) : 0;
   return (
     <div className="grid content-start gap-4">
-      <section aria-label="Now playing" className="rounded-3xl border border-border-soft bg-surface p-5">
+      <section aria-label="Now playing" className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-heading">
           <span className="flex items-end gap-0.5 text-primary-600" aria-hidden="true">
             <span className="w-0.5 animate-pulse rounded bg-current" style={{ height: 14 }} />

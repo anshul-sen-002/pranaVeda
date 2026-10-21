@@ -32,7 +32,7 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+    <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24 bg-gradient-to-b from-primary-50/30 via-transparent to-primary-50/30">
       <SectionHeading
         eyebrow="How it works"
         title="From curious visitor to steady practice"

@@ -20,7 +20,7 @@ export function Playlist({
 }) {
   const queued = ids.map((id) => byId.get(id)).filter((t): t is AudioTrackSummary => Boolean(t));
   return (
-    <section aria-label="Your playlist" className="rounded-3xl border border-border-soft bg-surface p-5">
+    <section aria-label="Your playlist" className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5">
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-heading">
           <ListMusic className="size-4 text-primary-600" aria-hidden="true" />

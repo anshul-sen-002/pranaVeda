@@ -111,7 +111,7 @@ function SettingsBody({
   return (
     <div className="mx-auto max-w-2xl space-y-5">
       <PageHeader title="Settings" subtitle="Your account, photo, and session." />
-      <section aria-labelledby="photo-heading" className="rounded-3xl border border-border-soft bg-surface p-5">
+      <section aria-labelledby="photo-heading" className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5">
         <h2 id="photo-heading" className="flex items-center gap-2 font-semibold text-heading">
           <UserRound className="size-5 text-primary-600" aria-hidden="true" />
           Profile photo
@@ -142,7 +142,7 @@ function SettingsBody({
         <p className="mt-3 text-xs text-muted">Up to 5 MB · jpeg, png, webp, avif. Stored on Cloudinary, private to you.</p>
         {photoMsg ? <p className={cn("mt-2 text-sm", msgError ? "text-danger" : "text-success")}>{photoMsg}</p> : null}
       </section>
-      <section aria-labelledby="account-heading" className="rounded-3xl border border-border-soft bg-surface p-5">
+      <section aria-labelledby="account-heading" className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5">
         <h2 id="account-heading" className="font-semibold text-heading">Account</h2>
         <dl className="mt-3 space-y-2 text-sm">
           <div className="flex justify-between gap-3">

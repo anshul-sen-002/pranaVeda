@@ -57,11 +57,11 @@ function TaxonomyStudio() {
       </form>
       {error ? <p className="mt-3 rounded-2xl bg-danger/5 px-4 py-3 text-sm text-danger" role="alert">{error}</p> : null}
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <section className="rounded-3xl border border-border-soft bg-surface p-5">
+        <section className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5">
           <h2 className="font-semibold text-heading">Categories ({cats.length})</h2>
           <ul className="mt-3 space-y-1.5">{cats.map((c) => <li key={c.id} className="text-sm text-body"><span className="font-medium text-heading">{c.name}</span> <span className="text-xs text-muted">· {c.slug}</span></li>)}</ul>
         </section>
-        <section className="rounded-3xl border border-border-soft bg-surface p-5">
+        <section className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5">
           <h2 className="font-semibold text-heading">Tags ({tags.length})</h2>
           <ul className="mt-3 space-y-1.5">{tags.map((t) => <li key={t.id} className="text-sm text-body"><span className="font-medium text-heading">{t.name}</span> <span className="text-xs text-muted">· {t.slug}</span></li>)}</ul>
         </section>

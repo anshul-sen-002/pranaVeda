@@ -61,7 +61,7 @@ function AiChat() {
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[minmax(0,1fr)_21rem]">
-      <section aria-label="AI wellness companion chat" className="flex min-h-[calc(100dvh-12rem)] flex-col overflow-hidden rounded-3xl border border-border-soft bg-surface sm:min-h-[calc(100dvh-13rem)]">
+      <section aria-label="AI wellness companion chat" className="flex min-h-[calc(100dvh-12rem)] flex-col overflow-hidden rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 sm:min-h-[calc(100dvh-13rem)]">
         <AiChatHeader />
 
         <div ref={scrollRef} aria-live="polite" className="flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-5">

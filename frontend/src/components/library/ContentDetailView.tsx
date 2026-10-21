@@ -25,7 +25,7 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-border-soft bg-surface p-5 sm:p-6">
+    <section className="rounded-2xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5 sm:p-6">
       <h2 className="flex items-center gap-2 text-base font-semibold text-heading">
         <span className="text-primary-600" aria-hidden="true">
           {icon}

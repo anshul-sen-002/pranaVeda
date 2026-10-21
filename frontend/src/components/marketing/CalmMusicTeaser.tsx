@@ -24,7 +24,7 @@ export function CalmMusicTeaser() {
   const [playing, setPlaying] = useState(false);
 
   return (
-    <section className="border-y border-border-soft bg-surface">
+    <section className="border-y border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30">
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-2">
         <div>
           <SectionHeading

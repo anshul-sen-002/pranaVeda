@@ -21,7 +21,7 @@ export function PlayerCard() {
   const [fav, setFav] = useState(false);
   if (!current) {
     return (
-      <section aria-label="Now playing" className="rounded-3xl border border-border-soft bg-surface p-5">
+      <section aria-label="Now playing" className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5">
         <h2 className="text-sm font-semibold text-heading">Now Playing</h2>
         <p className="mt-2 text-sm text-muted">Press play on any track to begin.</p>
       </section>
@@ -44,7 +44,7 @@ export function PlayerCard() {
     }
   };
   return (
-    <section aria-label="Now playing" className="rounded-3xl border border-border-soft bg-surface p-5">
+    <section aria-label="Now playing" className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5">
       <h2 className="text-sm font-semibold text-heading">Now Playing</h2>
       <Link href={`/calm-music/${current.slug}`} className="mt-3 flex items-center gap-3">
         <span className="size-16 shrink-0 overflow-hidden rounded-xl bg-primary-50"><CoverImage src={current.coverImageUrl} alt="" /></span>

@@ -34,7 +34,7 @@ export function SessionTimer({ contentId, defaultMinutes, onDone }: { contentId?
   const mm = String(Math.floor(left / 60)).padStart(2, "0");
   const ss = String(left % 60).padStart(2, "0");
   return (
-    <section aria-label="Session timer" className="rounded-3xl border border-border-soft bg-surface p-5 text-center">
+    <section aria-label="Session timer" className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5 text-center">
       <p className="text-xs font-semibold tracking-widest text-primary-700 uppercase">Session mode</p>
       <p className="mt-1 text-4xl font-semibold text-heading tabular-nums" aria-live="polite">{mm}:{ss}</p>
       <div className="mt-3 flex justify-center gap-1.5">

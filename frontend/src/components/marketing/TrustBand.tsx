@@ -16,7 +16,7 @@ const promises = [
 
 export function TrustBand() {
   return (
-    <section aria-label="Our promises" className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
+    <section aria-label="Our promises" className="mx-auto max-w-6xl px-5 py-12 sm:px-8 bg-gradient-to-b from-primary-50/40 via-transparent to-primary-50/40">
       <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {promises.map((promise, index) => (
           <motion.div

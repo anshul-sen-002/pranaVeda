@@ -183,7 +183,7 @@ function WellnessView() {
       />
       {error ? <Alert tone="error">{error}</Alert> : null}
       {saved ? <Alert tone="success">Profile saved.</Alert> : null}
-      <form onSubmit={submit} className="space-y-5 rounded-3xl border border-border-soft bg-surface p-5 sm:p-6">
+      <form onSubmit={submit} className="space-y-5 rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5 sm:p-6">
 
         <fieldset>
           <legend className="mb-3 text-xs font-semibold tracking-wider text-muted uppercase">
@@ -370,7 +370,7 @@ function WellnessView() {
       {profile ? (
         <section
           aria-labelledby="snapshot-heading"
-          className="rounded-3xl border border-border-soft bg-surface p-5 sm:p-6"
+          className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5 sm:p-6"
         >
           <h2 id="snapshot-heading" className="flex items-center gap-2 font-semibold text-heading">
             <Info className="size-4 text-primary-600" aria-hidden="true" />
@@ -405,7 +405,7 @@ function WellnessView() {
       ) : null}
 
       {profile ? (
-        <section className="rounded-3xl border border-border-soft bg-surface p-5 sm:p-6">
+        <section className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="font-semibold text-heading">Delete your profile</h2>

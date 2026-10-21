@@ -25,9 +25,6 @@ const NAV = [
   { href: "/yoga", label: "Yoga Asanas", icon: User },
   { href: "/videos", label: "Yoga Videos", icon: Video },
   { href: "/calm-music", label: "Library", icon: BookOpen },
-  { href: "/ai/history", label: "History", icon: History },
-  { href: "/dashboard/saved", label: "Saved", icon: ClipboardList },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 /** Admin-only nav links, shown when the user has role ADMIN. */
@@ -55,8 +52,11 @@ function NavLink({ href, label, Icon, active, onNavigate }: { href: string; labe
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex min-h-11 items-center gap-3 rounded-xl px-3.5 text-sm font-medium transition-colors",
-        active ? "bg-primary-100/70 text-primary-700" : "text-body hover:bg-primary-50 hover:text-heading",
+        "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors",
+        // Active item: soft light-green fill + deeper green text (mockup).
+        active
+          ? "bg-primary-50 text-primary-700 shadow-[inset_0_0_0_1px_var(--color-primary-100)]"
+          : "text-body hover:bg-primary-50/60 hover:text-heading",
       )}
     >
       <Icon className="size-5 shrink-0" aria-hidden="true" />
@@ -125,15 +125,16 @@ export function AppShell({ children, quote }: { children: React.ReactNode; quote
         </nav>
         <div className="shrink-0 px-3"><QuoteCard quote={quote} /></div>
       </aside>
-      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-border-soft bg-surface/70 px-4 py-5 lg:flex">
-        <Link href="/" className="rounded-lg px-2" aria-label="PranaVeda home"><Logo /></Link>
+      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-border-soft bg-surface/70 px-4 pt-5 pb-5 lg:flex">
+        {/* Brand sits at the very top of the rail (mockup). */}
+        <Link href="/" className="shrink-0 rounded-lg px-2" aria-label="PranaVeda home"><Logo /></Link>
         <nav aria-label="Primary" className="scrollbar-none mt-6 flex-1 space-y-1 overflow-y-auto">
           {NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} />))}
           {isAdmin ? (<><div className="mx-3.5 my-2 border-t border-border-soft" /><p className="px-3.5 pb-1 text-[11px] font-semibold tracking-widest text-muted uppercase">Admin</p>{ADMIN_NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} />))}</>) : null}
         </nav>
         <QuoteCard quote={quote} />
       </aside>
-      <AppMain pathname={pathname} displayName={displayName} onMenu={() => setDrawerOpen(true)}>
+      <AppMain pathname={pathname} displayName={displayName} isAdmin={isAdmin} onMenu={() => setDrawerOpen(true)}>
         {children}
       </AppMain>
     </div>
@@ -141,10 +142,11 @@ export function AppShell({ children, quote }: { children: React.ReactNode; quote
 }
 
 
-function AppMain({ pathname, displayName, onMenu, children }: { pathname: string; displayName: string; onMenu: () => void; children: React.ReactNode }) {
+function AppMain({ pathname, displayName, isAdmin, onMenu, children }: { pathname: string; displayName: string; isAdmin: boolean; onMenu: () => void; children: React.ReactNode }) {
   const { status, user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const roleLabel = isAdmin ? "Administrator" : "Member";
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -190,6 +192,12 @@ function AppMain({ pathname, displayName, onMenu, children }: { pathname: string
               >
                 <span className="flex size-8 items-center justify-center rounded-full bg-primary-100 text-primary-700"><User className="size-4" aria-hidden="true" /></span>
                 <span className="hidden max-w-28 truncate text-sm font-medium text-body sm:inline">{displayName}</span>
+                {/* Role chip — the mockup shows "Administrator" next to the name. */}
+                <span className="hidden items-center gap-1.5 lg:inline-flex">
+                  <span className="rounded-full bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-700">
+                    {roleLabel}
+                  </span>
+                </span>
                 <ChevronDown className={cn("hidden size-4 text-muted transition-transform sm:inline", menuOpen && "rotate-180")} aria-hidden="true" />
               </button>
               {menuOpen ? (
@@ -203,7 +211,7 @@ function AppMain({ pathname, displayName, onMenu, children }: { pathname: string
                       <p className="truncate text-sm font-semibold text-heading">{displayName}</p>
                       <p className="truncate text-xs text-muted">{user?.email ?? "—"}</p>
                       <span className="mt-1 inline-flex rounded-full bg-primary-100 px-2 py-0.5 text-[11px] font-medium text-primary-700">
-                        {user?.role === "ADMIN" ? "Administrator" : "Member"}
+                        {roleLabel}
                       </span>
                     </div>
                   </div>
@@ -238,7 +246,7 @@ function AppMain({ pathname, displayName, onMenu, children }: { pathname: string
           </div>
         </div>
       </header>
-      <main className="min-w-0 flex-1 px-3 pt-4 pb-24 sm:px-6 sm:py-6 lg:pb-10">{children}</main>
+      <main className="min-w-0 flex-1 px-3 pt-4 pb-24 sm:px-6 sm:py-6 lg:pb-10 bg-gradient-to-b from-surface-tint via-transparent to-primary-50/30">{children}</main>
       {/* Bottom tab bar — phones only, pill-shaped like the mobile app. */}
       <nav aria-label="Quick navigation" className="fixed inset-x-0 bottom-[3px] z-40 lg:hidden">
         <div className="mx-auto max-w-md w-full rounded-[1.5rem] border border-border-soft bg-white backdrop-blur-md shadow-lg p-2.5">

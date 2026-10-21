@@ -29,7 +29,7 @@ export function ListeningHistory() {
     catch { /* noop */ }
   };
   return (
-    <section aria-label="Listening history" className="rounded-3xl border border-border-soft bg-surface p-5">
+    <section aria-label="Listening history" className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5">
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-heading"><History className="size-4 text-primary-600" aria-hidden="true" />Listening history</h2>
         {items.length > 0 ? <button type="button" onClick={() => void clear()} className="inline-flex items-center gap-1 text-xs text-muted hover:text-danger"><Trash2 className="size-3.5" aria-hidden="true" />Clear</button> : null}

@@ -27,7 +27,7 @@ export function PersonalSide() {
   const signedIn = status === "authenticated";
 
   return (
-    <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+    <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24 bg-gradient-to-b from-primary-50/30 via-transparent to-primary-50/30">
       <div className="grid items-center gap-12 lg:grid-cols-2">
         <div className="order-2 lg:order-1">
           <JourneyVisual />

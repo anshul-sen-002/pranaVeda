@@ -17,7 +17,7 @@ export function WeeklyChart({ sessions }: { sessions: PracticeSessionDto[] }) {
   const max = Math.max(1, ...mins);
   const total = mins.reduce((a, b) => a + b, 0);
   return (
-    <section aria-label="Weekly consistency" className="rounded-3xl border border-border-soft bg-surface p-5">
+    <section aria-label="Weekly consistency" className="rounded-3xl border border-border-soft bg-gradient-to-br from-surface via-primary-50/30 to-primary-100/30 p-5">
       <h2 className="text-sm font-semibold text-heading">This week · {total} min</h2>
       <div className="mt-3 flex items-end gap-2" role="img" aria-label={`Minutes per day: ${days.map((d, i) => `${d} ${mins[i]}`).join(", ")}`}>
         {mins.map((m, i) => (

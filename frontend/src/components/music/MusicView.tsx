@@ -35,7 +35,7 @@ export function MusicView() {
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
       <div className="min-w-0 space-y-6 sm:space-y-8">
-      <header className="overflow-hidden rounded-3xl border border-border-soft bg-gradient-to-br from-primary-50 via-surface-tint to-primary-100 p-4 sm:p-6">
+      <header className="overflow-hidden rounded-3xl border border-border-soft bg-gradient-to-br from-primary-50/40 via-surface-tint to-primary-100/40 p-4 sm:p-6">
         <div className="flex items-center gap-3">
           <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary-100 text-primary-700">
             <Music2 className="size-6" aria-hidden="true" />

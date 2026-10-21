@@ -103,7 +103,7 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
 
 
   return (
-    <div>
+    <div className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30">
       {/* Search + sort row */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center px-3 sm:px-6 pt-3 pb-2">
         <div className="relative flex-1">
