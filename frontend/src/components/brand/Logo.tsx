@@ -20,9 +20,9 @@ export function Logo({ className, markOnly = false }: LogoProps) {
       <Image
         src="/pranaveda.png"
         alt="PranaVeda"
-        width={32}
-        height={32}
-        className="size-8 shrink-0"
+        width={20}
+        height={20}
+        className="size-10 shrink-0"
         priority
       />
 

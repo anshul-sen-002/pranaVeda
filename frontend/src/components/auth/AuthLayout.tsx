@@ -146,7 +146,7 @@ function Leaf({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 200 200" fill="none" className={className} aria-hidden="true">
       <path d="M40 160C40 100 90 40 170 30c6 78-44 138-130 130Z" fill="currentColor" />
-      <path d="M40 160C70 120 110 80 170 30" stroke="#0A3D59" strokeOpacity="0.12" strokeWidth="3" />
+      <path d="M40 160C70 120 110 80 170 30" stroke="#14543f" strokeOpacity="0.12" strokeWidth="3" />
     </svg>
   );
 }

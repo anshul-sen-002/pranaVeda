@@ -83,7 +83,7 @@ export function AiCompanion() {
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           role="img"
           aria-label="Preview of an AI companion conversation about gentle bedtime poses"
-          className="rounded-3xl border border-border-soft bg-surface-tint p-5 shadow-[0_24px_60px_-40px_rgba(23,137,199,0.5)] sm:p-6"
+          className="rounded-3xl border border-border-soft bg-surface-tint p-5 shadow-[0_24px_60px_-40px_rgba(29,111,84,0.5)] sm:p-6"
         >
           <div className="flex items-center gap-2.5 border-b border-border-soft pb-4">
             <span className="inline-flex size-9 items-center justify-center rounded-full bg-gradient-primary text-white">

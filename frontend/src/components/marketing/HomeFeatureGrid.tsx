@@ -80,7 +80,7 @@ export function HomeFeatureGrid() {
           >
             <Link
               href={c.href}
-              className="group relative block h-full overflow-hidden rounded-2xl border border-border-soft bg-surface p-5 transition-shadow hover:shadow-[0_14px_36px_-24px_rgba(23,137,199,0.5)] sm:p-6"
+              className="group relative block h-full overflow-hidden rounded-2xl border border-border-soft bg-surface p-5 transition-shadow hover:shadow-[0_14px_36px_-24px_rgba(29,111,84,0.5)] sm:p-6"
             >
               <LeafSprig className="pointer-events-none absolute -right-2 -bottom-4 h-24 w-18 text-primary-200" />
               <span className="inline-flex size-11 items-center justify-center rounded-xl bg-primary-50 text-primary-600">

@@ -18,7 +18,7 @@ interface TrackCardProps {
 /** Single track card — screenshot style: image left, text right, play button. */
 export function TrackCard({ track, active, onToggle, categoryChip, categoryLabel, minutesOf }: TrackCardProps) {
   return (
-    <article role="listitem" className="overflow-hidden rounded-2xl border border-border-soft bg-surface transition-shadow hover:shadow-[0_14px_36px_-24px_rgba(23,137,199,0.5)]">
+    <article role="listitem" className="overflow-hidden rounded-2xl border border-border-soft bg-surface transition-shadow hover:shadow-[0_14px_36px_-24px_rgba(29,111,84,0.5)]">
       <div className="flex gap-3 p-3 sm:gap-4 sm:p-4">
         <Link href={`/calm-music/${track.slug}`} className="relative block size-24 shrink-0 overflow-hidden rounded-xl bg-primary-50 sm:size-28" aria-label={track.title} tabIndex={-1}>
           <CoverImage src={track.coverImageUrl} alt="" className="h-full w-full object-cover" />

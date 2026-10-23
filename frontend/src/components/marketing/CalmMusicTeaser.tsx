@@ -93,7 +93,7 @@ export function CalmMusicTeaser() {
               onClick={() => setPlaying((value) => !value)}
               aria-pressed={playing}
               aria-label={playing ? "Pause preview animation" : "Play preview animation"}
-              className="inline-flex size-12 items-center justify-center rounded-full bg-gradient-primary text-white shadow-[0_12px_28px_-12px_rgba(23,137,199,0.7)] transition-transform duration-200 hover:scale-105 active:scale-95"
+              className="inline-flex size-12 items-center justify-center rounded-full bg-gradient-primary text-white shadow-[0_12px_28px_-12px_rgba(29,111,84,0.7)] transition-transform duration-200 hover:scale-105 active:scale-95"
             >
               {playing ? <Pause className="size-5" aria-hidden="true" /> : <Play className="ml-0.5 size-5" aria-hidden="true" />}
             </button>

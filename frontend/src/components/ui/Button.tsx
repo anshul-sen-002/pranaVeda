@@ -24,8 +24,8 @@ const base =
 const variants: Record<ButtonVariant, string> = {
   // The primary CTA carries the brand gradient (design-tokens.md).
   primary:
-    "bg-gradient-primary text-white shadow-[0_8px_20px_-8px_rgba(23,137,199,0.65)] " +
-    "hover:shadow-[0_12px_26px_-8px_rgba(23,137,199,0.75)]",
+    "bg-gradient-primary text-white shadow-[0_8px_20px_-8px_rgba(29,111,84,0.65)] " +
+    "hover:shadow-[0_12px_26px_-8px_rgba(29,111,84,0.75)]",
   secondary:
     "bg-surface text-heading border border-border-soft hover:border-primary-300 hover:bg-primary-50",
   ghost: "text-primary-700 hover:bg-primary-50",

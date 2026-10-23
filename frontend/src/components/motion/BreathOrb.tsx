@@ -49,7 +49,7 @@ export function BreathOrb({ className }: { className?: string }) {
           aria-hidden="true"
           animate={reduceMotion ? undefined : { scale: [1, 1.06, 1] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="flex size-28 items-center justify-center rounded-full border border-border-soft bg-surface shadow-[0_24px_60px_-30px_rgba(23,137,199,0.55)] sm:size-36"
+          className="flex size-28 items-center justify-center rounded-full border border-border-soft bg-surface shadow-[0_24px_60px_-30px_rgba(29,111,84,0.55)] sm:size-36"
         >
           <Logo markOnly />
         </motion.div>

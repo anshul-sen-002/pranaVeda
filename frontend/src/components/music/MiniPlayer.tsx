@@ -16,7 +16,7 @@ export function MiniPlayer() {
   const pct = duration ? Math.min(100, (elapsed / duration) * 100) : 0;
   return (
     <div className="safe-area-bottom fixed inset-x-2 bottom-[4.5rem] z-40 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-96 lg:bottom-6">
-      <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface/95 shadow-[0_20px_50px_-20px_rgba(23,137,199,0.5)] backdrop-blur">
+      <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface/95 shadow-[0_20px_50px_-20px_rgba(29,111,84,0.5)] backdrop-blur">
         <div className="flex items-center gap-3 px-3 py-2.5">
           <Link href={`/calm-music/${current.slug}`} className="size-11 shrink-0 overflow-hidden rounded-xl bg-primary-50" aria-label={`Open ${current.title}`}>
             <CoverImage src={current.coverImageUrl} alt="" />

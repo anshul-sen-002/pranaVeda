@@ -26,4 +26,15 @@ public interface AiProvider {
      *         {@code ApiException} with {@code ErrorCode#AI_UNAVAILABLE}
      */
     AiReply chat(List<ChatTurn> turns);
+
+    /**
+     * Streams the assistant reply as a series of text chunks (Server-Sent Events).
+     * Each emitted string is a delta of the reply; the caller concatenates them.
+     *
+     * @param turns ordered history including the latest user message
+     * @param language preferred reply language (may be null/blank -> model default)
+     * @param onChunk invoked for every chunk of text received from the provider
+     * @throws ApiException with ErrorCode AI_UNAVAILABLE on timeout/unavailability
+     */
+    void streamChat(List<ChatTurn> turns, String language, java.util.function.Consumer<String> onChunk);
 }

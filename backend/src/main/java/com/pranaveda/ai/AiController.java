@@ -1,10 +1,12 @@
 package com.pranaveda.ai;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -37,6 +40,32 @@ public class AiController {
     @PostMapping("/chat")
     public ResponseEntity<AiChatResponse> chat(@Valid @RequestBody AiChatRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(aiService.chat(request));
+    }
+
+    /** Streams the assistant reply as Server-Sent Events (text/event-stream). */
+    @PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamChat(@Valid @RequestBody AiChatRequest request) {
+        SseEmitter emitter = new SseEmitter(30_000L);
+        List<String> chunks = new CopyOnWriteArrayList<>();
+
+        aiService.streamChat(request, chunk -> {
+            chunks.add(chunk);
+            try {
+                emitter.send(SseEmitter.event().data(chunk));
+            } catch (Exception ignored) {
+                // Client may have disconnected.
+            }
+        });
+
+        // Send completion marker once the full reply has been collected.
+        try {
+            emitter.send(SseEmitter.event().data("[DONE]"));
+        } catch (Exception ignored) {
+            // Ignore.
+        }
+        emitter.complete();
+
+        return emitter;
     }
 
     /** The caller's conversation history, newest first. */

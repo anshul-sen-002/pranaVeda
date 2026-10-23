@@ -50,7 +50,7 @@ export function BreathingStudio() {
         <p className="mx-auto mt-2 max-w-sm text-sm text-muted">{PATTERNS[pattern].hint}</p>
         <div className="relative mx-auto mt-6 flex aspect-square w-full max-w-[240px] items-center justify-center" role="img" aria-label={`${phase.label}, ${phaseLeft} seconds remaining`}>
           <div aria-hidden="true" className="absolute inset-4 rounded-full bg-gradient-to-br from-primary-100 via-surface to-primary-200/60 blur-sm" />
-          <div className="relative rounded-full border border-border-soft bg-surface px-7 py-5 shadow-[0_24px_60px_-30px_rgba(23,137,199,0.55)]">
+          <div className="relative rounded-full border border-border-soft bg-surface px-7 py-5 shadow-[0_24px_60px_-30px_rgba(29,111,84,0.55)]">
             <p className="text-xl font-semibold text-heading">{phase.label}</p>
             <p className="mt-1 text-4xl font-semibold text-primary-700 tabular-nums" aria-live="polite">{phaseLeft}</p>
           </div>

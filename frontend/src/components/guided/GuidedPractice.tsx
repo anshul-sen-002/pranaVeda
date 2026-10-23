@@ -194,7 +194,7 @@ export function GuidedPractice({ steps, poseTitle }: GuidedPracticeProps) {
           <button
             type="button"
             onClick={start}
-            className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-gradient-primary px-6 text-sm font-medium text-white shadow-[0_8px_20px_-8px_rgba(23,137,199,0.65)] transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+            className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full bg-gradient-primary px-6 text-sm font-medium text-white shadow-[0_8px_20px_-8px_rgba(29,111,84,0.65)] transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
           >
             <Play className="size-4" aria-hidden="true" />
             Start Practice

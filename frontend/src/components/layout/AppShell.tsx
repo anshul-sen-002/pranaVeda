@@ -201,7 +201,7 @@ function AppMain({ pathname, displayName, isAdmin, onMenu, children }: { pathnam
                 <ChevronDown className={cn("hidden size-4 text-muted transition-transform sm:inline", menuOpen && "rotate-180")} aria-hidden="true" />
               </button>
               {menuOpen ? (
-                <div role="menu" className="absolute right-0 z-40 mt-2 w-64 overflow-hidden rounded-2xl border border-border-soft bg-surface py-1.5 shadow-[0_20px_50px_-20px_rgba(23,137,199,0.5)]">
+                <div role="menu" className="absolute right-0 z-40 mt-2 w-64 overflow-hidden rounded-2xl border border-border-soft bg-surface py-1.5 shadow-[0_20px_50px_-20px_rgba(29,111,84,0.5)]">
                   {/* Screenshot-style header: avatar + name + email + role pill */}
                   <div className="flex items-center gap-3 px-4 pt-2 pb-3">
                     <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-700">

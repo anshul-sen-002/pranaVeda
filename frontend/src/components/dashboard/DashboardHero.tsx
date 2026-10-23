@@ -1,21 +1,34 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { ListMusic, Play } from "lucide-react";
 
 import { LotusMark } from "@/components/brand/LotusMark";
 
-/** Gradient greeting banner matching screenshot 3, with lotus motif. */
+/** Greeting banner with medi.png background image instead of gradient. */
 export function DashboardHero({ firstName, practisedToday }: { firstName?: string; practisedToday: boolean }) {
   const name = firstName?.trim() || "Administrator";
   return (
-    <section className="mobile-compact relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#45c0f5] via-[#1fa9ed] to-[#1668b4] px-4 py-6 text-white sm:px-8 sm:py-8" aria-labelledby="dashboard-greeting">
-      <LotusMark className="pointer-events-none absolute -right-8 -bottom-12 size-44 text-white/20 sm:-right-10 sm:-bottom-14 sm:size-56" />
+    <section className="mobile-compact relative overflow-hidden rounded-3xl border border-border-soft px-4 py-6 sm:px-8 sm:py-8" aria-labelledby="dashboard-greeting">
+      {/* Background image: medi.png, contained so it never crops awkwardly on mobile */}
+      <div className="absolute inset-0 -z-10">
+        <Image
+          src="/medi.png"
+          alt=""
+          priority
+          className="w-full h-full object-cover object-center opacity-90"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        />
+        {/* Soft green overlay so white text stays readable over the image */}
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary-500/60 via-primary-600/40 to-primary-800/20" />
+      </div>
+      <LotusMark className="pointer-events-none absolute right-2 -bottom-2 size-36 text-white/20 sm:-right-10 sm:-bottom-14 sm:size-56" />
       <LotusMark className="pointer-events-none absolute top-4 right-40 hidden size-16 text-white/15 md:block" />
       <p className="relative text-[13px] text-white/85 sm:text-sm">
         {practisedToday ? "Beautiful — you practised today." : "Take a breath. Today is open."}
       </p>
-      <h1 id="dashboard-greeting" className="relative mt-1 text-xl font-semibold tracking-tight text-balance sm:text-[32px] sm:leading-tight">
+      <h1 id="dashboard-greeting" className="relative mt-1 text-xl font-semibold tracking-tight text-balance text-white sm:text-[32px] sm:leading-tight">
         Welcome back, {name}.
       </h1>
       <div className="relative mt-4 flex flex-col gap-2 sm:mt-5 sm:flex-row sm:gap-2.5">

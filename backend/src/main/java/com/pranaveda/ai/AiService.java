@@ -2,6 +2,7 @@ package com.pranaveda.ai;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import com.pranaveda.common.error.NotFoundException;
 import com.pranaveda.security.CurrentUserPrincipal;
@@ -83,6 +84,44 @@ public class AiService {
 
         AiConversation saved = conversations.save(conversation);
         return toResponse(saved, reply.content(), reply.model());
+    }
+
+    /** Streams one message: collects deltas, then persists both turns atomically. */
+    @Transactional
+    public AiChatResponse streamChat(AiChatRequest request, Consumer<String> onChunk) {
+        long userId = CurrentUserPrincipal.requireCurrentUserId();
+        String userText = request.message().trim();
+        String language = request.language();
+
+        AiConversation conversation = request.conversationId() == null
+            ? newConversation(userId)
+            : requireOwnedConversation(request.conversationId(), userId);
+
+        AiMessage userMessage = new AiMessage();
+        userMessage.setRole(AiRole.USER);
+        userMessage.setContent(userText);
+        conversation.addMessage(userMessage);
+
+        StringBuilder fullReply = new StringBuilder();
+        provider.streamChat(buildTurns(conversation), language, chunk -> {
+            fullReply.append(chunk);
+            onChunk.accept(chunk);
+        });
+
+        AiMessage assistantMessage = new AiMessage();
+        assistantMessage.setRole(AiRole.ASSISTANT);
+        assistantMessage.setContent(fullReply.toString());
+        assistantMessage.setModel(null);
+        assistantMessage.setPromptTokens(null);
+        assistantMessage.setCompletionTokens(null);
+        conversation.addMessage(assistantMessage);
+
+        if (conversation.getTitle() == null || conversation.getTitle().isBlank()) {
+            conversation.setTitle(deriveTitle(userText));
+        }
+
+        AiConversation saved = conversations.save(conversation);
+        return toResponse(saved, fullReply.toString(), null);
     }
 
     /** Owner-scoped history list, newest first. */

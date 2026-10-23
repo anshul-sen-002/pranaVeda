@@ -243,7 +243,7 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
               className={cn(
                 "inline-flex size-9 items-center justify-center rounded-xl text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300",
                 n === page
-                  ? "bg-gradient-primary text-white shadow-[0_6px_16px_-8px_rgba(23,137,199,0.7)]"
+                  ? "bg-gradient-primary text-white shadow-[0_6px_16px_-8px_rgba(29,111,84,0.7)]"
                   : "text-body hover:bg-primary-50 hover:text-primary-700",
               )}
             >
@@ -268,7 +268,7 @@ function Chip({ active, label, onClick }: { active: boolean; label: string; onCl
       className={cn(
         "inline-flex h-9 items-center rounded-full border px-4 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300",
         active
-          ? "border-primary-500 bg-gradient-primary text-white shadow-[0_6px_16px_-8px_rgba(23,137,199,0.7)]"
+          ? "border-primary-500 bg-gradient-primary text-white shadow-[0_6px_16px_-8px_rgba(29,111,84,0.7)]"
           : "border-border-soft bg-surface text-body hover:border-primary-200 hover:text-primary-700",
       )}
     >

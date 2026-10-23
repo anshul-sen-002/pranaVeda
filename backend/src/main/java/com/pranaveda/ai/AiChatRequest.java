@@ -9,5 +9,6 @@ import jakarta.validation.constraints.Size;
  */
 public record AiChatRequest(
         Long conversationId,
-        @NotBlank @Size(max = 4000) String message) {
+        @NotBlank @Size(max = 4000) String message,
+        String language) {
 }

@@ -86,7 +86,7 @@ export function HomeCalmMusic() {
           >
             <Link
               href={`/calm-music/${t.slug}`}
-              className="group block overflow-hidden rounded-2xl border border-border-soft bg-surface transition-shadow hover:shadow-[0_14px_36px_-24px_rgba(23,137,199,0.5)]"
+              className="group block overflow-hidden rounded-2xl border border-border-soft bg-surface transition-shadow hover:shadow-[0_14px_36px_-24px_rgba(29,111,84,0.5)]"
             >
               <div className="relative aspect-[16/10] w-full bg-primary-50">
                 <CoverImage src={t.coverImageUrl} alt="" className="h-full w-full object-cover" />

@@ -35,21 +35,21 @@ export function MeditationIllustration({ className }: { className?: string }) {
     >
       <defs>
         <radialGradient id="med-glow" cx="50%" cy="46%" r="50%">
-          <stop offset="0%" stopColor="#BFEBFF" stopOpacity="0.95" />
-          <stop offset="55%" stopColor="#8FD8F8" stopOpacity="0.55" />
-          <stop offset="100%" stopColor="#8FD8F8" stopOpacity="0" />
+          <stop offset="0%" stopColor="#f0f7f4" stopOpacity="0.95" />
+          <stop offset="55%" stopColor="#8fc1ad" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#8fc1ad" stopOpacity="0" />
         </radialGradient>
         <linearGradient id="med-top" x1="188" y1="176" x2="252" y2="266" gradientUnits="userSpaceOnUse">
           <stop stopColor="#FFFFFF" />
           <stop offset="1" stopColor="#EAF6FC" />
         </linearGradient>
         <linearGradient id="med-mat" x1="80" y1="300" x2="360" y2="330" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#8FD8F8" stopOpacity="0.55" />
-          <stop offset="1" stopColor="#1789C7" stopOpacity="0.18" />
+          <stop stopColor="#8fc1ad" stopOpacity="0.55" />
+          <stop offset="1" stopColor="#1d6f54" stopOpacity="0.18" />
         </linearGradient>
         <linearGradient id="med-leaf" x1="0" y1="0" x2="1" y2="1">
-          <stop stopColor="#7FD0F0" />
-          <stop offset="1" stopColor="#2E9BD6" />
+          <stop stopColor="#8fc1ad" />
+          <stop offset="1" stopColor="#2f8b66" />
         </linearGradient>
       </defs>
 
@@ -66,7 +66,7 @@ export function MeditationIllustration({ className }: { className?: string }) {
 
       {/* Ground pool / mat */}
       <ellipse cx="220" cy="316" rx="150" ry="22" fill="url(#med-mat)" />
-      <ellipse cx="220" cy="312" rx="96" ry="12" fill="#0A3D59" opacity="0.06" />
+      <ellipse cx="220" cy="312" rx="96" ry="12" fill="#0d3c2d" opacity="0.06" />
 
       {/* Drifting leaves */}
       <motion.g
@@ -75,7 +75,7 @@ export function MeditationIllustration({ className }: { className?: string }) {
         style={{ originX: "70px", originY: "120px" }}
       >
         <path d="M70 120c10-20 32-26 46-20-6 16-26 28-46 20Z" fill="url(#med-leaf)" opacity="0.7" />
-        <path d="M70 120c14-2 30 4 40 14" stroke="#0A3D59" strokeOpacity="0.15" strokeWidth="1.5" />
+        <path d="M70 120c14-2 30 4 40 14" stroke="#0d3c2d" strokeOpacity="0.15" strokeWidth="1.5" />
       </motion.g>
       <motion.g
         animate={reduce ? undefined : { y: [0, 12, 0], rotate: [0, -8, 0] }}

@@ -19,7 +19,7 @@ export function ContentCard({ item }: { item: ContentSummary }) {
   const [saved, setSaved] = useState(false);
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border-soft bg-surface transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-[0_16px_40px_-24px_rgba(23,137,199,0.5)]">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-border-soft bg-surface transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:border-primary-200 hover:shadow-[0_16px_40px_-24px_rgba(29,111,84,0.5)]">
       <Link
         href={`/yoga/${item.slug}`}
         aria-label={`${item.title}${item.sanskritName ? ` (${item.sanskritName})` : ""}`}

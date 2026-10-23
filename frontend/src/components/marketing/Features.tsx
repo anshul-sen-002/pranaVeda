@@ -94,7 +94,7 @@ export function Features() {
               delay: index * 0.06,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="group rounded-2xl border border-border-soft bg-surface p-6 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-[0_16px_40px_-28px_rgba(23,137,199,0.5)]"
+            className="group rounded-2xl border border-border-soft bg-surface p-6 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-[0_16px_40px_-28px_rgba(29,111,84,0.5)]"
           >
             <span className="inline-flex size-11 items-center justify-center rounded-xl bg-primary-50 text-primary-600 transition-colors duration-300 group-hover:bg-primary-100">
               <feature.icon className="size-5" aria-hidden="true" />

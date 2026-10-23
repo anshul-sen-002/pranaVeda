@@ -22,7 +22,7 @@ export function JourneyVisual() {
     <div
       role="img"
       aria-label="Illustration of a practice dashboard showing weekly progress and a five-day streak"
-      className="relative mx-auto w-full max-w-md rounded-3xl border border-border-soft bg-surface p-6 shadow-[0_24px_60px_-40px_rgba(23,137,199,0.5)] sm:p-8"
+      className="relative mx-auto w-full max-w-md rounded-3xl border border-border-soft bg-surface p-6 shadow-[0_24px_60px_-40px_rgba(29,111,84,0.5)] sm:p-8"
     >
       <div className="flex items-center gap-5">
         {/* progress ring */}
@@ -45,8 +45,8 @@ export function JourneyVisual() {
             />
             <defs>
               <linearGradient id="pv-ring" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
-                <stop stopColor="#45C0F5" />
-                <stop offset="1" stopColor="#1789C7" />
+                <stop stopColor="#2f8b66" />
+                <stop offset="1" stopColor="#1d6f54" />
               </linearGradient>
             </defs>
           </svg>
@@ -74,7 +74,7 @@ export function JourneyVisual() {
                 }
                 className={
                   lit
-                    ? "size-3.5 rounded-full bg-gradient-primary shadow-[0_4px_10px_-4px_rgba(23,137,199,0.7)]"
+                    ? "size-3.5 rounded-full bg-gradient-primary shadow-[0_4px_10px_-4px_rgba(29,111,84,0.7)]"
                     : "size-3.5 rounded-full border border-dashed border-primary-200 bg-primary-50"
                 }
               />
@@ -89,7 +89,7 @@ export function JourneyVisual() {
         aria-hidden="true"
         animate={reduceMotion ? undefined : { y: [0, -6, 0] }}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -top-4 right-2 rounded-2xl border border-border-soft bg-surface px-4 py-2 shadow-[0_14px_30px_-18px_rgba(23,137,199,0.55)] sm:-right-5"
+        className="absolute -top-4 right-2 rounded-2xl border border-border-soft bg-surface px-4 py-2 shadow-[0_14px_30px_-18px_rgba(29,111,84,0.55)] sm:-right-5"
       >
         <p className="text-sm font-semibold text-heading">126 min</p>
         <p className="text-[11px] text-muted">practiced</p>
@@ -98,7 +98,7 @@ export function JourneyVisual() {
         aria-hidden="true"
         animate={reduceMotion ? undefined : { y: [0, 6, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
-        className="absolute -bottom-4 left-2 rounded-2xl border border-border-soft bg-surface px-4 py-2 shadow-[0_14px_30px_-18px_rgba(23,137,199,0.55)] sm:-left-5"
+        className="absolute -bottom-4 left-2 rounded-2xl border border-border-soft bg-surface px-4 py-2 shadow-[0_14px_30px_-18px_rgba(29,111,84,0.55)] sm:-left-5"
       >
         <p className="text-sm font-semibold text-heading">12 saved</p>
         <p className="text-[11px] text-muted">poses &amp; tracks</p>

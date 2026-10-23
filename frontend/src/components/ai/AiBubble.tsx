@@ -44,8 +44,8 @@ export function FormattedContent({ content }: { content: string }) {
   );
 }
 
-/** One chat bubble, screenshot style: soft blue cards + timestamp. */
-export function Bubble({ role, content, createdAt }: { role: AiMessage["role"]; content: string; createdAt: string }) {
+/** One chat bubble, screenshot style: soft green cards + timestamp. */
+export function Bubble({ role, content, createdAt, streaming = false }: { role: AiMessage["role"]; content: string; createdAt: string; streaming?: boolean }) {
   const isUser = role === "USER";
   const label = clockLabel(createdAt);
   return (
@@ -59,13 +59,14 @@ export function Bubble({ role, content, createdAt }: { role: AiMessage["role"]; 
       <div className={cn("max-w-[85%] sm:max-w-[78%]", isUser && "flex flex-col items-end")}>
         <div
           className={cn(
-            "px-4 py-3 text-sm leading-relaxed",
+            "px-4 py-3 text-sm leading-relaxed transition-colors",
             isUser
               ? "rounded-2xl rounded-br-md bg-primary-100/80 text-heading"
-              : "rounded-2xl rounded-bl-md bg-primary-50/70 text-body",
+              : `rounded-2xl rounded-bl-md bg-primary-50/70 text-body ${streaming ? "animate-pulse" : ""}`,
           )}
         >
           <FormattedContent content={content} />
+          {streaming && <span className="inline-block animate-ping opacity-75" aria-hidden="true">…</span>}
         </div>
         {label ? <p className="mt-1 px-1 text-[11px] text-muted tabular-nums">{label}</p> : null}
       </div>
