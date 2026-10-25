@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   BarChart3, BookOpen, CalendarDays, ChevronDown, ClipboardList,
   CloudUpload, FileMusic, Flower2, HelpCircle, History, Home, Layers, Leaf, LogOut, Menu,
-  Settings, Sparkles, Trophy, User, Video, Wind, X, Bell,
+  Settings, Sparkles, Trophy, User, Video, Wind, X,
 } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
@@ -171,15 +171,6 @@ function AppMain({ pathname, displayName, isAdmin, onMenu, children }: { pathnam
             <Link href="/" className="rounded-lg p-1.5 lg:hidden" aria-label="PranaVeda home"><Logo markOnly /></Link>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Bell — visual only for now; no notification backend exists yet. */}
-            <button
-              type="button"
-              aria-label="Notifications (none yet)"
-              className="relative inline-flex size-10 items-center justify-center rounded-full text-body transition-colors hover:bg-primary-50 hover:text-primary-700"
-            >
-              <Bell className="size-5" aria-hidden="true" />
-              <span className="absolute top-2 right-2.5 size-1.5 rounded-full bg-primary-500" aria-hidden="true" />
-            </button>
             <span className="hidden h-6 w-px bg-border-soft sm:block" aria-hidden="true" />
             <div ref={menuRef} className="relative">
               <button
@@ -194,9 +185,6 @@ function AppMain({ pathname, displayName, isAdmin, onMenu, children }: { pathnam
                 <span className="hidden max-w-28 truncate text-sm font-medium text-body sm:inline">{displayName}</span>
                 {/* Role chip — the mockup shows "Administrator" next to the name. */}
                 <span className="hidden items-center gap-1.5 lg:inline-flex">
-                  <span className="rounded-full bg-primary-50 px-2.5 py-1 text-xs font-medium text-primary-700">
-                    {roleLabel}
-                  </span>
                 </span>
                 <ChevronDown className={cn("hidden size-4 text-muted transition-transform sm:inline", menuOpen && "rotate-180")} aria-hidden="true" />
               </button>

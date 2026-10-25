@@ -71,14 +71,10 @@ export function AiChat() {
     const tempId = appendStreamingBubble();
 
     try {
-      await aiApi.streamChat(accessToken, message, cid, language, (chunk) => {
+      const { conversationId } = await aiApi.streamChat(accessToken, message, cid, language, (chunk) => {
         updateStreamingBubble(chunk);
       });
-
-      // Fetch the persisted conversation to get the real IDs and full history.
-      const res = await aiApi.chat(accessToken, message, cid, language);
-      setCid(res.conversationId ?? null);
-      setMessages(res.messages);
+      setCid(conversationId ?? null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "The assistant is unavailable right now.");
       // Remove the incomplete streaming bubble on error.
@@ -100,13 +96,13 @@ export function AiChat() {
         {/* Language selector bar */}
         <div className="px-4 py-2 sm:px-5 border-b border-border-soft/50 bg-surface/50 backdrop-blur-sm">
           <span className="text-[11px] font-medium text-muted uppercase tracking-wider">Reply language</span>
-          <div className="mt-1 flex items-center gap-2">
+          <div className="mt-1 flex items-center gap-1.5 overflow-x-auto py-1 pr-1 [overflow-x:hidden] sm:gap-2 sm:py-0">
             <button
               type="button"
               onClick={() => setLanguage(null)}
               aria-label="Auto-detect language"
               aria-pressed={!language}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${!language ? "bg-primary-100 text-primary-700" : "text-muted hover:bg-primary-50"}`}
+              className={`shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-medium transition-colors sm:px-3 sm:py-1 sm:text-xs ${!language ? "bg-primary-100 text-primary-700" : "text-muted hover:bg-primary-50"}`}
             >
               Auto
             </button>
@@ -117,12 +113,7 @@ export function AiChat() {
                 onClick={() => setLanguage(lng.code)}
                 aria-label={`Reply in ${lng.label}`}
                 aria-pressed={language === lng.code}
-                className={cn(
-                  "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                  language === lng.code
-                    ? "bg-primary-100 text-primary-700"
-                    : "text-muted hover:bg-primary-50",
-                )}
+                className={`shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-medium transition-colors sm:px-3 sm:py-1 sm:text-xs ${language === lng.code ? "bg-primary-100 text-primary-700" : "text-muted hover:bg-primary-50"}`}
               >
                 {lng.label}
               </button>
@@ -168,7 +159,7 @@ export function AiChat() {
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(input); } }}
               rows={1}
               placeholder="Type your message…"
-              className="max-h-32 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-heading placeholder:text-muted focus:outline-none"
+              className="max-h-32 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-heading placeholder:text-muted focus-visible:ring-2 focus-visible:ring-primary-200 focus-visible:border-primary-300 rounded-lg"
             />
             <VoiceInputButton
               language={language ?? "en"}

@@ -95,7 +95,7 @@ export function LibraryFilters(props: LibraryFiltersProps) {
             onChange={(e) => onQInput(e.target.value)}
             placeholder="Search asanas…"
             aria-label="Search the yoga library"
-            className="h-11 w-full rounded-xl border border-border-soft bg-surface pr-3 pl-9 text-sm text-heading placeholder:text-muted focus:border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-200"
+            className="h-11 w-full max-w-xs sm:w-full rounded-xl border border-border-soft bg-surface pr-3 pl-9 text-sm text-heading placeholder:text-muted focus:border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-200"
           />
         </div>
         <button

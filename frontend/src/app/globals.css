@@ -19,11 +19,12 @@
   --color-primary-800: #0d3c2d;
   --color-primary-900: #07251d;
 
-  /* Surfaces & neutrals */
-  --color-surface: #ffffff;
-  --color-surface-tint: #f8fbf9;
-  --color-surface-tint-2: #eef7f2;
-  --color-border-soft: #d9eae2;
+  /* Surfaces & neutrals - kept deliberately soft/quiet */
+  --color-surface: #fafdfc;
+  --color-surface-tint: #f0f7f4;
+  --color-surface-tint-2: #e8f1ec;
+  --color-surface-tint-3: #dcf2ea;
+  --color-border-soft: #c9e2d6;
 
   /* Text */
   --color-heading: #1a2e25;
@@ -39,6 +40,11 @@
 
   /* Primary CTA gradient */
   --background-image-gradient-primary: linear-gradient(135deg, #2f8b66 0%, #1d6f54 100%);
+
+  /* Light, calm gradient surfaces for cards/components (soft sage ivory) */
+  --background-image-gradient-card: linear-gradient(135deg, #f0f7f4 0%, #e8f1ec 55%, #eaf6ee 100%);
+  --background-image-gradient-subtle: linear-gradient(145deg, #f8fbf9 0%, #eef7f2 100%);
+  --background-image-gradient-interactive: linear-gradient(145deg, #f0f7f4 0%, #eef7f2 100%);
 
   --font-sans: var(--font-geist-sans);
 
@@ -74,6 +80,40 @@ svg,
 video,
 canvas {
   max-width: 100%;
+}
+
+@utility bg-surface {
+  /* Light sage gradient instead of flat white, applied across all card surfaces */
+  background-image: var(--background-image-gradient-card);
+}
+@utility bg-surface-tint {
+  /* Softer gradient variant for secondary surfaces/chips */
+  background-image: var(--background-image-gradient-subtle);
+}
+@utility bg-surface-tint-2 {
+  background-image: var(--background-image-gradient-subtle);
+}
+@utility bg-surface-tint-3 {
+  background-image: linear-gradient(145deg, #eaf6ee 0%, #e8f1ec 55%, #f0f7f4 100%);
+}
+
+@utility bg-gradient-card {
+  background-image: var(--background-image-gradient-card);
+}
+@utility bg-gradient-subtle {
+  background-image: var(--background-image-gradient-subtle);
+}
+@utility bg-gradient-light {
+  /* Very light surface tint - for overlays/translucent effects */
+  background-image: linear-gradient(180deg, #fafdfc 0%, #f0f7f4 100%);
+}
+@utility bg-gradient-lighter {
+  /* Even lighter - for modal backs/dialogs */
+  background-image: linear-gradient(180deg, #ffffff 0%, #fafdfc 100%);
+}
+@utility bg-gradient-soft {
+  /* Soft sage gradient - primary card surface */
+  background-image: var(--background-image-gradient-card);
 }
 
 /* Hide scrollbars for horizontal chip rails while keeping scroll. */

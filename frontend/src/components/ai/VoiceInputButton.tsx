@@ -139,36 +139,10 @@ export function VoiceInputButton({
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (animationRef.current) clearInterval(animationRef.current);
-    };
-  }, []);
-
-  if (supported === false) {
-    return (
-      <button
-        type="button"
-        disabled
-        aria-label="Voice input not supported"
-        title="Voice input not supported in this browser"
-        className={cn(
-          "inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-tint/60 text-muted disabled:opacity-40",
-          className,
-        )}
-      >
-        <MicOff className="size-4.5" aria-hidden="true" />
-      </button>
-    );
-  }
-
   return (
     <button
       type="button"
       onClick={() => (listening ? stop() : start())}
-      onMouseDown={() => setListening((l) => (l ? l : true))} // immediate visual on press
-      onMouseUp={stop}
-      onMouseLeave={stop}
       aria-label={listening ? "Stop voice input" : "Start voice input"}
       aria-pressed={listening}
       title={listening ? "Listening…" : "Voice input"}

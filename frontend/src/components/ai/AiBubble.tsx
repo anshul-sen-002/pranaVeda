@@ -1,9 +1,10 @@
 "use client";
 
-import { Bot, User } from "lucide-react";
-
+import { Bot, Speaker, User, VolumeX } from "lucide-react";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import type { AiMessage } from "@/lib/api/ai";
 import { cn } from "@/lib/cn";
+import { useEffect, useState } from "react";
 
 /** Local clock label for a message (backend `createdAt` is UTC ISO). */
 export function clockLabel(iso: string): string {
@@ -44,10 +45,50 @@ export function FormattedContent({ content }: { content: string }) {
   );
 }
 
+/** Speaker toggle for an AI assistant message: reads the bubble aloud via Web Speech API. */
+export function SpeakerToggle({ content, supported }: { content: string; supported: boolean }) {
+  const speech = useSpeechSynthesis();
+  const [speaking, setSpeaking] = useState(false);
+
+  const speak = () => {
+    if (speech.speaking) {
+      speech.cancel();
+      setSpeaking(false);
+    } else {
+      speech.speak(content);
+      setSpeaking(true);
+    }
+  };
+
+  useEffect(() => {
+    if (!speech.speaking) setSpeaking(false);
+  }, [speech.speaking]);
+
+  if (!supported) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={speak}
+      aria-label={speaking ? "Stop reading aloud" : "Read aloud"}
+      aria-pressed={speaking}
+      className="shrink-0 size-7 rounded-full border border-border-soft bg-surface p-1 text-muted transition-colors hover:bg-primary-50 hover:text-primary-700 focus-visible:ring-2 focus-visible:ring-primary-200"
+    >
+      {speaking ? (
+        <VolumeX className="size-4" aria-hidden="true" />
+      ) : (
+        <Speaker className="size-4" aria-hidden="true" />
+      )}
+    </button>
+  );
+}
+
 /** One chat bubble, screenshot style: soft green cards + timestamp. */
 export function Bubble({ role, content, createdAt, streaming = false }: { role: AiMessage["role"]; content: string; createdAt: string; streaming?: boolean }) {
   const isUser = role === "USER";
   const label = clockLabel(createdAt);
+  const speech = useSpeechSynthesis();
+
   return (
     <div className={cn("flex gap-2.5", isUser && "flex-row-reverse")}>
       <span
@@ -68,6 +109,9 @@ export function Bubble({ role, content, createdAt, streaming = false }: { role: 
           <FormattedContent content={content} />
           {streaming && <span className="inline-block animate-ping opacity-75" aria-hidden="true">…</span>}
         </div>
+        {!isUser && !streaming && (
+          <SpeakerToggle content={content} supported={speech.supported} />
+        )}
         {label ? <p className="mt-1 px-1 text-[11px] text-muted tabular-nums">{label}</p> : null}
       </div>
     </div>

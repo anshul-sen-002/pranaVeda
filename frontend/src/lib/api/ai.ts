@@ -78,7 +78,7 @@ export const aiApi = {
     conversationId?: number | null,
     language?: string | null,
     onChunk?: (chunk: string) => void,
-  ): Promise<AiChatResponse> {
+  ): Promise<{ conversationId: number | null }> {
     const controller = new AbortController();
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080"}/api/v1/ai/chat/stream`, {
       method: "POST",
@@ -100,7 +100,6 @@ export const aiApi = {
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
-    let fullReply = "";
     let conversationIdResult: number | null = null;
 
     try {
@@ -111,18 +110,31 @@ export const aiApi = {
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? ""; // keep incomplete line in buffer
 
+        let currentEvent = "message";
         for (const line of lines) {
           const trimmed = line.trim();
+          if (trimmed.startsWith("event:")) {
+            currentEvent = trimmed.slice(6).trim();
+            continue;
+          }
           if (!trimmed.startsWith("data:")) continue;
           const payload = trimmed.slice(5).trim();
           if (payload === "[DONE]") continue;
+          if (currentEvent === "conversation-id") {
+            try {
+              conversationIdResult = Number(payload);
+              if (!Number.isFinite(conversationIdResult)) conversationIdResult = null;
+            } catch {
+              // Ignore unparseable conversation id.
+            }
+            continue;
+          }
           try {
             const json = JSON.parse(payload);
             const choices = json.choices;
             if (Array.isArray(choices) && choices.length > 0) {
               const delta = choices[0].delta;
               if (delta && typeof delta.content === "string" && delta.content) {
-                fullReply += delta.content;
                 onChunk?.(delta.content);
               }
             }
@@ -135,13 +147,6 @@ export const aiApi = {
       reader.releaseLock();
     }
 
-    // Return a minimal response; the caller merges chunks into local state.
-    return {
-      conversationId: conversationIdResult,
-      reply: fullReply,
-      model: null,
-      createdAt: null,
-      messages: [],
-    };
+    return { conversationId: conversationIdResult };
   },
 };

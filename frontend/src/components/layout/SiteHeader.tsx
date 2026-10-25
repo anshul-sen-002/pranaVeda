@@ -61,7 +61,7 @@ export function SiteHeader() {
       className={[
         "sticky top-0 z-40 transition-colors duration-300",
         scrolled || menuOpen
-          ? "border-b border-border-soft bg-surface/85 backdrop-blur-md"
+          ? "border-b border-border-soft bg-surface backdrop-blur-md"
           : "border-b border-transparent bg-transparent",
       ].join(" ")}
     >
@@ -84,7 +84,7 @@ export function SiteHeader() {
           {signedIn ? (
             <>
               <span className="hidden max-w-32 truncate text-sm text-body sm:inline" title={user?.email ?? ""}>
-                {user?.displayName?.trim() || user?.email}
+                {user?.displayName?.trim()}
               </span>
               <LinkButton href="/dashboard" size="sm" className="hidden sm:inline-flex">
                 Dashboard
@@ -121,7 +121,7 @@ export function SiteHeader() {
 
       {/* Mobile panel */}
       {menuOpen ? (
-        <nav id="mobile-nav" aria-label="Mobile" className="border-t border-border-soft bg-surface/95 backdrop-blur-md md:hidden">
+        <nav id="mobile-nav" aria-label="Mobile" className="border-t border-border-soft bg-gradient-subtle backdrop-blur-md md:hidden">
           <ul className="mx-auto max-w-6xl space-y-1 px-5 py-4 sm:px-8">
             {[
               { href: "/yoga", label: "Yoga" },
@@ -176,3 +176,7 @@ function HeaderLink({ href, children }: { href: string; children: React.ReactNod
     </a>
   );
 }
+
+
+
+

@@ -117,7 +117,7 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
             onChange={(e) => setQInput(e.target.value)}
             placeholder="Search poses, focus areas, or difficulty…"
             aria-label="Search yoga poses"
-            className="h-11 w-full rounded-full border border-border-soft bg-surface pr-4 pl-11 text-sm text-heading placeholder:text-muted focus:border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-200"
+            className="h-11 w-full max-w-xs sm:w-full rounded-full border border-border-soft bg-surface pr-4 pl-11 text-sm text-heading placeholder:text-muted focus:border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-200"
           />
         </div>
 

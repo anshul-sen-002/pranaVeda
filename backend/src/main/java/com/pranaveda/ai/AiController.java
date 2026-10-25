@@ -48,7 +48,7 @@ public class AiController {
         SseEmitter emitter = new SseEmitter(30_000L);
         List<String> chunks = new CopyOnWriteArrayList<>();
 
-        aiService.streamChat(request, chunk -> {
+        AiChatResponse response = aiService.streamChat(request, chunk -> {
             chunks.add(chunk);
             try {
                 emitter.send(SseEmitter.event().data(chunk));
@@ -62,6 +62,15 @@ public class AiController {
             emitter.send(SseEmitter.event().data("[DONE]"));
         } catch (Exception ignored) {
             // Ignore.
+        }
+
+        // Send the conversation id so the client can continue the thread.
+        if (response.conversationId() != null) {
+            try {
+                emitter.send(SseEmitter.event().name("conversation-id").data(String.valueOf(response.conversationId())));
+            } catch (Exception ignored) {
+                // Ignore.
+            }
         }
         emitter.complete();
 
