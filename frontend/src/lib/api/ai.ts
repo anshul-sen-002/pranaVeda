@@ -94,7 +94,21 @@ export const aiApi = {
 
     if (!res.ok || !res.body) {
       const text = await res.text().catch(() => "");
-      throw new Error(`Stream failed: ${res.status} ${text}`);
+      // Extract user-friendly message from backend error, hiding internal details
+      let userMessage = "The assistant is unavailable right now.";
+      try {
+        const errorBody = JSON.parse(text);
+        // Handle token expired - show sign-in prompt style message
+        if (errorBody?.code === "TOKEN_EXPIRED" || errorBody?.status === 401) {
+          userMessage = "Your session has expired. Please sign in again.";
+        } else if (errorBody?.message) {
+          // Don't expose internal error details to the user
+          userMessage = "The assistant is unavailable right now.";
+        }
+      } catch {
+        // If we can't parse the error, use generic message
+      }
+      throw new Error(userMessage);
     }
 
     const reader = res.body.getReader();
@@ -129,18 +143,38 @@ export const aiApi = {
             }
             continue;
           }
+          // The backend emits plain-text SSE deltas (e.g. `data: Hello`).
+          // Tolerate OpenAI-style JSON (`data: {"choices":[...]}`) too so the
+          // parser works with either shape. Non-JSON payloads are treated as
+          // plain text chunks and streamed to the UI.
+          let parsed: unknown = null;
           try {
-            const json = JSON.parse(payload);
-            const choices = json.choices;
+            parsed = JSON.parse(payload);
+          } catch {
+            // Not JSON - treat as a plain-text content delta below.
+          }
+          let contentFromJson: string | null = null;
+          if (parsed !== null && typeof parsed === "object") {
+            const choices = (parsed as { choices?: unknown }).choices;
             if (Array.isArray(choices) && choices.length > 0) {
-              const delta = choices[0].delta;
-              if (delta && typeof delta.content === "string" && delta.content) {
-                onChunk?.(delta.content);
+              const first = choices[0];
+              const delta =
+                first && typeof first === "object"
+                  ? (first as { delta?: unknown }).delta
+                  : undefined;
+              if (delta && typeof delta === "object") {
+                const c = (delta as { content?: unknown }).content;
+                if (typeof c === "string" && c) contentFromJson = c;
               }
             }
-          } catch {
-            // Skip malformed SSE data lines.
           }
+          if (contentFromJson) {
+            onChunk?.(contentFromJson);
+          } else if (parsed === null) {
+            // Plain-text chunk from our backend.
+            if (payload) onChunk?.(payload);
+          }
+          // Valid JSON that doesn't match the expected shape is skipped.
         }
       }
     } finally {

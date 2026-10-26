@@ -54,12 +54,12 @@ export function Hero() {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-2xl"
         >
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-surface px-3.5 py-1.5 text-xs font-medium text-primary-700">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-surface px-3.5 py-1.5 text-xs font-medium text-primary-700 shadow-sm">
             <Sparkles className="size-3.5" aria-hidden="true" />
             Yoga, breath &amp; calm in one place
           </span>
 
-          <h1 className="mt-6 text-4xl font-semibold tracking-tight text-balance text-heading sm:text-5xl lg:text-6xl">
+          <h1 className="mt-5 text-4xl font-bold tracking-tight text-balance text-heading sm:text-5xl lg:text-6xl">
             {signedIn && firstName ? (
               <>Welcome back, {firstName}. Let&apos;s breathe.</>
             ) : (
@@ -79,21 +79,30 @@ export function Hero() {
             save routines, track streaks, and make it yours.
           </p>
 
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <LinkButton href={signedIn ? "/dashboard" : "/register"} size="lg" className="sm:w-auto">
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
+            <LinkButton
+              href={signedIn ? "/dashboard" : "/register"}
+              size="lg"
+              className="sm:w-auto whitespace-nowrap"
+            >
               {signedIn ? "Resume your practice" : "Get started"}
               <ArrowRight className="size-4" aria-hidden="true" />
             </LinkButton>
 
             {signedIn ? null : (
-              <LinkButton href="/login" size="lg" variant="secondary" className="sm:w-auto">
+              <LinkButton
+                href="/login"
+                size="lg"
+                variant="secondary"
+                className="sm:w-auto whitespace-nowrap"
+              >
                 Sign in
               </LinkButton>
             )}
 
             <Link
               href="/yoga"
-              className="text-sm font-medium text-body underline-offset-4 transition-colors hover:text-primary-700 hover:underline sm:ml-2"
+              className="text-sm font-medium text-body underline-offset-4 transition-colors hover:text-primary-700 hover:underline sm:ml-2 whitespace-nowrap"
             >
               Browse content without an account
             </Link>

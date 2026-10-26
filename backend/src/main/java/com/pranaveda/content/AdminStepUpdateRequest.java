@@ -1,5 +1,7 @@
 package com.pranaveda.content;
 
+import java.util.List;
+
 import jakarta.validation.constraints.Size;
 
 /**
@@ -9,5 +11,21 @@ import jakarta.validation.constraints.Size;
  */
 public record AdminStepUpdateRequest(
     @Size(max = 300) String caption,
-    @Size(max = 2000) String instruction) {
+    @Size(max = 2000) String instruction,
+    StepMediaType mediaType,
+    String coverImageUrl,
+    String imageUrl,
+    List<String> imageUrls,
+    String videoUrl,
+    String audioUrl) {
+
+    public AdminStepUpdateRequest {
+        caption = caption == null ? null : caption.trim();
+        instruction = instruction == null ? null : instruction.trim();
+        coverImageUrl = coverImageUrl == null ? null : coverImageUrl.trim();
+        imageUrl = imageUrl == null ? null : imageUrl.trim();
+        videoUrl = videoUrl == null ? null : videoUrl.trim();
+        audioUrl = audioUrl == null ? null : audioUrl.trim();
+        imageUrls = imageUrls == null ? List.of() : imageUrls;
+    }
 }

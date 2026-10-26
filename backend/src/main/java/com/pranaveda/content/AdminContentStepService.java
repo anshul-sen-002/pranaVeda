@@ -87,24 +87,9 @@ public class AdminContentStepService {
         step.setCaption(safeCaption);
         step.setInstruction(safeInstruction);
         step.setInstructionSource(safeInstruction == null ? null : InstructionSource.ADMIN);
+        step.setMediaType(StepMediaType.IMAGE);
         return ContentStepDto.from(stepRepository.save(step));
     }
-
-    @Transactional
-    public ContentStepDto update(long contentId, long stepId, AdminStepUpdateRequest request) {
-        ContentStep step = requireStep(contentId, stepId);
-        if (request.caption() != null) {
-            step.setCaption(checkedCaption(request.caption()));
-        }
-        if (request.instruction() != null) {
-            String text = checkedInstruction(request.instruction());
-            step.setInstruction(text);
-            // An admin edit always supersedes an AI draft (review-before-publish).
-            step.setInstructionSource(text == null ? null : InstructionSource.ADMIN);
-        }
-        return ContentStepDto.from(stepRepository.save(step));
-    }
-
 
     /** Renumbers steps 0..n-1 in the requested order. Validates the whole list. */
     @Transactional
@@ -165,6 +150,24 @@ public class AdminContentStepService {
             step.setInstructionSource(InstructionSource.AI);
         }
         return toDtos(stepRepository.saveAll(steps));
+    }
+
+    /** Updates an existing step's media and narration fields. */
+    @Transactional
+    public ContentStepDto update(long contentId, long stepId, AdminStepUpdateRequest request) {
+        ContentStep step = requireStep(contentId, stepId);
+        if (request.mediaType() != null) step.setMediaType(request.mediaType());
+        if (request.coverImageUrl() != null) step.setCoverImageUrl(request.coverImageUrl());
+        if (request.imageUrl() != null) step.setImageUrl(request.imageUrl());
+        if (request.videoUrl() != null) step.setVideoUrl(request.videoUrl());
+        if (request.audioUrl() != null) step.setAudioUrl(request.audioUrl());
+        step.setImageUrls(request.imageUrls());
+        if (request.caption() != null) step.setCaption(request.caption());
+        if (request.instruction() != null) {
+            step.setInstruction(request.instruction());
+            step.setInstructionSource(InstructionSource.ADMIN);
+        }
+        return ContentStepDto.from(stepRepository.save(step));
     }
 
     /** Deletes the step, then its Cloudinary image after ownership validation. */

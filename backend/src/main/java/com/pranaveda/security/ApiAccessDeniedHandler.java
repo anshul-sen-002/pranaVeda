@@ -36,6 +36,7 @@ public class ApiAccessDeniedHandler implements AccessDeniedHandler {
             Instant.now(), request.getRequestURI(), MDC.get(CorrelationIdFilter.MDC_KEY), null);
         response.setStatus(ErrorCode.FORBIDDEN.httpStatus());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
         response.getOutputStream().write(
             objectMapper.writeValueAsString(error).getBytes(StandardCharsets.UTF_8));
     }

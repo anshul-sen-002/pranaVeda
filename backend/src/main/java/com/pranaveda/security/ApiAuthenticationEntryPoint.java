@@ -44,6 +44,7 @@ public class ApiAuthenticationEntryPoint implements AuthenticationEntryPoint {
             code, message, Instant.now(), request.getRequestURI(), MDC.get(CorrelationIdFilter.MDC_KEY), null);
         response.setStatus(code.httpStatus());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
         response.getOutputStream().write(
             objectMapper.writeValueAsString(error).getBytes(StandardCharsets.UTF_8));
     }

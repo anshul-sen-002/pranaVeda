@@ -1,8 +1,11 @@
 package com.pranaveda.content;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -10,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -19,15 +23,9 @@ import org.hibernate.annotations.Check;
 import org.hibernate.annotations.Checks;
 
 /**
- * One ordered image + narration step of a guided pose (feature: guided yoga
- * pose with voice narration). Mirrors the {@code content_item_facets} pattern:
- * a child row keyed by {@code content_id}, never a client-supplied target.
- *
- * <p>The image itself lives in Cloudinary; only its delivery URL and generated
- * public id are stored here ({@code media_asset_id} links back to
- * {@code media_assets} for lifecycle/ownership). The narration {@code
- * instruction} is plain text read aloud by the browser - no audio files are
- * ever generated or stored.
+ * One ordered step of a guided pose tutorial (feature: guided yoga pose with
+ * voice narration). Each step carries exactly one media type plus its own
+ * separate cover image. Media is served via Cloudinary delivery URLs.
  *
  * <p>Schema is Hibernate-owned from this mapping (application.properties
  * {@code spring.jpa.hibernate.ddl-auto=update}); no migration tool is used in
@@ -41,6 +39,7 @@ import org.hibernate.annotations.Checks;
         @Index(name = "ix_content_steps_content", columnList = "content_id")})
 @Checks({
     @Check(constraints = "step_order >= 0"),
+    @Check(constraints = "media_type IS NULL OR media_type IN ('IMAGE', 'VIDEO', 'AUDIO')"),
     @Check(constraints = "instruction_source IS NULL OR instruction_source IN ('AI', 'ADMIN')")})
 public class ContentStep {
 
@@ -58,8 +57,32 @@ public class ContentStep {
     @Column(name = "step_order", nullable = false)
     private int stepOrder;
 
-    @Column(name = "image_url", nullable = false, length = 500)
+    /** Which media kind this step plays. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "media_type", length = 16)
+    private StepMediaType mediaType;
+
+    /** Separate cover image for this step (Cloudinary delivery URL). */
+    @Column(name = "cover_image_url", length = 500)
+    private String coverImageUrl;
+
+    /** IMAGE: primary image URL (or first image of a slideshow). */
+    @Column(name = "image_url", length = 500)
     private String imageUrl;
+
+    /** IMAGE: all image URLs for the step slideshow (Cloudinary URLs). */
+    @ElementCollection
+    @jakarta.persistence.CollectionTable(name = "content_step_images", joinColumns = @JoinColumn(name = "step_id"))
+    @Column(name = "image_url", length = 500)
+    private List<String> imageUrls = new ArrayList<>();
+
+    /** VIDEO: Cloudinary delivery URL. */
+    @Column(name = "video_url", length = 500)
+    private String videoUrl;
+
+    /** AUDIO: Cloudinary delivery URL. */
+    @Column(name = "audio_url", length = 500)
+    private String audioUrl;
 
     /** Generated Cloudinary public id (never client-supplied); used for deletion. */
     @Column(name = "image_public_id", length = 255)
@@ -118,12 +141,52 @@ public class ContentStep {
         this.stepOrder = stepOrder;
     }
 
+    public StepMediaType getMediaType() {
+        return mediaType;
+    }
+
+    public void setMediaType(StepMediaType mediaType) {
+        this.mediaType = mediaType;
+    }
+
+    public String getCoverImageUrl() {
+        return coverImageUrl;
+    }
+
+    public void setCoverImageUrl(String coverImageUrl) {
+        this.coverImageUrl = coverImageUrl;
+    }
+
     public String getImageUrl() {
         return imageUrl;
     }
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public List<String> getImageUrls() {
+        return imageUrls;
+    }
+
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls != null ? imageUrls : new ArrayList<>();
+    }
+
+    public String getVideoUrl() {
+        return videoUrl;
+    }
+
+    public void setVideoUrl(String videoUrl) {
+        this.videoUrl = videoUrl;
+    }
+
+    public String getAudioUrl() {
+        return audioUrl;
+    }
+
+    public void setAudioUrl(String audioUrl) {
+        this.audioUrl = audioUrl;
     }
 
     public String getImagePublicId() {

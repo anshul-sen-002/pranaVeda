@@ -34,4 +34,17 @@ public enum ErrorCode {
     public int httpStatus() {
         return status.value();
     }
+
+    /**
+     * Maps an HTTP status code to the corresponding {@link ErrorCode}.
+     * Returns {@link #INTERNAL_ERROR} for unknown status codes.
+     */
+    public static ErrorCode fromHttpStatus(int httpStatus) {
+        for (ErrorCode code : values()) {
+            if (code.httpStatus() == httpStatus) {
+                return code;
+            }
+        }
+        return INTERNAL_ERROR;
+    }
 }

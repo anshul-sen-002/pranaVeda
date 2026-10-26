@@ -117,13 +117,31 @@ export interface ContentDetail {
 /** Who authored a step's narration text (backend InstructionSource). */
 export type InstructionSource = "AI" | "ADMIN";
 
-/** One ordered image + narration step of a guided pose (backend ContentStepDto). */
+/** Media kind of a guided step. */
+export type StepMediaType = "IMAGE" | "VIDEO" | "AUDIO";
+
+/** One ordered step of a guided pose tutorial (backend ContentStepDto).
+ *
+ * Each step carries exactly one media type plus its own separate cover image.
+ * Media is served via Cloudinary delivery URLs.
+ */
 export interface ContentStep {
   id: number;
   stepOrder: number;
-  imageUrl: string;
+  /** Which media kind this step plays. */
+  mediaType: StepMediaType;
+  /** Separate cover image for this step (Cloudinary URL). */
+  coverImageUrl: string | null;
+  /** IMAGE: single image URL (or first image of a slideshow). */
+  imageUrl: string | null;
+  /** IMAGE: all image URLs for the step slideshow (Cloudinary URLs). */
+  imageUrls: string[] | null;
+  /** VIDEO: Cloudinary delivery URL. */
+  videoUrl: string | null;
+  /** AUDIO: Cloudinary delivery URL. */
+  audioUrl: string | null;
   caption: string | null;
-  /** Null until an admin writes or generates it; publish requires it. */
+  /** Narration script read aloud by the browser's speech synthesis. Null until authored. */
   instruction: string | null;
   instructionSource: InstructionSource | null;
   updatedAt: string;

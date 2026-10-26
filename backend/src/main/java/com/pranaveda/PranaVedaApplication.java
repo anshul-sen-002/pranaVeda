@@ -10,8 +10,14 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
  * <p>Package layout and layering rules are defined in docs/architecture.md:
  * controllers stay thin, services own business + authorization rules,
  * repositories own persistence, entities are never exposed to clients.
+ *
+ * <p>{@code ErrorMvcAutoConfiguration} is excluded so that Spring Boot's
+ * {@code BasicErrorController} is not registered for {@code /error}. The API
+ * uses a custom {@link com.pranaveda.common.web.ErrorController} that returns
+ * JSON instead of HTML whitelabel error pages, preventing
+ * "response has already been committed" errors.
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = {org.springframework.boot.webmvc.autoconfigure.error.ErrorMvcAutoConfiguration.class})
 @ConfigurationPropertiesScan // binds @ConfigurationProperties records (app.media.*, app.cloudinary.*, app.ai.*)
 public class PranaVedaApplication {
 

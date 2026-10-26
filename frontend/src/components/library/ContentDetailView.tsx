@@ -13,7 +13,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import { CONTENT_TYPE_META, DIFFICULTY_META } from "@/lib/library/contentMeta";
 import type { ContentDetail } from "@/lib/api/types";
-import { GuidedPractice } from "@/components/guided/GuidedPractice";
+import { StepTutorial } from "@/components/guided/StepTutorial";
 
 function Section({
   icon,
@@ -107,7 +107,7 @@ export function ContentDetailView({ detail }: { detail: ContentDetail }) {
           2.1); speech runs entirely in the browser. */}
       {detail.steps.length > 0 ? (
         <div className="mt-6">
-          <GuidedPractice steps={detail.steps} poseTitle={item.title} />
+          <StepTutorial steps={detail.steps} poseTitle={item.title} />
         </div>
       ) : null}
 
