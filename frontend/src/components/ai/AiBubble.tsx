@@ -103,11 +103,10 @@ export function Bubble({ role, content, createdAt, streaming = false }: { role: 
             "px-4 py-3 text-sm leading-relaxed transition-colors",
             isUser
               ? "rounded-2xl rounded-br-md bg-primary-100/80 text-heading"
-              : `rounded-2xl rounded-bl-md bg-primary-50/70 text-body ${streaming ? "animate-pulse" : ""}`,
+              : `rounded-2xl rounded-bl-md bg-primary-50/70 text-body`,
           )}
         >
           <FormattedContent content={content} />
-          {streaming && <span className="inline-block animate-ping opacity-75" aria-hidden="true">…</span>}
         </div>
         {!isUser && !streaming && (
           <SpeakerToggle content={content} supported={speech.supported} />

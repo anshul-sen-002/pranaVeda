@@ -33,7 +33,7 @@ Deliver a backend that:
 | 9 | Validation | Bean Validation on every request DTO | `agents.md` §3.3 |
 | 10 | API docs | springdoc-openapi **3.1.x** (Swagger UI) | Major version locked to Spring Boot 4 |
 | 11 | Media storage | `StorageService` interface: local filesystem in dev, S3-compatible later | `agents.md` §7 — swap providers without touching business code |
-| 12 | AI provider | `AiProvider` interface + `MockAiProvider` fallback until credentials exist | `agents.md` §2.14 — provider-independent |
+| 12 | AI provider | `AiProvider` interface + OpenRouter (server-side key) | `agents.md` §2.14 — provider-independent |
 | 13 | Posture coach | MediaPipe runs **entirely in the browser**; backend serves pose-rule configs and (optionally) compact session summaries only | `agents.md` §13 — no frames ever uploaded |
 | 14 | Rate limiting | `RateLimiter` interface, in-memory first, Redis later | `agents.md` §5 |
 
@@ -106,7 +106,7 @@ com.pranaveda
 ├── routine/           # personal routines and sequence items
 ├── audio/             # audio tracks, streaming/download rules, history
 ├── recommendation/    # personalized suggestions (opt-in profile data only)
-├── ai/                # AiProvider interface, mock impl, chat service, safety
+├── ai/                # AiProvider interface, OpenRouter provider, chat service, safety
 ├── posture/           # pose-rule configs + session summaries (agents.md §13)
 ├── admin/             # ADMIN-only controllers/analytics (thin; delegate to
 │                      # the same domain services - no duplicated rules)
@@ -298,9 +298,9 @@ public interface AiProvider {
 }
 ```
 
-- `MockAiProvider` returns a safe canned answer until real credentials exist
-  (Phase 7); changing providers later means one new implementation of this
-  interface — no business-code changes.
+- `AiProvider` is implemented by `OpenRouterProvider` (server-side key);
+  changing providers later means one new implementation of this interface
+  — no business-code changes.
 - Provider API keys live **only** in server-side environment/secrets, never in
   `NEXT_PUBLIC_*` variables or source (`agents.md` §2.14).
 - Safety rules are PranaVeda-owned code/system instructions in `ai/`, not
@@ -380,7 +380,7 @@ public interface AiProvider {
 | **4.5 — Posture coach start** | public `GET /posture/poses` rule configs (landmark-overlay prototype after media foundations, `agents.md` §13) |
 | **5 — Member features** | bookmarks, wellness profile + privacy controls, practice sessions, streaks/7-day challenge (timezone-aware, idempotent), routines, optional posture session summaries |
 | **6 — Calm music** | audio track APIs, streaming/download permissions, favorites/listening history |
-| **7 — AI companion** | `AiProvider` + mock, chat endpoint, grounding, safety/limits/timeouts, privacy controls |
+| **7 — AI companion** | `AiProvider` + OpenRouter, chat endpoint, grounding, safety/limits/timeouts, privacy controls |
 | **8 — Polish & release** | aggregate admin analytics, regression pass over every route/endpoint against the authorization matrix, deployment docs |
 
 Ordering follows `agents.md` §10 with §13 slotted after media foundations and

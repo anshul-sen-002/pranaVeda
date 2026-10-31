@@ -60,16 +60,6 @@ public class WellnessProfileService {
         return WellnessProfileDto.from(profiles.save(profile));
     }
 
-    /**
-     * Owner-scoped export of the caller's own data (agents.md 2.8 export right).
-     * Returns the same safe DTO the UI uses - never the raw entity or any other
-     * user's data.
-     */
-    @Transactional(readOnly = true)
-    public WellnessProfileDto export() {
-        return WellnessProfileDto.from(findOrCreate());
-    }
-
     /** Deletes the caller's profile. Idempotent - absent profile is a no-op. */
     @Transactional
     public void delete() {

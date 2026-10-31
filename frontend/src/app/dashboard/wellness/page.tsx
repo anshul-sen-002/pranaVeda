@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
 import { useCallback, useEffect, useState } from "react";
-import { Save, Sparkles, Download, Info } from "lucide-react";
+import { Save, User, Calendar, Trophy, Ruler, Scale, Clock, Globe, Moon, Zap, Smile, Activity, HeartPulse, Info } from "lucide-react";
 
 import { MemberGuard } from "@/components/auth/MemberGuard";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -25,10 +25,13 @@ import {
 const EXPERIENCE: Difficulty[] = ["BEGINNER", "INTERMEDIATE", "ADVANCED"];
 const PRACTICE_TIMES: PracticeTime[] = ["MORNING", "AFTERNOON", "EVENING", "FLEXIBLE"];
 
-/** Shared class for native selects/textareas to match the Input component. */
 const selectCls =
-  "h-11 w-full rounded-xl border border-border-soft bg-surface px-3 text-sm text-heading transition-colors duration-200 " +
-  "focus:border-primary-300 focus:ring-2 focus:ring-primary-200 focus:outline-none sm:h-12 sm:text-base";
+  "h-10 w-full rounded-xl border border-border-soft bg-surface px-3 text-sm text-heading transition-colors duration-200 " +
+  "focus:border-primary-300 focus:ring-2 focus:ring-primary-200 focus:outline-none sm:h-11 sm:text-base";
+
+const inputCls =
+  "h-10 w-full rounded-xl border border-border-soft bg-surface px-3 text-sm text-heading transition-colors duration-200 " +
+  "focus:border-primary-300 focus:ring-2 focus:ring-primary-200 focus:outline-none sm:h-11 sm:text-base";
 
 export default function WellnessPage() {
   return (
@@ -39,7 +42,6 @@ export default function WellnessPage() {
     </MemberGuard>
   );
 }
-
 function WellnessView() {
   const { accessToken } = useAuth();
   const [profile, setProfile] = useState<WellnessProfileDto | null>(null);
@@ -89,13 +91,54 @@ function WellnessView() {
   }, [accessToken]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (!accessToken) return;
+    let cancelled = false;
+    meApi
+      .wellnessProfile(accessToken)
+      .then((p) => {
+        if (cancelled) return;
+        setProfile(p);
+        setForm({
+          dateOfBirth: p.dateOfBirth,
+          heightValue: p.heightValue,
+          heightUnit: p.heightUnit,
+          weightValue: p.weightValue,
+          weightUnit: p.weightUnit,
+          experienceLevel: p.experienceLevel,
+          preferredSessionMinutes: p.preferredSessionMinutes,
+          practiceTime: p.practiceTime,
+          sleepQuality: p.sleepQuality,
+          energyLevel: p.energyLevel,
+          moodScore: p.moodScore,
+          flexibilityScore: p.flexibilityScore,
+          timezone: p.timezone,
+          constraintsNotes: p.constraintsNotes,
+          aiPersonalizationConsent: p.aiPersonalizationConsent,
+        });
+        setError(null);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        if (err instanceof ApiError && err.status === 404) {
+          setProfile(null);
+          setError(null);
+        } else {
+          setError(err instanceof ApiError ? err.message : "Could not load your profile.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken]);
 
   const set = <K extends keyof WellnessProfileRequest>(
     key: K,
     value: WellnessProfileRequest[K],
   ) => setForm((prev) => ({ ...prev, [key]: value }));
+
   const num = (v: string): number | null => (v.trim() === "" ? null : Number(v));
 
   const submit = async (e: React.FormEvent) => {
@@ -113,18 +156,6 @@ function WellnessView() {
       setError(err instanceof ApiError ? err.message : "Could not save your profile.");
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleExport = async () => {
-    if (!accessToken) return;
-    setError(null);
-    try {
-      await meApi.wellnessProfile(accessToken);
-      setError("Profile exported — copy the values above for your records.");
-      setTimeout(() => setError(null), 4000);
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Export failed.");
     }
   };
 
@@ -164,41 +195,44 @@ function WellnessView() {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-sm text-muted">Loading your wellness profile…</p>
+        <p className="text-sm text-muted">Loading your wellness profile�</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5 sm:space-y-6">
+    <div className="space-y-5 sm:space-y-6 max-w-3xl mx-auto">
       <PageHeader
         title="Wellness profile"
         subtitle="Everything is optional and stays private to you."
-        action={
-          <Button type="button" variant="secondary" size="sm" onClick={handleExport} disabled={deleting}>
-            <Download className="size-3.5" aria-hidden="true" />
-            Export
-          </Button>
-        }
       />
       {error ? <Alert tone="error">{error}</Alert> : null}
       {saved ? <Alert tone="success">Profile saved.</Alert> : null}
-      <form onSubmit={submit} className="space-y-5 rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5 sm:p-6">
-
-        <fieldset>
-          <legend className="mb-3 text-xs font-semibold tracking-wider text-muted uppercase">
+      <form onSubmit={submit} className="space-y-6 rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5 sm:p-6">
+        <fieldset className="border-0 p-0 m-0">
+          <legend className="flex items-center gap-2 mb-4 text-xs font-semibold tracking-wider text-muted uppercase">
+            <User className="size-4 text-primary-600" aria-hidden="true" />
             Your details
           </legend>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input
-              label="Date of birth"
-              type="date"
-              value={form.dateOfBirth ?? ""}
-              onChange={(e) => set("dateOfBirth", e.target.value || null)}
-              hint="We derive your age from this — it is never stored separately."
-            />
-            <div>
+            <div className="col-span-2 sm:col-span-1">
+              <label htmlFor="date-of-birth" className="mb-1.5 block text-sm font-semibold text-heading">
+                <Calendar className="mr-1.5 size-4 text-primary-600" aria-hidden="true" />
+                Date of birth
+              </label>
+              <Input
+                id="date-of-birth"
+                type="date"
+                value={form.dateOfBirth ?? ""}
+                onChange={(e) => set("dateOfBirth", e.target.value || null)}
+                label=""
+                hint="We derive your age from this — it is never stored separately."
+                className="h-11 sm:h-12"
+              />
+            </div>
+            <div className="col-span-2 sm:col-span-1">
               <label htmlFor="experience-level" className="mb-1.5 block text-sm font-semibold text-heading">
+                <Trophy className="mr-1.5 size-4 text-primary-600" aria-hidden="true" />
                 Experience level
               </label>
               <select
@@ -213,18 +247,21 @@ function WellnessView() {
                 ))}
               </select>
             </div>
-            <div>
-              <span id="height-label" className="mb-1.5 block text-sm font-semibold text-heading">Height</span>
-              <div className="flex gap-2" role="group" aria-labelledby="height-label">
+            <div className="col-span-2 sm:col-span-1">
+              <div className="mb-1.5 block text-sm font-semibold text-heading flex items-center gap-1.5">
+                <Ruler className="size-4 text-primary-600" aria-hidden="true" />
+                Height
+              </div>
+              <div className="flex items-end gap-2">
                 <Input
-                  label="Height value"
+                  label=""
                   type="number"
                   step="0.1"
                   min="1"
                   value={form.heightValue ?? ""}
                   onChange={(e) => set("heightValue", num(e.target.value))}
                   placeholder="170"
-                  className="flex-1"
+                  className="flex-1 h-11 sm:h-12"
                 />
                 <div className="w-24 shrink-0">
                   <label htmlFor="height-unit" className="sr-only">Height unit</label>
@@ -240,18 +277,21 @@ function WellnessView() {
                 </div>
               </div>
             </div>
-            <div>
-              <span id="weight-label" className="mb-1.5 block text-sm font-semibold text-heading">Weight</span>
-              <div className="flex gap-2" role="group" aria-labelledby="weight-label">
+            <div className="col-span-2 sm:col-span-1">
+              <div className="mb-1.5 block text-sm font-semibold text-heading flex items-center gap-1.5">
+                <Scale className="size-4 text-primary-600" aria-hidden="true" />
+                Weight
+              </div>
+              <div className="flex items-end gap-2">
                 <Input
-                  label="Weight value"
+                  label=""
                   type="number"
                   step="0.1"
                   min="1"
                   value={form.weightValue ?? ""}
                   onChange={(e) => set("weightValue", num(e.target.value))}
                   placeholder="65"
-                  className="flex-1"
+                  className="flex-1 h-11 sm:h-12"
                 />
                 <div className="w-24 shrink-0">
                   <label htmlFor="weight-unit" className="sr-only">Weight unit</label>
@@ -267,17 +307,25 @@ function WellnessView() {
                 </div>
               </div>
             </div>
-            <Input
-              label="Preferred session length (minutes)"
-              type="number"
-              min={5}
-              max={240}
-              value={form.preferredSessionMinutes ?? ""}
-              onChange={(e) => set("preferredSessionMinutes", num(e.target.value))}
-              placeholder="20"
-            />
-            <div>
-              <label htmlFor="practice-time" className="mb-1.5 block text-sm font-semibold text-heading">
+            <div className="col-span-2">
+              <label className="mb-1.5 block text-sm font-semibold text-heading flex items-center gap-1.5">
+                <Clock className="mr-1.5 size-4 text-primary-600" aria-hidden="true" />
+                Preferred session length (minutes)
+              </label>
+              <Input
+                type="number"
+                min={5}
+                max={240}
+                value={form.preferredSessionMinutes ?? ""}
+                onChange={(e) => set("preferredSessionMinutes", num(e.target.value))}
+                placeholder="20"
+                label=""
+                className="h-11 sm:h-12"
+              />
+            </div>
+            <div className="col-span-2 sm:col-span-1">
+              <label htmlFor="practice-time" className="mb-1.5 block text-sm font-semibold text-heading flex items-center gap-1.5">
+                <Globe className="mr-1.5 size-4 text-primary-600" aria-hidden="true" />
                 Usual practice time
               </label>
               <select
@@ -292,42 +340,64 @@ function WellnessView() {
                 ))}
               </select>
             </div>
-            <Input
-              label="Timezone"
-              value={form.timezone ?? ""}
-              onChange={(e) => set("timezone", e.target.value || null)}
-              placeholder="e.g. Asia/Kolkata"
-              hint="Used for streak day boundaries — never for any health reading."
-            />
+            <div className="col-span-2 sm:col-span-1">
+              <label htmlFor="timezone" className="mb-1.5 block text-sm font-semibold text-heading flex items-center gap-1.5">
+                <Globe className="mr-1.5 size-4 text-primary-600" aria-hidden="true" />
+                Timezone
+              </label>
+              <Input
+                id="timezone"
+                value={form.timezone ?? ""}
+                onChange={(e) => set("timezone", e.target.value || null)}
+                placeholder="e.g. Asia/Kolkata"
+                hint="Used for streak day boundaries � never for any health reading."
+                label=""
+                className="h-11 sm:h-12"
+              />
+            </div>
           </div>
         </fieldset>
-
-        <fieldset>
-          <legend className="mb-3 text-xs font-semibold tracking-wider text-muted uppercase">
+        <fieldset className="border-0 p-0 m-0">
+          <legend className="flex items-center gap-2 mb-4 text-xs font-semibold tracking-wider text-muted uppercase">
+            <HeartPulse className="size-4 text-primary-600" aria-hidden="true" />
             How you feel (1 = low, 5 = high)
           </legend>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-4">
             {([
-              ["sleepQuality", "Sleep"],
-              ["energyLevel", "Energy"],
-              ["moodScore", "Mood"],
-              ["flexibilityScore", "Flexibility"],
-            ] as const).map(([key, label]) => (
-              <Input
-                key={key}
-                label={label}
-                type="number"
-                min={1}
-                max={5}
-                value={form[key] ?? ""}
-                onChange={(e) => set(key, num(e.target.value))}
-              />
-            ))}
+              ["sleepQuality", "Sleep", Moon],
+              ["energyLevel", "Energy", Zap],
+              ["moodScore", "Mood", Smile],
+              ["flexibilityScore", "Flexibility", Activity],
+            ] as const).map(([key, label, Icon]) => {
+              const val = form[key] ?? 0;
+              return (
+                <div key={key} className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-surface border border-border-soft hover:border-primary-200 transition-colors">
+                  <Icon className="size-5 text-primary-600" aria-hidden="true" />
+                  <span className="text-xs font-semibold text-heading">{label}</span>
+                  <div className="flex items-center gap-0.5 text-[10px] text-muted">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => set(key, n)}
+                        className={`w-4 h-4 rounded-full transition-colors ${
+                          val >= n
+                            ? "bg-primary-600 text-white text-[9px] font-bold"
+                            : "bg-surface/50 text-muted hover:bg-primary-50/40"
+                        }`}
+                        aria-label={`${label} ${n}`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </fieldset>
-
         <div>
-          <label htmlFor="constraints" className="mb-1.5 block text-sm font-semibold text-heading">
+          <label htmlFor="constraints" className="mb-1.5 mt-4 block text-sm font-semibold text-heading">
             Injuries or constraints (optional)
           </label>
           <textarea
@@ -336,10 +406,10 @@ function WellnessView() {
             value={form.constraintsNotes ?? ""}
             onChange={(e) => set("constraintsNotes", e.target.value || null)}
             placeholder="e.g. sensitive left knee"
-            className={selectCls + " h-auto py-2.5"}
+            className={inputCls + " h-auto py-2.5"}
           />
           <p className="mt-1.5 text-xs text-muted">
-            Used to soften recommendations — never a diagnosis.
+            Used to soften recommendations � never a diagnosis.
           </p>
         </div>
 
@@ -352,7 +422,7 @@ function WellnessView() {
           />
           <span className="text-sm leading-relaxed text-body">
             <span className="inline-flex items-center gap-1 font-medium text-heading">
-              <Sparkles className="size-4 text-primary-600" aria-hidden="true" />
+              <Info className="size-4 text-primary-600" aria-hidden="true" />
               Let the AI use my profile to personalise suggestions.
             </span>
             <span className="mt-1 block text-xs text-muted">
@@ -363,10 +433,9 @@ function WellnessView() {
 
         <Button type="submit" loading={saving} fullWidth className="sm:w-auto">
           <Save className="size-4" aria-hidden="true" />
-          {saving ? "Saving…" : "Save profile"}
+          {saving ? "Saving�" : "Save profile"}
         </Button>
       </form>
-
       {profile ? (
         <section
           aria-labelledby="snapshot-heading"
@@ -379,12 +448,12 @@ function WellnessView() {
           <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
             <div className="rounded-2xl bg-surface-tint px-3.5 py-3">
               <dt className="text-xs text-muted">Age</dt>
-              <dd className="mt-0.5 text-lg font-semibold text-heading">{profile.age ?? "—"}</dd>
+              <dd className="mt-0.5 text-lg font-semibold text-heading">{profile.age ?? "�"}</dd>
             </div>
             <div className="rounded-2xl bg-surface-tint px-3.5 py-3">
               <dt className="text-xs text-muted">BMI</dt>
               <dd className="mt-0.5 text-lg font-semibold text-heading">
-                {profile.bmiAvailable && profile.bmiOrNull != null ? profile.bmiOrNull : "—"}
+                {profile.bmiAvailable && profile.bmiOrNull != null ? profile.bmiOrNull : "�"}
               </dd>
             </div>
             <div className="rounded-2xl bg-surface-tint px-3.5 py-3">
@@ -398,7 +467,7 @@ function WellnessView() {
             <p className="mt-3 text-xs leading-relaxed text-muted">{BMI_DISCLAIMER}</p>
           ) : (
             <p className="mt-3 text-xs leading-relaxed text-muted">
-              Add your height and weight above to see a BMI estimate — always with its limits noted.
+              Add your height and weight above to see a BMI estimate � always with its limits noted.
             </p>
           )}
         </section>

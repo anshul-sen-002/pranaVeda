@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { AudioPlayerProvider } from "@/components/music/PlayerProvider";
-import { MiniPlayer } from "@/components/music/MiniPlayer";
 
 export const metadata: Metadata = {
   title: "Calm Music | PranaVeda",
@@ -13,7 +12,6 @@ export default function CalmMusicLayout({ children }: { children: ReactNode }) {
   return (
     <AudioPlayerProvider>
       {children}
-      <MiniPlayer />
     </AudioPlayerProvider>
   );
 }

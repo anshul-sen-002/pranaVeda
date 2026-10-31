@@ -115,6 +115,8 @@ export const aiApi = {
     const decoder = new TextDecoder();
     let buffer = "";
     let conversationIdResult: number | null = null;
+    let receivedContent = false;
+    let currentEvent = "message";
 
     try {
       while (true) {
@@ -124,9 +126,9 @@ export const aiApi = {
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? ""; // keep incomplete line in buffer
 
-        let currentEvent = "message";
         for (const line of lines) {
           const trimmed = line.trim();
+          if (trimmed === "") { currentEvent = "message"; continue; }
           if (trimmed.startsWith("event:")) {
             currentEvent = trimmed.slice(6).trim();
             continue;
@@ -134,6 +136,9 @@ export const aiApi = {
           if (!trimmed.startsWith("data:")) continue;
           const payload = trimmed.slice(5).trim();
           if (payload === "[DONE]") continue;
+          if (currentEvent === "error") {
+            throw new Error(payload || "The assistant is unavailable right now.");
+          }
           if (currentEvent === "conversation-id") {
             try {
               conversationIdResult = Number(payload);
@@ -169,16 +174,33 @@ export const aiApi = {
             }
           }
           if (contentFromJson) {
+            receivedContent = true;
             onChunk?.(contentFromJson);
           } else if (parsed === null) {
             // Plain-text chunk from our backend.
-            if (payload) onChunk?.(payload);
+            if (payload) { receivedContent = true; onChunk?.(payload); }
           }
           // Valid JSON that doesn't match the expected shape is skipped.
         }
       }
+    } catch (err) {
+      // Some runtimes (undici/Node, and occasionally browsers) throw a
+      // "terminated"/network error when the server closes the SSE stream
+      // after sending all data. If we already received content or a
+      // conversation id, treat that as a normal completion rather than
+      // failing the request.
+      const msg = err instanceof Error ? err.message : String(err);
+      const isTermination =
+        /terminat/i.test(msg) ||
+        /network/i.test(msg) ||
+        /aborted/i.test(msg) ||
+        /closed/i.test(msg);
+      if (!(isTermination && receivedContent)) {
+        throw err;
+      }
+      // Swallow benign stream-close errors.
     } finally {
-      reader.releaseLock();
+      try { reader.releaseLock(); } catch { /* ignore */ }
     }
 
     return { conversationId: conversationIdResult };

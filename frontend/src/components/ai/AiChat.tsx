@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { SendHorizonal } from "lucide-react";
+import { Bot, SendHorizonal } from "lucide-react";
 
 import { Bubble } from "@/components/ai/AiBubble";
 import { AiChatHeader } from "@/components/ai/AiChatHeader";
@@ -11,8 +11,7 @@ import { VoiceInputButton } from "@/components/ai/VoiceInputButton";
 import { WhatsAppTypingDots } from "@/components/ai/WhatsAppTypingDots";
 import { LotusMark } from "@/components/brand/LotusMark";
 import { useAuth } from "@/hooks/useAuth";
-import { aiApi, AI_MAX_MESSAGE_CHARS, AI_LANGUAGES, type AiMessage } from "@/lib/api/ai";
-import { cn } from "@/lib/cn";
+import { aiApi, AI_MAX_MESSAGE_CHARS, type AiMessage } from "@/lib/api/ai";
 
 /**
  * AI wellness companion chat with streaming responses, WhatsApp-style typing
@@ -23,25 +22,17 @@ export function AiChat() {
   const [messages, setMessages] = useState<AiMessage[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const [hasContent, setHasContent] = useState(false);
+  const [streamingId, setStreamingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cid, setCid] = useState<number | null>(null);
-  const [language, setLanguage] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const streamingIdRef = useRef<number | null>(null);
+  const messageIdCounterRef = useRef(0);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, streaming]);
-
-  const appendStreamingBubble = useCallback(() => {
-    const tempId = -Date.now();
-    setMessages((prev) => [
-      ...prev,
-      { id: tempId, role: "ASSISTANT", content: "", createdAt: new Date().toISOString() },
-    ]);
-    streamingIdRef.current = tempId;
-    return tempId;
-  }, []);
 
   const updateStreamingBubble = useCallback((chunk: string) => {
     setMessages((prev) =>
@@ -53,33 +44,53 @@ export function AiChat() {
 
   const finalizeStreaming = useCallback(() => {
     streamingIdRef.current = null;
+    setStreamingId(null);
     setStreaming(false);
   }, []);
 
   const send = async (text: string) => {
     const message = text.trim();
     if (!accessToken || !message || streaming) return;
+    const userId = -(++messageIdCounterRef.current);
     setStreaming(true);
+    setHasContent(false);
     setError(null);
     setInput("");
 
     setMessages((prev) => [
       ...prev,
-      { id: -prev.length - 1, role: "USER", content: message, createdAt: new Date().toISOString() },
+      { id: userId, role: "USER", content: message, createdAt: new Date().toISOString() },
     ]);
 
-    const tempId = appendStreamingBubble();
+    const tempId = -(++messageIdCounterRef.current);
+    streamingIdRef.current = tempId;
+    setStreamingId(tempId);
+    let firstChunk = true;
 
     try {
-      const { conversationId } = await aiApi.streamChat(accessToken, message, cid, language, (chunk) => {
-        updateStreamingBubble(chunk);
+      const { conversationId } = await aiApi.streamChat(accessToken, message, cid, null, (chunk) => {
+        if (firstChunk) {
+          firstChunk = false;
+          setHasContent(true);
+          setMessages((prev) => [
+            ...prev,
+            { id: tempId, role: "ASSISTANT", content: chunk, createdAt: new Date().toISOString() },
+          ]);
+        } else {
+          updateStreamingBubble(chunk);
+        }
       });
       setCid(conversationId ?? null);
     } catch (err) {
+      // Set error message and immediately clear streaming state so the error
+      // takes exclusive precedence over the typing indicator.
       setError(err instanceof Error ? err.message : "The assistant is unavailable right now.");
-      // Remove the incomplete streaming bubble on error.
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      setStreaming(false);
+      setStreamingId(null);
+      setHasContent(false);
     } finally {
+      // Still ensure cleanup even if catch logic misses something.
       finalizeStreaming();
     }
   };
@@ -92,34 +103,6 @@ export function AiChat() {
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[minmax(0,1fr)_21rem]">
       <section aria-label="AI wellness companion chat" className="flex min-h-[calc(100dvh-12rem)] flex-col overflow-hidden rounded-3xl border border-border-soft bg-surface sm:min-h-[calc(100dvh-13rem)]">
         <AiChatHeader />
-
-        {/* Language selector bar */}
-        <div className="px-4 py-2 sm:px-5 border-b border-border-soft/50 bg-surface/50 backdrop-blur-sm">
-          <span className="text-[11px] font-medium text-muted uppercase tracking-wider">Reply language</span>
-          <div className="mt-1 flex items-center gap-1.5 overflow-x-auto py-1 pr-1 [overflow-x:hidden] sm:gap-2 sm:py-0">
-            <button
-              type="button"
-              onClick={() => setLanguage(null)}
-              aria-label="Auto-detect language"
-              aria-pressed={!language}
-              className={`shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-medium transition-colors sm:px-3 sm:py-1 sm:text-xs ${!language ? "bg-primary-100 text-primary-700" : "text-muted hover:bg-primary-50"}`}
-            >
-              Auto
-            </button>
-            {AI_LANGUAGES.map((lng) => (
-              <button
-                key={lng.code}
-                type="button"
-                onClick={() => setLanguage(lng.code)}
-                aria-label={`Reply in ${lng.label}`}
-                aria-pressed={language === lng.code}
-                className={`shrink-0 inline-flex items-center justify-center whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-medium transition-colors sm:px-3 sm:py-1 sm:text-xs ${language === lng.code ? "bg-primary-100 text-primary-700" : "text-muted hover:bg-primary-50"}`}
-              >
-                {lng.label}
-              </button>
-            ))}
-          </div>
-        </div>
 
         <div ref={scrollRef} aria-live="polite" className="flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-5">
           {messages.length === 0 ? (
@@ -135,12 +118,18 @@ export function AiChat() {
               </div>
             </div>
           ) : (
-            messages.map((m) => <Bubble key={m.id} role={m.role} content={m.content} createdAt={m.createdAt} streaming={m.id === streamingIdRef.current} />)
+            messages.map((m) => <Bubble key={m.id} role={m.role} content={m.content} createdAt={m.createdAt} streaming={m.id === streamingId} />)
           )}
-          {streaming ? (
-            <div className="flex items-center gap-2.5">
-              <span className="rounded-2xl rounded-bl-md bg-primary-50 px-4 py-2.5 text-sm text-muted">
-                <WhatsAppTypingDots text="Thinking" />
+          {streaming && !hasContent && !error ? (
+            <div className="flex gap-2.5">
+              <span
+                className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-700"
+                aria-hidden="true"
+              >
+                <Bot className="size-4" />
+              </span>
+              <span className="rounded-2xl rounded-bl-md bg-primary-50/70 px-4 py-3 text-body">
+                <WhatsAppTypingDots />
               </span>
             </div>
           ) : null}
@@ -149,7 +138,7 @@ export function AiChat() {
         <div className="px-3 pb-3 sm:px-4 sm:pb-4 border-t border-border-soft/50 bg-surface/50 backdrop-blur-sm">
           <form
             onSubmit={(e) => { e.preventDefault(); void send(input); }}
-            className="flex items-center gap-2 rounded-2xl border border-border-soft bg-surface-tint/60 p-1.5 pl-2 focus-within:border-primary-300 focus-within:ring-2 focus-within:ring-primary-200"
+            className="flex items-center gap-2 rounded-2xl border border-border-soft bg-surface-tint/60 p-1.5 pl-2 transition-shadow focus-within:shadow-md focus-within:shadow-primary-200/40"
           >
             <label htmlFor="ai-message" className="sr-only">Type your message</label>
             <textarea
@@ -159,10 +148,10 @@ export function AiChat() {
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(input); } }}
               rows={1}
               placeholder="Type your message…"
-              className="max-h-32 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-heading placeholder:text-muted focus-visible:ring-2 focus-visible:ring-primary-200 focus-visible:border-primary-300 rounded-lg"
+              className="max-h-32 min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-heading placeholder:text-muted focus:outline-none rounded-lg"
             />
             <VoiceInputButton
-              language={language ?? "en"}
+              language="en"
               onResult={handleVoiceResult}
               disabled={streaming || !accessToken}
             />

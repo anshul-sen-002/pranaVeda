@@ -2,6 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { audioApi } from "@/lib/api/audio";
+import { apiBaseUrl } from "@/lib/api/client";
 import type { AudioTrackSummary } from "@/lib/api/types";
 
 interface PlayerState {
@@ -63,7 +64,8 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
       (detail) => {
         if (cancelled || !detail.streamUrl) { if (!cancelled && !detail.streamUrl) { setError("This track is stream-only unavailable right now."); setLoading(false); setPlaying(false); } return; }
         const el = ensureEl();
-        el.src = detail.streamUrl;
+        const src = detail.streamUrl && detail.streamUrl.startsWith("/") ? `${apiBaseUrl}${detail.streamUrl}` : detail.streamUrl;
+        el.src = src!;
         el.onloadedmetadata = () => !cancelled && setDuration(el.duration || null);
         el.ontimeupdate = () => {
           if (cancelled) return;

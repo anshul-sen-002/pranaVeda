@@ -4,19 +4,24 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.ResponseInfo;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Flow;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import com.pranaveda.common.error.AiUnavailableException;
 import com.pranaveda.common.error.ApiException;
-import com.pranaveda.common.error.ErrorCode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import tools.jackson.databind.json.JsonMapper;
@@ -31,6 +36,8 @@ import tools.jackson.databind.json.JsonMapper;
  * {@code AI_UNAVAILABLE} so no internal prompt or key ever leaks to clients.
  */
 @Component
+@Primary
+@ConditionalOnProperty(name = "app.ai.provider", havingValue = "openrouter", matchIfMissing = true)
 public class OpenRouterProvider implements AiProvider {
 
     private static final Logger log = LoggerFactory.getLogger(OpenRouterProvider.class);
@@ -51,7 +58,7 @@ public class OpenRouterProvider implements AiProvider {
     public AiReply chat(List<ChatTurn> turns) {
         if (!properties.isConfigured()) {
             throw new AiUnavailableException(
-                "The AI companion is not configured. Set the OPENROUTER_API_KEY environment variable.");
+                "The AI companion is not configured. Set the app.ai.api-key property.");
         }
 
         List<Map<String, String>> messages = turns.stream()
@@ -96,7 +103,7 @@ public class OpenRouterProvider implements AiProvider {
     public void streamChat(List<ChatTurn> turns, String language, Consumer<String> onChunk) {
         if (!properties.isConfigured()) {
             throw new AiUnavailableException(
-                "The AI companion is not configured. Set the OPENROUTER_API_KEY environment variable.");
+                "The AI companion is not configured. Set the app.ai.api-key property.");
         }
 
         List<Map<String, String>> messages = turns.stream()
@@ -138,20 +145,123 @@ public class OpenRouterProvider implements AiProvider {
             .build();
 
         try {
-            HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
+            // Use sendAsync with a BodyHandler that returns a custom
+            // BodySubscriber. SSE data lines are forwarded to onChunk as they
+            // arrive from OpenRouter. The getBody() future completes only when
+            // the stream is fully consumed ([DONE] received or error), so
+            // .join() blocks until all chunks have been delivered to onChunk.
+            CompletableFuture<HttpResponse<Void>> responseFuture = http.sendAsync(request,
+                (ResponseInfo responseInfo) -> {
+                    int status = responseInfo.statusCode();
+                    if (status < 200 || status >= 300) {
+                        return HttpResponse.BodySubscribers.discarding();
+                    }
+                    return new SseLineSubscriber(onChunk);
+                });
+
+            HttpResponse<Void> response = responseFuture.join();
+
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                log.warn("AI stream provider returned status {} body={}", response.statusCode(), truncate(response.body()));
+                log.warn("AI stream provider returned status {}", response.statusCode());
                 throw new AiUnavailableException("The AI companion is temporarily unavailable.");
             }
-            parseStream(response.body(), onChunk);
         } catch (ApiException ex) {
             throw ex;
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new AiUnavailableException("The AI request was interrupted.");
         } catch (Exception ex) {
             log.warn("AI stream provider call failed", ex);
             throw new AiUnavailableException("The AI companion is temporarily unavailable.", ex);
+        }
+    }
+
+    /** SSE line subscriber: forwards OpenRouter {@code data:} lines to onChunk as they arrive.
+     *  The {@link #getBody()} future completes only when the stream is fully consumed,
+     *  ensuring {@code sendAsync().join()} blocks until all chunks have been delivered.
+     *  Tracks how many chunks were delivered so stream cancellation after partial
+     *  delivery can be treated as a normal (not error) completion. */
+    private static final class SseLineSubscriber implements HttpResponse.BodySubscriber<Void> {
+        private final Consumer<String> onChunk;
+        private final StringBuilder buffer = new StringBuilder();
+        private final CompletableFuture<Void> bodyFuture = new CompletableFuture<>();
+        private Flow.Subscription subscription;
+        private volatile boolean done = false;
+        private int chunksDelivered = 0;
+
+        SseLineSubscriber(Consumer<String> onChunk) {
+            this.onChunk = onChunk;
+        }
+
+        /** Returns the number of chunks already delivered to onChunk. */
+        int chunksDelivered() {
+            return chunksDelivered;
+        }
+
+        @Override
+        public void onSubscribe(Flow.Subscription subscription) {
+            this.subscription = subscription;
+            subscription.request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(List<java.nio.ByteBuffer> items) {
+            if (done) return;
+            for (java.nio.ByteBuffer bb : items) {
+                int len = bb.remaining();
+                byte[] bytes = new byte[len];
+                bb.get(bytes);
+                buffer.append(new String(bytes, java.nio.charset.StandardCharsets.UTF_8));
+            }
+            drainBuffer();
+        }
+
+        private void drainBuffer() {
+            String content = buffer.toString();
+            int nl;
+            while ((nl = content.indexOf('\n')) >= 0) {
+                String line = content.substring(0, nl);
+                content = content.substring(nl + 1);
+                processLine(line);
+            }
+            buffer.setLength(0);
+            buffer.append(content);
+        }
+
+        private void processLine(String line) {
+            String trimmed = line.trim();
+            if (!trimmed.startsWith("data:")) return;
+            String payload = trimmed.substring(5).trim();
+            if ("[DONE]".equals(payload)) {
+                done = true;
+                if (subscription != null) {
+                    subscription.cancel();
+                }
+                bodyFuture.complete(null);
+                return;
+            }
+            if (!payload.isBlank()) {
+                onChunk.accept(payload);
+                chunksDelivered++;
+            }
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+            done = true;
+            log.warn("AI stream provider call failed", throwable);
+            bodyFuture.completeExceptionally(throwable);
+        }
+
+        @Override
+        public void onComplete() {
+            done = true;
+            drainBuffer();
+            if (!bodyFuture.isDone()) {
+                bodyFuture.complete(null);
+            }
+        }
+
+        @Override
+        public CompletionStage<Void> getBody() {
+            return bodyFuture;
         }
     }
 
@@ -159,30 +269,6 @@ public class OpenRouterProvider implements AiProvider {
 
     private String writeJson(Object value) {
         return mapper.writeValueAsString(value);
-    }
-
-    private void parseStream(String sseBody, Consumer<String> onChunk) {
-        String[] lines = sseBody.split("\n");
-        for (String line : lines) {
-            String trimmed = line.trim();
-            if (!trimmed.startsWith("data:")) continue;
-            String payload = trimmed.substring("data:".length()).trim();
-            if ("[DONE]".equals(payload)) continue;
-            try {
-                Map<String, Object> root = mapper.readValue(payload, Map.class);
-                Object choices = root.get("choices");
-                if (!(choices instanceof List<?> list) || list.isEmpty()) continue;
-                Map<String, Object> first = (Map<String, Object>) list.get(0);
-                Map<String, Object> delta = (Map<String, Object>) first.get("delta");
-                if (delta == null) continue;
-                Object content = delta.get("content");
-                if (content != null && !content.toString().isBlank()) {
-                    onChunk.accept(content.toString());
-                }
-            } catch (Exception ignored) {
-                // Skip malformed chunks; keep streaming resilient.
-            }
-        }
     }
 
     @SuppressWarnings("unchecked")

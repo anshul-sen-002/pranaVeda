@@ -234,6 +234,7 @@ function AppMain({ pathname, displayName, isAdmin, onMenu, children }: { pathnam
           </div>
         </div>
       </header>
+<main className="min-w-0 flex-1 px-3 pt-4 pb-24 sm:px-6 sm:py-6 lg:pb-10 bg-library-image from-surface-tint via-transparent to-primary-50/30">{children}</main>
       <main className="min-w-0 flex-1 px-3 pt-4 pb-24 sm:px-6 sm:py-6 lg:pb-10 bg-gradient-to-b from-surface-tint via-transparent to-primary-50/30">{children}</main>
       {/* Bottom tab bar — phones only, pill-shaped like the mobile app. */}
       <nav aria-label="Quick navigation" className="fixed inset-x-0 bottom-[3px] z-40 lg:hidden">

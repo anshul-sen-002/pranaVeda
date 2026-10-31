@@ -1,13 +1,15 @@
 package com.pranaveda.ai;
 
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CompletableFuture;
 
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,34 +47,71 @@ public class AiController {
     /** Streams the assistant reply as Server-Sent Events (text/event-stream). */
     @PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamChat(@Valid @RequestBody AiChatRequest request) {
-        SseEmitter emitter = new SseEmitter(30_000L);
-        List<String> chunks = new CopyOnWriteArrayList<>();
+        SseEmitter emitter = new SseEmitter();
 
-        AiChatResponse response = aiService.streamChat(request, chunk -> {
-            chunks.add(chunk);
+        // Capture the SecurityContext from the current (Spring MVC) thread so it
+        // can be restored on the async thread. Without this, the async thread runs
+        // with no authentication and CurrentUserPrincipal.requireCurrentUserId()
+        // throws UnauthorizedException (Access Denied).
+        SecurityContext context = SecurityContextHolder.getContext();
+
+        // Run the blocking provider work on a separate thread so the emitter
+        // is returned to Spring MVC immediately. Spring MVC then initializes
+        // the SSE response headers before any data is sent. Calling
+        // emitter.send() from the controller thread before returning would
+        // write to an uncommitted response and cause "response already
+        // committed" errors.
+        CompletableFuture.runAsync(() -> {
+            SecurityContextHolder.setContext(context);
+            boolean[] contentSent = { false };
             try {
-                emitter.send(SseEmitter.event().data(chunk));
-            } catch (Exception ignored) {
-                // Client may have disconnected.
+                AiChatResponse response = aiService.streamChat(request, chunk -> {
+                    try {
+                        emitter.send(SseEmitter.event().data(chunk));
+                        contentSent[0] = true;
+                    } catch (Exception ignored) {
+                        // Client may have disconnected.
+                    }
+                });
+
+                // Send completion marker once the full reply has been collected.
+                try {
+                    emitter.send(SseEmitter.event().data("[DONE]"));
+                } catch (Exception ignored) {
+                    // Ignore.
+                }
+
+                // Send the conversation id so the client can continue the thread.
+                if (response.conversationId() != null) {
+                    try {
+                        emitter.send(SseEmitter.event()
+                            .name("conversation-id")
+                            .data(String.valueOf(response.conversationId())));
+                    } catch (Exception ignored) {
+                        // Ignore.
+                    }
+                }
+            } catch (Exception ex) {
+                // Only surface an error if no content was streamed. If chunks
+                // were already delivered, a stream cancellation (e.g. client
+                // disconnect) is not a failure - the reply was received.
+                if (!contentSent[0]) {
+                    try {
+                        emitter.send(SseEmitter.event()
+                            .name("error")
+                            .data("The assistant is unavailable right now. Please try again."));
+                    } catch (Exception ignored) {
+                        // Response already committed or client disconnected.
+                    }
+                }
+            } finally {
+                try {
+                    emitter.complete();
+                } catch (Exception ignored) {
+                    // Emitter may already be complete or errored.
+                }
             }
         });
-
-        // Send completion marker once the full reply has been collected.
-        try {
-            emitter.send(SseEmitter.event().data("[DONE]"));
-        } catch (Exception ignored) {
-            // Ignore.
-        }
-
-        // Send the conversation id so the client can continue the thread.
-        if (response.conversationId() != null) {
-            try {
-                emitter.send(SseEmitter.event().name("conversation-id").data(String.valueOf(response.conversationId())));
-            } catch (Exception ignored) {
-                // Ignore.
-            }
-        }
-        emitter.complete();
 
         return emitter;
     }

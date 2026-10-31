@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -103,8 +104,18 @@ public class MediaController {
      * Public read access - no auth required, since the public URL is returned
      * in {@link MediaDto} and used for cover art / stream previews.
      */
-    @GetMapping("/media/serve/{publicId:.+}")
-    public ResponseEntity<byte[]> serveLocal(@PathVariable String publicId) {
+    @GetMapping("/media/serve/**")
+    public ResponseEntity<byte[]> serveLocal(HttpServletRequest request) {
+        String prefix = "/api/v1/media/serve/";
+        String uri = request.getRequestURI();
+        int idx = uri.indexOf(prefix);
+        String publicId = (idx >= 0) ? uri.substring(idx + prefix.length()) : "";
+        // URL-decode in case of encoded characters
+        try {
+            publicId = java.net.URLDecoder.decode(publicId, java.nio.charset.StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException ignored) {
+            // keep raw
+        }
         LocalStorageService storage = localStorage.getIfAvailable();
         if (storage == null) {
             return ResponseEntity.notFound().build();

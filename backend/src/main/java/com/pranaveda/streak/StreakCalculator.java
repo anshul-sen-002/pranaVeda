@@ -77,6 +77,6 @@ public final class StreakCalculator {
      * @param broken             true when neither today nor yesterday has a practice
      */
     public record StreakResult(int currentStreak, int longestStreak, boolean practisedToday,
-                               boolean practisedYesterday, boolean broken) {
+        boolean practisedYesterday, boolean broken) {
     }
 }

@@ -42,12 +42,6 @@ public class WellnessProfileController {
         return wellnessProfileService.upsert(request);
     }
 
-    /** Export the caller's own data (personal-data export right). */
-    @GetMapping("/export")
-    public WellnessProfileDto export() {
-        return wellnessProfileService.export();
-    }
-
     /** Delete the caller's wellness profile. Idempotent. */
     @DeleteMapping
     public ResponseEntity<Void> delete() {

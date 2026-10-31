@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ImageOff } from "lucide-react";
 
 import { cn } from "@/lib/cn";
+import { apiBaseUrl } from "@/lib/api/client";
 
 /**
  * Common image fallback (per user decision): whenever a backend cover is
@@ -51,13 +52,18 @@ export function CoverImage({
   eager?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [src]);
-  if (!src || failed) return <CoverFallback className={className} label={alt} />;
+  const resolvedSrc = src && src.startsWith("/") ? `${apiBaseUrl}${src}` : src;
+  const [prevSrc, setPrevSrc] = useState(resolvedSrc);
+  if (prevSrc !== resolvedSrc) {
+    setPrevSrc(resolvedSrc);
+    setFailed(false);
+  }
+  if (!resolvedSrc || failed) return <CoverFallback className={className} label={alt} />;
   return (
     <div className={cn("h-full w-full overflow-hidden", className)}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={src}
+        src={resolvedSrc}
         alt={alt}
         loading={eager ? "eager" : "lazy"}
         onError={() => setFailed(true)}

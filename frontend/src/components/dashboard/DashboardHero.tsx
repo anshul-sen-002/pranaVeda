@@ -4,8 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { ListMusic, Play } from "lucide-react";
 
-import { LotusMark } from "@/components/brand/LotusMark";
-
 /** Greeting banner. Displays a warm hero image with a dark overlay so the
  * white text stays readable. Height matches the library hero (AsanaHero)
  * for a consistent page rhythm.
@@ -27,8 +25,6 @@ export function DashboardHero({ firstName, practisedToday }: { firstName?: strin
       />
       <div className="absolute inset-0 bg-black/35" aria-hidden="true" />
       <div className="relative z-10">
-        <LotusMark className="pointer-events-none absolute right-2 -bottom-2 size-36 text-white/20 sm:-right-10 sm:-bottom-14 sm:size-56" />
-        <LotusMark className="pointer-events-none absolute top-4 right-40 hidden size-16 text-white/15 md:block" />
         <p className="text-[13px] text-white/85 sm:text-sm">
           {practisedToday ? "Beautiful — you practised today." : "Take a breath. Today is open."}
         </p>
