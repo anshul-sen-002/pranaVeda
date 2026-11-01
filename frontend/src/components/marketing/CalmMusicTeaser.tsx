@@ -37,7 +37,7 @@ export function CalmMusicTeaser() {
             {categories.map((category) => (
               <li
                 key={category}
-                className="rounded-full border border-border-soft bg-surface-tint px-3.5 py-1.5 text-xs font-medium text-body"
+                className="rounded-full border border-border-soft/60 bg-home-card px-3.5 py-1.5 text-xs font-medium text-body"
               >
                 {category}
               </li>
@@ -58,7 +58,7 @@ export function CalmMusicTeaser() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-          className="rounded-3xl border border-border-soft bg-surface-tint p-6 sm:p-7"
+          className="rounded-3xl border border-border-soft/60 bg-home-card p-6 sm:p-7"
         >
           <div className="flex items-center gap-4">
             <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-primary text-white">

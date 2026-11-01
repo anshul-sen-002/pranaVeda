@@ -54,7 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="shortcut icon" href="/pranaveda.png?v=2" type="image/png" />
         <link rel="apple-touch-icon" href="/pranaveda.png?v=2" sizes="180x180" />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col antialiased overflow-x-hidden" style={{ backgroundImage: 'url("/image.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed' }}>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

@@ -21,7 +21,6 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const { login } = useAuth();
   const [formError, setFormError] = useState<string | null>(null);
-  const [remember, setRemember] = useState(false);
 
   // Where to go after signing in. agents.md 2.2: return the user to the page
   // they originally wanted. Defaults to the dashboard.
@@ -93,20 +92,6 @@ export function LoginForm() {
             error={errors.password?.message}
             {...register("password")}
           />
-
-          <div className="flex items-center">
-            {/* Visual only: the session cookie already keeps this device signed in. */}
-            <label htmlFor="remember-me" className="flex cursor-pointer items-center gap-2 text-sm text-body">
-              <input
-                id="remember-me"
-                type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-                className="size-4.5 shrink-0 rounded accent-primary-600"
-              />
-              Remember me
-            </label>
-          </div>
 
           <Button type="submit" size="lg" fullWidth loading={isSubmitting}>
             {isSubmitting ? "Signing in..." : "Log In"}

@@ -5,7 +5,6 @@ import { motion } from "motion/react";
 import { ArrowRight, Sparkles } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
-import { BreathOrb } from "@/components/motion/BreathOrb";
 import { LinkButton } from "@/components/ui/LinkButton";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -54,7 +53,7 @@ export function Hero() {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-2xl"
         >
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-surface px-3.5 py-1.5 text-xs font-medium text-primary-700 shadow-sm">
+          <span className="inline-flex items-center gap-2 rounded-full border border-primary-200/60 bg-home-card px-3.5 py-1.5 text-xs font-medium text-primary-700 shadow-sm">
             <Sparkles className="size-3.5" aria-hidden="true" />
             Yoga, breath &amp; calm in one place
           </span>
@@ -109,14 +108,6 @@ export function Hero() {
           </div>
         </motion.div>
 
-        {/* Breathing orb visual */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <BreathOrb />
-        </motion.div>
       </div>
     </section>
   );

@@ -7,7 +7,6 @@ import { Features } from "@/components/marketing/Features";
 import { Hero } from "@/components/marketing/Hero";
 import { HowItWorks } from "@/components/marketing/HowItWorks";
 import { PersonalSide } from "@/components/marketing/PersonalSide";
-import { TrustBand } from "@/components/marketing/TrustBand";
 
 /**
  * Public home page (agents.md 2.1: fully browsable without an account).
@@ -26,7 +25,6 @@ export default function Home() {
       <SiteHeader />
       <main className="flex flex-1 flex-col">
         <Hero />
-        <TrustBand />
         <Features />
         <HowItWorks />
         <AiCompanion />

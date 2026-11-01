@@ -138,23 +138,12 @@ canvas {
 }
 
 
-/* Long words (emails, URLs, tokens) wrap instead of forcing sideways scroll. */
-p,
-li,
-a,
-span,
-div {
-  overflow-wrap: anywhere;
-}
 
-html {
-  /* Reserve space for the scrollbar so layout does not jump between routes. */
-  scrollbar-gutter: stable;
-}
+
+
 
 body {
-  background: linear-gradient(135deg, #f0f7f4 0%, #eef7f2 55%, #f8fbf9 100%);
-  background-attachment: fixed;
+  background-color: #f0f7f4;
   color: var(--color-body);
   font-family: var(--font-sans), system-ui, sans-serif;
   /* Respect OS reduced-motion (agents.md 6). Framer Motion honours this too. */
@@ -194,9 +183,43 @@ body {
    ====================================================================
    Tailwind v4 generates every colour utility from the @theme block
    above, including opacity variants such as `bg-primary-50/50`
-   (emitted as the escaped selector `.bg-primary-50\/50`).
+   /* (emitted as the escaped selector `.bg-primary-50\/50`).
 
    Do NOT hand-write these classes here: an unescaped `/` is not
-   valid in a CSS class selector and breaks the stylesheet build.
-   ====================================================================*/
+   valid in a CSS class selector and breaks the stylesheet build. */
+
+
+/* Background image utility for modules - uses image.png */
+@utility bg-image-png {
+  background-image: url('/image.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Component duplication prevention */
+body {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+*, *::before, *::after {
+  counter-reset: none !important;
+}
+.motion\|header, .motion\|section {
+  will-change: initial;
+  isolation: isolate;
+}
+/* Transparent sky-blue gradient for sidebar */
+@utility bg-sidebar-sky {
+  background: linear-gradient(180deg, rgba(239, 249, 254, 0.7) 0%, rgba(217, 241, 253, 0.5) 50%, rgba(179, 227, 251, 0.4) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Whitish-green transparent gradient for home page components */
+@utility bg-home-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(240, 247, 244, 0.5) 50%, rgba(232, 241, 236, 0.45) 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
 

@@ -48,7 +48,7 @@ export function HowItWorks() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="relative rounded-2xl border border-border-soft bg-surface p-6 sm:p-7"
+            className="relative rounded-2xl border border-border-soft/60 bg-home-card p-6 sm:p-7"
           >
             <span className="absolute top-6 right-6 text-4xl font-semibold text-primary-100 select-none" aria-hidden="true">
               {index + 1}

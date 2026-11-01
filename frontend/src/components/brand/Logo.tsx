@@ -16,13 +16,13 @@ export interface LogoProps {
  */
 export function Logo({ className, markOnly = false }: LogoProps) {
   return (
-    <span className={cn("inline-flex items-center gap-2.5", className)}>
+    <span className={cn("inline-flex items-center gap-1", className)}>
       <Image
         src="/pranaveda.png"
         alt="PranaVeda"
-        width={20}
-        height={20}
-        className="size-10 shrink-0"
+        width={40}
+        height={40}
+        className="size-12 shrink-0"
         priority
       />
 

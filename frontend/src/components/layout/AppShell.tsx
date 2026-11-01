@@ -14,6 +14,7 @@ import { LotusMark } from "@/components/brand/LotusMark";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/cn";
 
+
 const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/dashboard/history", label: "Sessions", icon: CalendarDays },
@@ -104,7 +105,7 @@ export function AppShell({ children, quote }: { children: React.ReactNode; quote
   }, [drawerOpen]);
 
   return (
-    <div className="flex min-h-dvh bg-surface-tint">
+    <div className="flex min-h-dvh" style={{ backgroundImage: 'url("/serene.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed' }}>
       {drawerOpen ? (
         <div className="fixed inset-0 z-40 bg-[#223240]/40 backdrop-blur-sm lg:hidden" onClick={() => setDrawerOpen(false)} aria-hidden="true" />
       ) : null}
@@ -116,7 +117,7 @@ export function AppShell({ children, quote }: { children: React.ReactNode; quote
         className={cn("fixed inset-y-0 left-0 z-50 flex w-[17rem] max-w-[85vw] shrink-0 flex-col border-r border-border-soft bg-surface pb-4 shadow-2xl transition-transform duration-300 ease-in-out lg:hidden", drawerOpen ? "translate-x-0" : "-translate-x-full")}
       >
         <div className="flex h-16 shrink-0 items-center justify-between gap-3 px-4">
-          <Link href="/" className="rounded-lg px-1" aria-label="PranaVeda home" onClick={() => setDrawerOpen(false)}><Logo /></Link>
+          <Link href="/" className="rounded-lg px-1" aria-label="PranaVeda home" onClick={() => setDrawerOpen(false)}><Logo markOnly /></Link>
           <button type="button" onClick={() => setDrawerOpen(false)} className="inline-flex size-11 items-center justify-center rounded-full text-body hover:bg-primary-50" aria-label="Close menu"><X className="size-5" aria-hidden="true" /></button>
         </div>
         <nav aria-label="Primary" className="scrollbar-none mt-1 flex-1 space-y-0.5 overflow-y-auto px-3">
@@ -168,7 +169,7 @@ function AppMain({ pathname, displayName, isAdmin, onMenu, children }: { pathnam
         <div className="flex h-14 items-center justify-between gap-2 px-3 sm:h-16 sm:px-6">
           <div className="flex items-center gap-1">
             <button type="button" onClick={onMenu} className="inline-flex size-11 items-center justify-center rounded-full text-body transition-colors hover:bg-primary-50 lg:hidden" aria-controls="mobile-drawer" aria-label="Open navigation"><Menu className="size-5" aria-hidden="true" /></button>
-            <Link href="/" className="rounded-lg p-1.5 lg:hidden" aria-label="PranaVeda home"><Logo markOnly /></Link>
+            <Link href="/" className="rounded-lg -ml-1 p-1.5 lg:hidden" aria-label="PranaVeda home"><Logo /></Link>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
             <span className="hidden h-6 w-px bg-border-soft sm:block" aria-hidden="true" />
@@ -234,36 +235,33 @@ function AppMain({ pathname, displayName, isAdmin, onMenu, children }: { pathnam
           </div>
         </div>
       </header>
-<main className="min-w-0 flex-1 px-3 pt-4 pb-24 sm:px-6 sm:py-6 lg:pb-10 bg-library-image from-surface-tint via-transparent to-primary-50/30">{children}</main>
-      <main className="min-w-0 flex-1 px-3 pt-4 pb-24 sm:px-6 sm:py-6 lg:pb-10 bg-gradient-to-b from-surface-tint via-transparent to-primary-50/30">{children}</main>
+<main className="min-w-0 flex-1 px-3 pt-4 pb-32 sm:px-6 sm:py-6 lg:pb-10 bg-gradient-to-b from-surface-tint/60 via-transparent to-primary-50/20">{children}</main>
       {/* Bottom tab bar — phones only, pill-shaped like the mobile app. */}
-      <nav aria-label="Quick navigation" className="fixed inset-x-0 bottom-[3px] z-40 lg:hidden">
-        <div className="mx-auto max-w-md w-full rounded-[1.5rem] border border-border-soft bg-white backdrop-blur-md shadow-lg p-2.5">
+      <nav aria-label="Quick navigation" className="fixed inset-x-0 bottom-[0px] z-40 lg:hidden">
+        <div className="mx-auto max-w-md w-full rounded-t-[0.8rem] border border-border-soft bg-white backdrop-blur-md shadow-lg px-2 py-1.5 ">
           <ul className="flex justify-around items-center">
             {TABS.map(({ href, label, Icon }) => {
               const active = href === "/dashboard" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
               return (
-                <li key={href}>
                   <Link
                     href={href}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex flex-col items-center justify-center gap-1 min-h-[44px] px-3 py-1.5 rounded-xl text-[11px] font-medium transition-colors",
-                      active ? "bg-primary-100 text-primary-600" : "text-muted hover:text-primary-600",
+                      "flex flex-col items-center justify-center gap-1 min-h-[30px] px-3 py-0.5 rounded-xl text-[9px] font-medium transition-colors",
+                      active ? "text-primary-600" : "text-gray-900 hover:text-primary-600",
                     )}
                   >
                     <Icon
                       className={cn(
                         "size-5 shrink-0",
-                        active ? "text-primary-600" : "text-muted",
+                        active ? "text-primary-600" : "text-gray-900",
                       )}
                       aria-hidden="true"
                     />
-                    <span className={cn("text-[11px] font-medium", active ? "text-primary-600" : "text-muted")}>
+                    <span className={cn("text-[9px] font-medium", active ? "text-primary-600" : "text-gray-900")}>
                       {label}
                     </span>
                   </Link>
-                </li>
               );
             })}
           </ul>

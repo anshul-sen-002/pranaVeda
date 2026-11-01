@@ -121,7 +121,7 @@ export function SiteHeader() {
 
       {/* Mobile panel */}
       {menuOpen ? (
-        <nav id="mobile-nav" aria-label="Mobile" className="border-t border-border-soft bg-gradient-subtle backdrop-blur-md md:hidden">
+        <nav id="mobile-nav" aria-label="Mobile" className="border-t border-border-soft/50 bg-gradient-to-b from-surface via-primary-50/30 to-surface-tint/80 backdrop-blur-xl md:hidden shadow-[0_-8px_30px_-12px_rgba(29,111,84,0.15)]">
           <ul className="mx-auto max-w-6xl space-y-1 px-5 py-4 sm:px-8">
             {[
               { href: "/yoga", label: "Yoga" },
@@ -139,7 +139,7 @@ export function SiteHeader() {
                 <Link
                   href={item.href}
                   onClick={() => setMenuOpen(false)}
-                  className="flex min-h-11 items-center rounded-xl px-3 text-[15px] font-medium text-heading transition-colors hover:bg-primary-50 active:bg-primary-100"
+                  className="flex min-h-11 items-center gap-3 rounded-xl px-4 py-2.5 text-[15px] font-medium text-heading transition-all duration-200 hover:bg-primary-50/80 hover:translate-x-1 active:bg-primary-100 active:scale-[0.98]"
                 >
                   {item.label}
                 </Link>
@@ -153,7 +153,7 @@ export function SiteHeader() {
                     setMenuOpen(false);
                     void logout();
                   }}
-                  className="flex min-h-11 w-full items-center rounded-xl px-3 text-left text-[15px] font-medium text-heading transition-colors hover:bg-primary-50 active:bg-primary-100"
+                  className="flex min-h-11 w-full items-center gap-3 rounded-xl px-4 py-2.5 text-left text-[15px] font-medium text-heading transition-all duration-200 hover:bg-primary-50/80 hover:translate-x-1 active:bg-primary-100 active:scale-[0.98]"
                 >
                   Sign out
                 </button>
