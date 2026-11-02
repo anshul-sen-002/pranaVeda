@@ -46,7 +46,7 @@
   --background-image-gradient-subtle: linear-gradient(145deg, #f8fbf9 0%, #eef7f2 100%);
   --background-image-gradient-interactive: linear-gradient(145deg, #f0f7f4 0%, #eef7f2 100%);
 
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
 
   /* Calm, quiet motion */
   --animate-fade-in-up: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;

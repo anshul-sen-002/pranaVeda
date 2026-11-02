@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PoseDetail } from "@/components/library/PoseDetail";
-import { GuidedPractice } from "@/components/guided/GuidedPractice";
+import { StepTutorial } from "@/components/guided/StepTutorial";
 import { PostureCoach } from "@/components/coach/PostureCoach";
 import { SessionTimer } from "@/components/session/SessionTimer";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -51,7 +51,7 @@ export default async function YogaDetailPage({
         </div>
         {detail.steps.length > 0 ? (
           <section className="mx-auto w-full max-w-6xl px-5 pb-14 sm:px-8" aria-label="Guided practice">
-            <GuidedPractice steps={detail.steps} poseTitle={detail.summary.title} />
+            <StepTutorial steps={detail.steps} poseTitle={detail.summary.title} />
           </section>
         ) : null}
       </main>

@@ -171,7 +171,41 @@ function AppMain({ pathname, displayName, isAdmin, onMenu, children }: { pathnam
             <button type="button" onClick={onMenu} className="inline-flex size-11 items-center justify-center rounded-full text-body transition-colors hover:bg-primary-50 lg:hidden" aria-controls="mobile-drawer" aria-label="Open navigation"><Menu className="size-5" aria-hidden="true" /></button>
             <Link href="/" className="rounded-lg -ml-1 p-1.5 lg:hidden" aria-label="PranaVeda home"><Logo /></Link>
           </div>
+          
+          {/* Search bar (desktop) */}
+          <div className="hidden lg:flex flex-1 max-w-md mx-4">
+            <div className="relative w-full">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted size-4 pointer-events-none" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="search"
+                placeholder="Search poses, areas, or difficulty..."
+                className="h-10 w-full rounded-full border border-border-soft bg-white pr-4 pl-10 text-sm text-body placeholder:text-muted focus:border-primary-300 focus:ring-2 focus:ring-primary-200 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Breadcrumb */}
+          <div className="hidden lg:flex items-center gap-1 text-sm text-muted">
+            <span>Library</span>
+            <ChevronDown className="size-4" />
+            <span>Calm Music</span>
+          </div>
+
           <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Notification bell */}
+            <button
+              type="button"
+              className="rounded-full p-1.5 text-muted hover:bg-primary-50 hover:text-heading transition-colors"
+              aria-label="Notifications"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+            </button>
             <span className="hidden h-6 w-px bg-border-soft sm:block" aria-hidden="true" />
             <div ref={menuRef} className="relative">
               <button

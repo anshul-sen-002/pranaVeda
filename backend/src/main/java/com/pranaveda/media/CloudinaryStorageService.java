@@ -85,7 +85,12 @@ public class CloudinaryStorageService implements StorageService {
             params.put("resource_type", resourceType);
             params.put("overwrite", true);
             params.put("invalidate", true);
-            if (eager != null && !eager.isEmpty()) {
+            // Explicitly set eager to empty list to prevent Cloudinary SDK from
+            // attempting to process transformations. Size-capping should be
+            // applied delivery-time via eager transformations in the URL if needed.
+            if (eager == null || eager.isEmpty()) {
+                params.put("eager", java.util.Collections.<java.util.Map<String, Object>>emptyList());
+            } else {
                 params.put("eager", eager);
             }
             @SuppressWarnings("unchecked")

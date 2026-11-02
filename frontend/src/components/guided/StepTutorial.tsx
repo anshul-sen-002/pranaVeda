@@ -69,14 +69,6 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
 
   const stepChanged = useRef(stepIndex);
 
-  useEffect(() => {
-    if (stepChanged.current !== stepIndex) {
-      stepChanged.current = stepIndex;
-      setSlideIndex(0);
-      resetSlideTimer();
-    }
-  }, [stepIndex, resetSlideTimer]);
-
   const resetSlideTimer = useCallback(() => {
     if (slideTimer.current) {
       clearTimeout(slideTimer.current);
@@ -95,15 +87,31 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
   }, [active, currentStep?.mediaType, images.length, stepIndex, total]);
 
   useEffect(() => {
+    if (stepChanged.current !== stepIndex) {
+      stepChanged.current = stepIndex;
+      setSlideIndex(0);
+      resetSlideTimer();
+    }
+  }, [stepIndex, resetSlideTimer]);
+
+  useEffect(() => {
     if (!active || !currentStep?.instruction) return;
     const session = ++speechSession.current;
     setIsSpeaking(true);
     speech.speak(currentStep.instruction, {
       onEnd: () => {
-        if (session === speechSession.current) setIsSpeaking(false);
-      },
-      onerror: () => {
-        if (session === speechSession.current) setIsSpeaking(false);
+        if (session === speechSession.current) {
+          setIsSpeaking(false);
+          // Auto-advance to the next step when narration finishes.
+          if (stepIndex < total - 1) {
+            setTimeout(() => {
+              if (speechSession.current === session) {
+                setStepIndex((prev) => Math.min(prev + 1, total - 1));
+                setSlideIndex(0);
+              }
+            }, 400);
+          }
+        }
       },
     });
     return () => {
@@ -111,6 +119,20 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
       setIsSpeaking(false);
     };
   }, [active, currentStep?.instruction, speech]);
+
+  // Per-step cap: a step may run at most 2 minutes, then advance automatically.
+  useEffect(() => {
+    if (!active) return;
+    const timer = setTimeout(() => {
+      if (stepIndex < total - 1) {
+        setStepIndex((prev) => Math.min(prev + 1, total - 1));
+        setSlideIndex(0);
+        speech.cancel();
+        setIsSpeaking(false);
+      }
+    }, 120000);
+    return () => clearTimeout(timer);
+  }, [active, stepIndex, total, speech]);
 
   const togglePlay = useCallback(() => {
     if (!active) {
@@ -202,7 +224,6 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
           <motion.img
             src={currentStep.coverImageUrl}
             alt=""
-            layout="width"
             className="h-full w-full object-cover"
             loading="lazy"
           />
@@ -282,7 +303,6 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
             <motion.img
               src={currentImage}
               alt=""
-              layout="width"
               className="h-full w-full object-cover"
               loading="lazy"
             />

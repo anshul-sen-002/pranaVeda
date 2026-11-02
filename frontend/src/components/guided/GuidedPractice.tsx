@@ -259,7 +259,7 @@ export function GuidedPractice({ steps, poseTitle }: GuidedPracticeProps) {
           {/* Current step: one image + its instruction at a time. */}
           <figure className="overflow-hidden rounded-2xl border border-border-soft">
             <img
-              src={step.imageUrl}
+              src={step.imageUrl ?? undefined}
               alt={step.caption ?? `${poseTitle} — step ${index + 1}`}
               className="aspect-[16/10] w-full object-cover"
             />

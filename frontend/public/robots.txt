@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+
+# Public content - all crawlers welcome
+Allow: /yoga
+Allow: /yoga/
+Allow: /videos
+Allow: /calm-music
+Allow: /breathing
+Allow: /about
+Allow: /safety
+Allow: /privacy
+Allow: /terms
+
+# Member-only areas - not for indexing
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /ai
+
+# Sitemap
+Sitemap: https://pranaveda.dev/sitemap.xml

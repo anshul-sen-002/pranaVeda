@@ -264,7 +264,7 @@ function StepsEditor() {
                 <div className="flex gap-4">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={step.imageUrl}
+                    src={step.imageUrl ?? undefined}
                     alt={step.caption ?? `Step ${i + 1}`}
                     className="size-20 shrink-0 rounded-xl border border-border-soft object-cover"
                   />

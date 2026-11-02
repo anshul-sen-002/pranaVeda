@@ -10,10 +10,10 @@ import { useAuth } from "@/hooks/useAuth";
 /**
  * Personal-side showcase: dashboard, routines, streaks.
  *
- * The LottieFiles illustration (people around screens and charts) visualises
- * the "your practice, visible" story - it plays only here, below the fold,
- * so first paint stays fast. Everything described maps to a real backend
- * surface (dashboard summary, routines, streaks/challenges).
+ * A calm SVG + Motion illustration visualises the "your practice, visible"
+ * story - it plays only here, below the fold, so first paint stays fast.
+ * Everything described maps to a real backend surface (dashboard summary,
+ * routines, streaks/challenges).
  */
 const points = [
   { icon: LayoutDashboard, title: "A dashboard that greets you", body: "Today's routine, minutes practiced, and saved items - one calm glance." },

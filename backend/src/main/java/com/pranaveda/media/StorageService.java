@@ -46,3 +46,4 @@ public interface StorageService {
         return upload(bytes, folder, publicId, "image");
     }
 }
+
