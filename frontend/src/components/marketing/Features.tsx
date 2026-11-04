@@ -65,13 +65,13 @@ const features: Feature[] = [
  */
 export function Features() {
   return (
-    <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24 bg-gradient-to-b from-transparent via-primary-50/30 to-transparent">
+    <section className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24">
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="max-w-2xl"
+        className="mx-auto max-w-2xl text-center"
       >
         <h2 className="text-2xl font-semibold tracking-tight text-heading sm:text-3xl">
           Everything you need for a calmer practice
@@ -82,7 +82,7 @@ export function Features() {
         </p>
       </motion.div>
 
-      <ul className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="mt-9 grid gap-3 sm:mt-12 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
         {features.map((feature, index) => (
           <motion.li
             key={feature.title}
@@ -94,7 +94,7 @@ export function Features() {
               delay: index * 0.06,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="group rounded-2xl border border-border-soft/60 bg-home-card p-6 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-[0_16px_40px_-28px_rgba(29,111,84,0.5)]"
+            className={`group min-w-0 rounded-2xl border border-border-soft/60 p-5 shadow-[0_8px_30px_-24px_rgba(29,63,46,.22)] transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-[0_16px_40px_-28px_rgba(29,111,84,0.35)] sm:rounded-3xl sm:p-7 ${feature.requiresAccount ? "bg-white/90" : "bg-gradient-gourd-white"}`}
           >
             <span className="inline-flex size-11 items-center justify-center rounded-xl bg-primary-50 text-primary-600 transition-colors duration-300 group-hover:bg-primary-100">
               <feature.icon className="size-5" aria-hidden="true" />

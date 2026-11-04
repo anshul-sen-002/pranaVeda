@@ -27,9 +27,9 @@ export function PersonalSide() {
   const signedIn = status === "authenticated";
 
   return (
-    <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24 bg-gradient-to-b from-primary-50/30 via-transparent to-primary-50/30">
-      <div className="grid items-center gap-12 lg:grid-cols-2">
-        <div className="order-2 lg:order-1">
+    <section className="mx-auto w-full max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24">
+      <div className="grid min-w-0 items-center gap-10 lg:grid-cols-2 lg:gap-16">
+        <div className="order-2 min-w-0 px-2 pt-3 sm:px-6 lg:order-1 lg:px-4">
           <JourneyVisual />
         </div>
 
@@ -40,7 +40,7 @@ export function PersonalSide() {
             lede="Everything personal stays yours - the backend enforces ownership on every record, so you can only ever see your own data."
           />
 
-          <ul className="mt-8 space-y-5">
+          <ul className="mt-7 space-y-4 sm:mt-8 sm:space-y-5">
             {points.map((point) => (
               <li key={point.title} className="flex gap-3.5">
                 <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-50 text-primary-600">

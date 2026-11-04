@@ -28,14 +28,14 @@ const fadeUp = {
  */
 export function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-gradient-to-b from-primary-100/70 via-white to-primary-100/50">
+    <div className="relative min-h-dvh overflow-hidden bg-[radial-gradient(ellipse_at_top_left,rgba(215,235,216,.72),transparent_42%),linear-gradient(180deg,#f8faf5_0%,#f2f6ef_100%)]">
       {/* Decorative corner leaves */}
-      <Leaf className="pointer-events-none absolute -top-12 -left-14 size-44 text-primary-200/60" />
-      <Leaf className="pointer-events-none absolute -right-16 bottom-[-4rem] size-56 rotate-180 text-primary-200/40" />
+      <Leaf className="pointer-events-none absolute -top-16 -left-20 size-40 text-primary-200/45 sm:size-52" />
+      <Leaf className="pointer-events-none absolute -right-24 bottom-[-5rem] size-48 rotate-180 text-primary-200/35 sm:size-64" />
 
       {/* Brand header — screenshot: YOGA left, Explore yoga, "A healthier you" right */}
-      <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
-        <div className="flex items-center gap-6">
+      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3.5 sm:px-8 sm:py-5 lg:px-10">
+        <div className="flex min-w-0 items-center gap-3 sm:gap-6">
           <Link
             href="/"
             className="rounded-lg transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:outline-none"
@@ -45,19 +45,19 @@ export function AuthLayout({ children }: { children: ReactNode }) {
           </Link>
           <Link
             href="/yoga"
-            className="hidden items-center gap-1.5 rounded-lg text-sm text-muted transition-colors hover:text-primary-700 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:outline-none sm:inline-flex"
+            className="hidden shrink-0 items-center gap-1.5 rounded-lg text-sm text-muted transition-colors hover:text-primary-700 focus-visible:ring-2 focus-visible:ring-primary-300 focus-visible:outline-none sm:inline-flex"
           >
             <Compass className="size-4" aria-hidden="true" />
             Explore yoga
           </Link>
         </div>
-        <p className="flex items-center gap-1.5 text-sm text-muted">
+        <p className="hidden shrink-0 items-center gap-1.5 text-sm text-muted sm:flex">
           <Heart className="size-4 text-muted" aria-hidden="true" />
           A healthier you
         </p>
       </header>
 
-      <main className="relative z-10 mx-auto grid max-w-6xl items-center gap-6 px-4 pt-0 pb-10 sm:gap-8 sm:px-5 sm:pt-2 sm:pb-14 lg:grid-cols-2 lg:gap-10">
+      <main className="relative z-10 mx-auto grid w-full max-w-7xl content-start items-center gap-5 px-4 pt-3 pb-8 sm:gap-8 sm:px-8 sm:pt-5 sm:pb-14 lg:content-center lg:grid-cols-2 lg:gap-12 lg:px-10 lg:py-8">
         {/* ------------- Welcome panel (desktop only — mobile shows the form
             first, matching the calm single-column mockup) ------------- */}
         <section className="hidden text-center lg:block lg:text-left">
@@ -122,17 +122,13 @@ export function AuthLayout({ children }: { children: ReactNode }) {
         </section>
 
         {/* ------------- Form card ------------- */}
-        <section className="mx-auto w-full max-w-md">
+        <section className="mx-auto w-full max-w-md min-w-0">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="rounded-3xl border border-white/70 bg-white/95 p-6 shadow-[0_24px_70px_-40px_rgba(10,61,89,0.45)] backdrop-blur-sm sm:p-10"
+            className="rounded-[1.5rem] border border-white/90 bg-white/95 p-5 shadow-[0_24px_70px_-40px_rgba(29,76,53,.28)] backdrop-blur-sm sm:rounded-[2rem] sm:p-8 md:p-10"
           >
-            <div className="mb-6 flex items-center justify-center gap-2.5 sm:mb-8">
-              <Logo />
-              <span className="hidden text-lg font-semibold tracking-[0.22em] text-heading sm:inline">YOGA</span>
-            </div>
             {children}
           </motion.div>
         </section>

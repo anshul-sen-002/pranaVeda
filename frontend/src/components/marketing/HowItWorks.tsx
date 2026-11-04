@@ -32,23 +32,24 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24 bg-gradient-to-b from-primary-50/30 via-transparent to-primary-50/30">
-      <SectionHeading
-        eyebrow="How it works"
-        title="From curious visitor to steady practice"
-        lede="Start without an account. Stay for the personal side when you're ready - every step respects your pace."
-        align="center"
-      />
+    <section className="w-full border-y border-border-soft/60 bg-[#f2f5ed] px-5 py-16 sm:px-8 sm:py-20 lg:px-10 lg:py-24">
+      <div className="mx-auto max-w-7xl">
+        <SectionHeading
+          eyebrow="How it works"
+          title="From curious visitor to steady practice"
+          lede="Start without an account. Stay for the personal side when you're ready - every step respects your pace."
+          align="center"
+        />
 
-      <ol className="relative mt-12 grid gap-5 md:grid-cols-3">
+        <ol className="relative mt-9 grid gap-3 sm:mt-12 sm:gap-5 md:grid-cols-3">
         {steps.map((item, index) => (
-          <motion.li
+            <motion.li
             key={item.title}
             initial={{ opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="relative rounded-2xl border border-border-soft/60 bg-home-card p-6 sm:p-7"
+            className="relative min-w-0 rounded-2xl border border-border-soft/70 bg-white/80 p-5 sm:rounded-3xl sm:p-7"
           >
             <span className="absolute top-6 right-6 text-4xl font-semibold text-primary-100 select-none" aria-hidden="true">
               {index + 1}
@@ -59,9 +60,10 @@ export function HowItWorks() {
             <p className="mt-5 text-xs font-semibold tracking-[0.12em] text-primary-600 uppercase">{item.step}</p>
             <h3 className="mt-1.5 text-lg font-semibold text-heading">{item.title}</h3>
             <p className="mt-2 text-sm leading-relaxed text-body">{item.body}</p>
-          </motion.li>
-        ))}
-      </ol>
+            </motion.li>
+          ))}
+        </ol>
+      </div>
     </section>
   );
 }

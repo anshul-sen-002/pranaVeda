@@ -170,7 +170,7 @@ export function VoiceInputButton({
   const isUnsupported = supported === false;
 
   return (
-    <div className="relative inline-flex size-10 shrink-0" style={{ display: "inline-flex" }}>
+    <div className="relative inline-flex size-9 shrink-0 sm:size-10" style={{ display: "inline-flex" }}>
       <button
         type="button"
         onClick={() => (listening ? stop() : start())}
@@ -186,7 +186,7 @@ export function VoiceInputButton({
         }
         disabled={disabled || !isSupported || listening}
         className={cn(
-          "inline-flex size-10 shrink-0 items-center justify-center rounded-full transition-all duration-200",
+          "inline-flex size-9 shrink-0 items-center justify-center rounded-full transition-all duration-200 sm:size-10",
           listening
             ? "bg-primary-600 text-white animate-pulse"
             : !isSupported

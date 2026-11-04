@@ -1,10 +1,6 @@
-import { DotLoader } from "@/components/motion/DotLoader";
+import { ModuleLoading } from "@/components/layout/ModuleLoading";
 
 /** Loading state while calm music tracks are fetched. */
 export default function CalmMusicLoading() {
-  return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <DotLoader text="Loading calming sounds" />
-    </div>
-  );
+  return <ModuleLoading text="Loading calming sounds" quote="Good music soothes the mind, heals the heart." />;
 }

@@ -1,10 +1,6 @@
-import { DotLoader } from "@/components/motion/DotLoader";
+import { ModuleLoading } from "@/components/layout/ModuleLoading";
 
 /** Loading state while the breathing studio initializes. */
 export default function BreathingLoading() {
-  return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <DotLoader text="Preparing breathing studio" />
-    </div>
-  );
+  return <ModuleLoading text="Preparing breathing studio" quote="Breathe in calm, breathe out tension." />;
 }

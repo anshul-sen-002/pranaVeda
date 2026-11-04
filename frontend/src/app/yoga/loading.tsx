@@ -1,10 +1,6 @@
-import { DotLoader } from "@/components/motion/DotLoader";
+import { ModuleLoading } from "@/components/layout/ModuleLoading";
 
 /** Loading state while the yoga library fetches content, categories, and tags. */
 export default function YogaLoading() {
-  return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <DotLoader text="Loading yoga library" />
-    </div>
-  );
+  return <ModuleLoading text="Loading yoga library" quote="A strong body creates a calm mind." />;
 }

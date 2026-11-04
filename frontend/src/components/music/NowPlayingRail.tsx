@@ -1,68 +1,57 @@
 "use client";
 
-import { Pause, Play } from "lucide-react";
+import { BarChart3, ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 
 import { CoverImage } from "@/components/media/CoverImage";
 import type { AudioTrackSummary } from "@/lib/api/types";
-import { cn } from "@/lib/cn";
 
-function clock(s: number) {
-  const v = Math.max(0, Math.floor(s));
-  return `${String(Math.floor(v / 60)).padStart(2, "0")}:${String(v % 60).padStart(2, "0")}`;
+function clock(seconds: number) {
+  const value = Math.max(0, Math.floor(seconds));
+  return `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
 }
 
-/** Now Playing card wired to the real player. */
 export function NowPlayingRail({
-  current, playing, elapsed, duration, onToggle, minutesOf,
+  current, playing, elapsed, duration, onToggle, onNext, onPrevious, onSeek, minutesOf,
 }: {
   current: AudioTrackSummary | null;
   playing: boolean;
   elapsed: number;
   duration: number | null;
   onToggle: () => void;
-  minutesOf: (t: AudioTrackSummary) => string;
+  onNext: () => void;
+  onPrevious: () => void;
+  onSeek: (seconds: number) => void;
+  minutesOf: (track: AudioTrackSummary) => string;
 }) {
-  const pct = duration ? Math.min(100, (elapsed / duration) * 100) : 0;
+  const length = duration ?? current?.durationSeconds ?? 0;
   return (
-    <div className="grid content-start gap-4">
-      <section aria-label="Now playing" className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-heading">
-          <span className="flex items-end gap-0.5 text-primary-600" aria-hidden="true">
-            <span className="w-0.5 animate-pulse rounded bg-current" style={{ height: 14 }} />
-            <span className="w-0.5 rounded bg-current" style={{ height: 9 }} />
-            <span className="w-0.5 animate-pulse rounded bg-current" style={{ height: 12 }} />
-          </span>
-          Now Playing
-        </h2>
-        {current ? (
-          <div className="mt-3 flex items-center gap-3">
-            <div className="size-16 shrink-0 overflow-hidden rounded-xl bg-primary-50">
-              <CoverImage src={current.coverImageUrl} alt="" />
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-heading">{current.title}</p>
-              <p className="text-xs text-muted">{minutesOf(current)}</p>
-            </div>
-          </div>
-        ) : (
-          <p className="mt-3 text-sm text-muted">Press play on any track to begin.</p>
-        )}
-        <div className="mt-3" aria-hidden="true">
-          <div className="h-1 overflow-hidden rounded-full bg-primary-100">
-            <div className="h-full rounded-full bg-primary-500 transition-[width]" style={{ width: `${pct}%` }} />
-          </div>
-          <div className="mt-1 flex justify-between text-[11px] text-muted tabular-nums">
-            <span>{clock(elapsed)}</span>
-            <span>{duration ? clock(duration) : "—"}</span>
-          </div>
+    <section aria-label="Now playing" className="min-w-0 rounded-2xl border border-[#dfe9dc] bg-gradient-gourd-white p-4 shadow-[0_12px_35px_-30px_rgba(29,63,46,.32)] sm:rounded-3xl sm:p-5 xl:sticky xl:top-24 xl:self-start">
+      <h2 className="flex items-center gap-2 text-sm font-semibold text-heading">
+        <BarChart3 className="size-5 text-primary-700" aria-hidden="true" />Now Playing
+      </h2>
+      {current ? (
+        <div className="mt-4 flex items-center gap-3">
+          <div className="size-20 shrink-0 overflow-hidden rounded-xl bg-primary-50 sm:size-24"><CoverImage src={current.coverImageUrl} alt="" className="h-full w-full object-cover" /></div>
+          <div className="min-w-0"><p className="line-clamp-2 text-sm font-semibold text-heading">{current.title}</p><p className="mt-1 text-xs text-muted">{minutesOf(current)}</p></div>
         </div>
-        <div className="mt-2 flex items-center justify-center gap-2">
-          <button type="button" onClick={onToggle} aria-label={playing ? "Pause" : "Play"} className="inline-flex size-13 items-center justify-center rounded-full bg-primary-600 p-3.5 text-white transition-colors hover:bg-primary-700">
-            {playing ? <Pause className="size-5" aria-hidden="true" /> : <Play className="size-5 fill-current" aria-hidden="true" />}
-          </button>
+      ) : (
+        <div className="mt-4 flex items-center gap-3">
+          <div className="flex size-20 shrink-0 items-center justify-center rounded-xl bg-primary-100 text-primary-700 sm:size-24"><BarChart3 className="size-8" aria-hidden="true" /></div>
+          <div><p className="text-sm font-semibold text-heading">Nothing playing yet</p><p className="mt-1 text-xs leading-relaxed text-muted">Choose a track to begin your journey.</p></div>
         </div>
-      </section>
-
-    </div>
+      )}
+      <div className="mt-4">
+        <label className="sr-only" htmlFor="music-progress">Track progress</label>
+        <input id="music-progress" type="range" min={0} max={length || 1} step={1} value={Math.min(elapsed, length || elapsed)} disabled={!current || !length} onChange={(event) => onSeek(Number(event.target.value))} className="h-1.5 w-full cursor-pointer accent-primary-700 disabled:cursor-default" />
+        <div className="mt-1 flex justify-between text-[11px] text-muted tabular-nums"><span>{clock(elapsed)}</span><span>{length ? clock(length) : "00:00"}</span></div>
+      </div>
+      <div className="mt-3 flex items-center justify-center gap-4 text-primary-800">
+        <button type="button" onClick={onPrevious} disabled={!current} aria-label="Previous track" className="inline-flex size-10 items-center justify-center rounded-full hover:bg-primary-100 disabled:opacity-40"><ChevronLeft className="size-5" aria-hidden="true" /></button>
+        <button type="button" onClick={onToggle} disabled={!current} aria-label={playing ? "Pause" : "Play"} className="inline-flex size-13 items-center justify-center rounded-full bg-primary-700 text-white transition-colors hover:bg-primary-800 disabled:opacity-50">
+          {playing ? <Pause className="size-5" aria-hidden="true" /> : <Play className="ml-0.5 size-5 fill-current" aria-hidden="true" />}
+        </button>
+        <button type="button" onClick={onNext} disabled={!current} aria-label="Next track" className="inline-flex size-10 items-center justify-center rounded-full hover:bg-primary-100 disabled:opacity-40"><ChevronRight className="size-5" aria-hidden="true" /></button>
+      </div>
+    </section>
   );
 }

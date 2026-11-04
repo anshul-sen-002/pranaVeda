@@ -66,7 +66,12 @@ public final class ContentSpecification {
                 cb.like(cb.lower(root.get("summary")), pattern, '\\'),
                 cb.like(cb.lower(root.get("commonName")), pattern, '\\'),
                 cb.like(cb.lower(root.get("sanskritName")), pattern, '\\'),
-                cb.like(cb.lower(root.get("description")), pattern, '\\')));
+                cb.like(cb.lower(root.get("description")), pattern, '\\'),
+                cb.like(cb.lower(root.get("difficulty").as(String.class)), pattern, '\\'),
+                hasSearchCategory(root, cq, cb, pattern),
+                hasSearchTag(root, cq, cb, pattern),
+                hasSearchFacet(root, cq, cb, pattern, FacetType.TARGET_AREA),
+                hasSearchFacet(root, cq, cb, pattern, FacetType.GOAL)));
         }
         if (query.category() != null) {
             predicates.add(hasCategory(root, cq, cb, query.category()));
@@ -98,6 +103,39 @@ public final class ContentSpecification {
         sq.select(tag.<Integer>get("id"));
         sq.where(cb.equal(inner.get("id"), root.get("id")),
                  cb.equal(tag.get("slug"), tagSlug));
+        return cb.exists(sq);
+    }
+
+    private static Predicate hasSearchCategory(Root<ContentItem> root, CriteriaQuery<?> cq,
+                                               CriteriaBuilder cb, String pattern) {
+        Subquery<Integer> sq = cq.subquery(Integer.class);
+        Root<ContentItem> inner = sq.from(ContentItem.class);
+        Join<ContentItem, Category> category = inner.join("categories");
+        sq.select(category.<Integer>get("id"));
+        sq.where(cb.equal(inner.get("id"), root.get("id")),
+                 cb.like(cb.lower(category.get("name")), pattern, '\\'));
+        return cb.exists(sq);
+    }
+
+    private static Predicate hasSearchTag(Root<ContentItem> root, CriteriaQuery<?> cq,
+                                          CriteriaBuilder cb, String pattern) {
+        Subquery<Integer> sq = cq.subquery(Integer.class);
+        Root<ContentItem> inner = sq.from(ContentItem.class);
+        Join<ContentItem, Tag> tag = inner.join("tags");
+        sq.select(tag.<Integer>get("id"));
+        sq.where(cb.equal(inner.get("id"), root.get("id")),
+                 cb.like(cb.lower(tag.get("name")), pattern, '\\'));
+        return cb.exists(sq);
+    }
+
+    private static Predicate hasSearchFacet(Root<ContentItem> root, CriteriaQuery<?> cq,
+                                            CriteriaBuilder cb, String pattern, FacetType type) {
+        Subquery<Integer> sq = cq.subquery(Integer.class);
+        Root<ContentItemFacet> facet = sq.from(ContentItemFacet.class);
+        sq.select(facet.<Integer>get("id"));
+        sq.where(cb.equal(facet.get("contentId"), root.get("id")),
+                 cb.equal(facet.get("facetType"), type),
+                 cb.like(cb.lower(facet.get("facetValue")), pattern, '\\'));
         return cb.exists(sq);
     }
 

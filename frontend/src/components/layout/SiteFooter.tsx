@@ -33,9 +33,9 @@ const columns = [
 export function SiteFooter() {
   return (
     <footer className="border-t border-border-soft bg-surface">
-      <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
+      <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14 lg:px-10">
+        <div className="grid grid-cols-2 gap-x-5 gap-y-9 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4">
+          <div className="col-span-2 sm:col-span-1">
             <Logo />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-body">
               A calm, accessible space for yoga, mindfulness, and holistic
@@ -63,7 +63,7 @@ export function SiteFooter() {
         </div>
 
         {/* Required wellness disclaimer (agents.md 1 / 2.4). */}
-        <p className="mt-10 border-t border-border-soft pt-6 text-xs leading-relaxed text-muted">
+        <p className="mt-9 border-t border-border-soft pt-5 text-xs leading-relaxed text-muted sm:mt-10 sm:pt-6">
           PranaVeda offers general yoga and wellness information only. It is not
           medical advice and cannot diagnose or treat any condition. Always
           listen to your body, stop if something hurts, and consult a qualified

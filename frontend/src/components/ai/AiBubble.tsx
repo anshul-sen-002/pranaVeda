@@ -90,20 +90,21 @@ export function Bubble({ role, content, createdAt, streaming = false }: { role: 
   const speech = useSpeechSynthesis();
 
   return (
-    <div className={cn("flex gap-2.5", isUser && "flex-row-reverse")}>
+    <div className={cn("flex items-end gap-1.5 sm:gap-3", isUser && "flex-row-reverse")}>
       <span
-        className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-700"
+        className={cn("mb-5 flex size-7 shrink-0 items-center justify-center rounded-[10px] border text-primary-700 shadow-sm sm:size-8 sm:rounded-xl", isUser ? "border-primary-700 bg-primary-700 text-white" : "border-[#e3ebdf] bg-gradient-gourd-white")}
         aria-hidden="true"
       >
         {isUser ? <User className="size-4" /> : <Bot className="size-4" />}
       </span>
-      <div className={cn("max-w-[85%] sm:max-w-[78%]", isUser && "flex flex-col items-end")}>
+      <div className={cn("min-w-0 max-w-[91%] sm:max-w-[78%]", isUser && "flex flex-col items-end")}>
+        <p className={cn("mb-0.5 px-1 text-[9px] font-semibold tracking-wide text-muted sm:mb-1 sm:text-[10px]", isUser && "text-right")}>{isUser ? "You" : "PranaVeda"}</p>
         <div
           className={cn(
-            "px-4 py-3 text-sm leading-relaxed transition-colors",
+            "break-words px-3 py-2.5 text-[13px] leading-[1.55] [overflow-wrap:anywhere] sm:px-5 sm:py-3.5 sm:text-[15px] sm:leading-relaxed",
             isUser
-              ? "rounded-2xl rounded-br-md bg-primary-100/80 text-heading"
-              : `rounded-2xl rounded-bl-md bg-primary-50/70 text-body`,
+              ? "rounded-2xl rounded-br-md bg-gradient-primary text-white shadow-[0_10px_24px_-18px_rgba(20,84,63,.65)]"
+              : "rounded-2xl rounded-bl-md border border-[#e7ece3] bg-white text-body shadow-[0_8px_24px_-22px_rgba(29,63,46,.5)]",
           )}
         >
           <FormattedContent content={content} />
@@ -111,7 +112,7 @@ export function Bubble({ role, content, createdAt, streaming = false }: { role: 
         {!isUser && !streaming && (
           <SpeakerToggle content={content} supported={speech.supported} />
         )}
-        {label ? <p className="mt-1 px-1 text-[11px] text-muted tabular-nums">{label}</p> : null}
+        {label ? <p className="mt-1 px-1 text-[10px] text-muted tabular-nums sm:text-[11px]">{label}</p> : null}
       </div>
     </div>
   );

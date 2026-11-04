@@ -61,20 +61,10 @@ public class MediaService {
             requireContentExists(contentId);
         }
         byte[] bytes = readAndValidate(file, kind);
-        StoredMedia stored;
-        if (kind == MediaKind.CONTENT_IMAGE) {
-            // Eager width-capped derivative: cards render ~800 px wide at most,
-            // so the delivery URL serves the capped variant, not the raw upload.
-            java.util.Map<String, Object> capped = new java.util.LinkedHashMap<>();
-            capped.put("width", 1600);
-            capped.put("crop", "limit");
-            capped.put("fetch_format", "auto");
-            capped.put("quality", "auto:good");
-            stored = storage.upload(bytes, folderFor(kind), generatePublicId(kind),
-                    resourceTypeFor(kind), java.util.List.of(capped));
-        } else {
-            stored = storage.upload(bytes, folderFor(kind), generatePublicId(kind), resourceTypeFor(kind));
-        }
+        // Store the validated source directly. Cover uploads use eager
+        // transformations nowhere in the response path, and those transforms
+        // can fail independently of storing the original image.
+        StoredMedia stored = storage.upload(bytes, folderFor(kind), generatePublicId(kind), resourceTypeFor(kind));
 
         MediaAsset asset = new MediaAsset();
         asset.setKind(kind);

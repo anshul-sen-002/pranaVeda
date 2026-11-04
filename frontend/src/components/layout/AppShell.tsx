@@ -1,18 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import {
-  BarChart3, BookOpen, CalendarDays, ChevronDown, ClipboardList,
-  CloudUpload, FileMusic, Flower2, HelpCircle, History, Home, Layers, Leaf, LogOut, Menu,
-  Settings, Sparkles, Trophy, User, Video, Wind, X,
+  ArrowLeft, BookOpen, CalendarDays, ChevronDown, ClipboardList,
+  CloudUpload, FileMusic, Flower2, HelpCircle, Home, Layers, Leaf, LogOut, Menu,
+  Search, Settings, Sparkles, Trophy, User, Video, Wind, X,
 } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
-import { LotusMark } from "@/components/brand/LotusMark";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/cn";
+import { BottomNav } from "@/components/layout/BottomNav";
 
 
 const NAV = [
@@ -34,16 +35,6 @@ const ADMIN_NAV = [
   { href: "/admin/audio", label: "Audio Studio", icon: FileMusic },
   { href: "/admin/media", label: "Media Studio", icon: CloudUpload },
   { href: "/admin/categories", label: "Categories & Tags", icon: ClipboardList },
-  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-];
-
-/** Bottom tab bar on phones: 5 compact destinations, 44px targets. */
-const TABS = [
-  { href: "/dashboard", label: "Home", Icon: Home },
-  { href: "/yoga", label: "Yoga", Icon: User },
-  { href: "/breathing", label: "Breathe", Icon: Wind },
-  { href: "/calm-music", label: "Music", Icon: BookOpen },
-  { href: "/ai", label: "AI", Icon: Sparkles },
 ];
 
 function NavLink({ href, label, Icon, active, onNavigate }: { href: string; label: string; Icon: typeof Home; active: boolean; onNavigate?: () => void }) {
@@ -56,7 +47,7 @@ function NavLink({ href, label, Icon, active, onNavigate }: { href: string; labe
         "flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors",
         // Active item: soft light-green fill + deeper green text (mockup).
         active
-          ? "bg-primary-50 text-primary-700 shadow-[inset_0_0_0_1px_var(--color-primary-100)]"
+          ? "rounded-l-md border-l-[3px] border-primary-600 bg-[#eaf1e5] pl-[9px] text-primary-800"
           : "text-body hover:bg-primary-50/60 hover:text-heading",
       )}
     >
@@ -65,21 +56,8 @@ function NavLink({ href, label, Icon, active, onNavigate }: { href: string; labe
     </Link>
   );
 }
-function QuoteCard({ quote }: { quote?: string }) {
-  return (
-    <div className="relative mt-4 overflow-hidden rounded-2xl bg-gradient-to-b from-primary-50/80 to-primary-100/50 p-4">
-      <LotusMark className="size-8 text-primary-300" />
-      <p className="mt-2 text-sm leading-relaxed text-body">
-        &ldquo;{quote ?? "Good music soothes the mind, heals the heart."}&rdquo;
-      </p>
-      <span className="mt-2 block h-0.5 w-6 rounded bg-primary-300" aria-hidden="true" />
-      <LotusMark className="pointer-events-none absolute -right-8 -bottom-10 size-36 text-primary-200/50" />
-    </div>
-  );
-}
-
 /** App shell: rail sidebar on desktop, drawer + bottom tabs on mobile. */
-export function AppShell({ children, quote }: { children: React.ReactNode; quote?: string }) {
+export function AppShell({ children }: { children: React.ReactNode; quote?: string }) {
   const pathname = usePathname();
   const { user } = useAuth();
   // Fall back to the email, never to a fake role label: a USER account must not
@@ -105,7 +83,7 @@ export function AppShell({ children, quote }: { children: React.ReactNode; quote
   }, [drawerOpen]);
 
   return (
-    <div className="flex min-h-dvh" style={{ backgroundImage: 'url("/serene.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed' }}>
+    <div className="flex min-h-dvh bg-[#f7f8f4]">
       {drawerOpen ? (
         <div className="fixed inset-0 z-40 bg-[#223240]/40 backdrop-blur-sm lg:hidden" onClick={() => setDrawerOpen(false)} aria-hidden="true" />
       ) : null}
@@ -114,7 +92,7 @@ export function AppShell({ children, quote }: { children: React.ReactNode; quote
         role="dialog"
         aria-modal="true"
         aria-label="App navigation"
-        className={cn("fixed inset-y-0 left-0 z-50 flex w-[17rem] max-w-[85vw] shrink-0 flex-col border-r border-border-soft bg-surface pb-4 shadow-2xl transition-transform duration-300 ease-in-out lg:hidden", drawerOpen ? "translate-x-0" : "-translate-x-full")}
+        className={cn("fixed inset-y-0 left-0 z-50 flex w-[17rem] max-w-[88vw] shrink-0 flex-col border-r border-border-soft bg-[#fbfcf8] pb-4 shadow-2xl transition-transform duration-300 ease-in-out lg:hidden", drawerOpen ? "translate-x-0" : "-translate-x-full")}
       >
         <div className="flex h-16 shrink-0 items-center justify-between gap-3 px-4">
           <Link href="/" className="rounded-lg px-1" aria-label="PranaVeda home" onClick={() => setDrawerOpen(false)}><Logo markOnly /></Link>
@@ -124,20 +102,19 @@ export function AppShell({ children, quote }: { children: React.ReactNode; quote
           {NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} onNavigate={() => setDrawerOpen(false)} />))}
           {isAdmin ? (<><div className="mx-3.5 my-2 border-t border-border-soft" /><p className="px-3.5 pb-1 text-[11px] font-semibold tracking-widest text-muted uppercase">Admin</p>{ADMIN_NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} onNavigate={() => setDrawerOpen(false)} />))}</>) : null}
         </nav>
-        <div className="shrink-0 px-3"><QuoteCard quote={quote} /></div>
       </aside>
-      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-border-soft bg-surface/70 px-4 pt-5 pb-5 lg:flex">
+      <aside className="sticky top-0 hidden h-dvh w-[13.5rem] shrink-0 flex-col border-r border-[#e6eadd] bg-[#fbfcf8] px-3.5 pt-5 pb-5 lg:flex xl:w-56 xl:px-4">
         {/* Brand sits at the very top of the rail (mockup). */}
         <Link href="/" className="shrink-0 rounded-lg px-2" aria-label="PranaVeda home"><Logo /></Link>
         <nav aria-label="Primary" className="scrollbar-none mt-6 flex-1 space-y-1 overflow-y-auto">
           {NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} />))}
           {isAdmin ? (<><div className="mx-3.5 my-2 border-t border-border-soft" /><p className="px-3.5 pb-1 text-[11px] font-semibold tracking-widest text-muted uppercase">Admin</p>{ADMIN_NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} />))}</>) : null}
         </nav>
-        <QuoteCard quote={quote} />
       </aside>
       <AppMain pathname={pathname} displayName={displayName} isAdmin={isAdmin} onMenu={() => setDrawerOpen(true)}>
         {children}
       </AppMain>
+      <BottomNav />
     </div>
   );
 }
@@ -145,9 +122,20 @@ export function AppShell({ children, quote }: { children: React.ReactNode; quote
 
 function AppMain({ pathname, displayName, isAdmin, onMenu, children }: { pathname: string; displayName: string; isAdmin: boolean; onMenu: () => void; children: React.ReactNode }) {
   const { status, user, logout } = useAuth();
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const roleLabel = isAdmin ? "Administrator" : "Member";
+  const pageTitle = routeTitle(pathname);
+  const rootTitle = pathname.startsWith("/admin") ? "Admin" : pathname.startsWith("/dashboard") ? "Dashboard" : "Explore";
+  const focusedMobilePage = pathname !== "/dashboard" && !pathname.startsWith("/admin");
+  const aiPage = pathname === "/ai";
+  const search = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const q = searchQuery.trim();
+    if (q) router.push(`/yoga?q=${encodeURIComponent(q)}`);
+  };
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -165,142 +153,115 @@ function AppMain({ pathname, displayName, isAdmin, onMenu, children }: { pathnam
 
   return (
     <div className="flex min-w-0 flex-1 flex-col">
-      <header className="sticky top-0 z-30 border-b border-border-soft/70 bg-surface/85 backdrop-blur-md">
-        <div className="flex h-14 items-center justify-between gap-2 px-3 sm:h-16 sm:px-6">
-          <div className="flex items-center gap-1">
-            <button type="button" onClick={onMenu} className="inline-flex size-11 items-center justify-center rounded-full text-body transition-colors hover:bg-primary-50 lg:hidden" aria-controls="mobile-drawer" aria-label="Open navigation"><Menu className="size-5" aria-hidden="true" /></button>
-            <Link href="/" className="rounded-lg -ml-1 p-1.5 lg:hidden" aria-label="PranaVeda home"><Logo /></Link>
-          </div>
-          
-          {/* Search bar (desktop) */}
-          <div className="hidden lg:flex flex-1 max-w-md mx-4">
-            <div className="relative w-full">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted size-4 pointer-events-none" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <input
-                type="search"
-                placeholder="Search poses, areas, or difficulty..."
-                className="h-10 w-full rounded-full border border-border-soft bg-white pr-4 pl-10 text-sm text-body placeholder:text-muted focus:border-primary-300 focus:ring-2 focus:ring-primary-200 focus:outline-none"
-              />
+      <header className={cn("sticky top-0 z-30 border-b border-[#e6eadd]/90 bg-[#fbfcf8]/90 shadow-[0_4px_24px_-20px_rgba(24,52,37,.35)] backdrop-blur-xl", focusedMobilePage && "hidden sm:block")}>
+        <div className="flex h-[4.25rem] items-center justify-between gap-2 px-3 sm:h-16 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center gap-1">
+            <button type="button" onClick={onMenu} className="inline-flex size-11 items-center justify-center rounded-2xl text-primary-900 transition-colors hover:bg-primary-50 active:scale-95 lg:hidden" aria-controls="mobile-drawer" aria-label="Open navigation"><Menu className="size-[1.35rem]" aria-hidden="true" /></button>
+            <div className="min-w-0 pl-1 lg:hidden">
+              <p className="truncate text-[15px] font-semibold leading-5 tracking-[-.02em] text-heading">{pageTitle}</p>
+              <p className="text-xs leading-4 text-[#78958a]">PranaVeda</p>
             </div>
           </div>
+          
+          <form onSubmit={search} role="search" className="hidden min-w-0 max-w-md flex-1 lg:block">
+            <label className="relative block">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden="true" />
+              <input type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search poses, areas, or difficulty..." aria-label="Search yoga library" className="h-10 w-full rounded-full border border-[#e5e9df] bg-white/90 pr-4 pl-10 text-sm text-heading placeholder:text-muted focus:border-primary-300 focus:ring-2 focus:ring-primary-100 focus:outline-none" />
+            </label>
+          </form>
 
-          {/* Breadcrumb */}
-          <div className="hidden lg:flex items-center gap-1 text-sm text-muted">
-            <span>Library</span>
-            <ChevronDown className="size-4" />
-            <span>Calm Music</span>
+          <div className="hidden min-w-0 items-center gap-2 text-sm lg:flex">
+            <span className="text-muted">{rootTitle}</span><ChevronDown className="size-4 -rotate-90 text-muted" aria-hidden="true" />
+            <span className="truncate font-medium text-primary-800" aria-current="page">{pageTitle}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Notification bell */}
-            <button
-              type="button"
-              className="rounded-full p-1.5 text-muted hover:bg-primary-50 hover:text-heading transition-colors"
-              aria-label="Notifications"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-            </button>
-            <span className="hidden h-6 w-px bg-border-soft sm:block" aria-hidden="true" />
-            <div ref={menuRef} className="relative">
+          <div ref={menuRef} className="relative">
               <button
                 type="button"
                 onClick={() => setMenuOpen((v) => !v)}
                 aria-haspopup="menu"
                 aria-expanded={menuOpen}
                 aria-label={`Account: ${displayName}`}
-                className="inline-flex items-center gap-2 rounded-full py-1 pr-1 pl-1 transition-colors hover:bg-primary-50"
+                className={cn("group inline-flex max-w-[45vw] items-center gap-2 rounded-full border border-transparent p-1 transition-all duration-200 hover:border-[#dce8df] hover:bg-white/80 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 sm:max-w-none", menuOpen && "border-[#dce8df] bg-white shadow-sm")}
               >
-                <span className="flex size-8 items-center justify-center rounded-full bg-primary-100 text-primary-700"><User className="size-4" aria-hidden="true" /></span>
-                <span className="hidden max-w-28 truncate text-sm font-medium text-body sm:inline">{displayName}</span>
+                <span className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-[#e5f0e8] to-[#cfe5d8] text-primary-800 ring-1 ring-white transition-transform group-hover:scale-[1.03]"><User className="size-[1.1rem]" aria-hidden="true" /></span>
+                <span className="hidden min-w-0 pr-1 text-left sm:block"><span className="block max-w-36 truncate text-sm font-semibold leading-4 text-heading">{isAdmin ? "Administrator" : displayName}</span><span className="mt-0.5 block max-w-36 truncate text-[11px] leading-3 text-muted">{isAdmin ? displayName : "Your account"}</span></span>
                 {/* Role chip — the mockup shows "Administrator" next to the name. */}
                 <span className="hidden items-center gap-1.5 lg:inline-flex">
                 </span>
-                <ChevronDown className={cn("hidden size-4 text-muted transition-transform sm:inline", menuOpen && "rotate-180")} aria-hidden="true" />
+                <ChevronDown className={cn("mr-1 hidden size-4 text-muted transition-transform duration-200 sm:inline", menuOpen && "rotate-180")} aria-hidden="true" />
               </button>
+              <AnimatePresence>
               {menuOpen ? (
-                <div role="menu" className="absolute right-0 z-40 mt-2 w-64 overflow-hidden rounded-2xl border border-border-soft bg-surface py-1.5 shadow-[0_20px_50px_-20px_rgba(29,111,84,0.5)]">
+                <motion.div role="menu" initial={{ opacity: 0, y: -7, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -5, scale: 0.98 }} transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }} className="absolute right-0 z-40 mt-2.5 w-[min(19rem,calc(100vw-1.5rem))] origin-top-right overflow-hidden rounded-[1.35rem] border border-[#e1e9df] bg-[#fcfdf9]/95 p-1.5 shadow-[0_22px_60px_-24px_rgba(24,52,37,.4)] backdrop-blur-2xl">
                   {/* Screenshot-style header: avatar + name + email + role pill */}
-                  <div className="flex items-center gap-3 px-4 pt-2 pb-3">
-                    <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-700">
+                  <div className="m-1 flex items-center gap-3 rounded-2xl bg-gradient-gourd-white p-3">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-primary-700 shadow-sm ring-1 ring-white">
                       <User className="size-5" aria-hidden="true" />
                     </span>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-heading">{displayName}</p>
+                      <p className="truncate text-sm font-semibold text-heading">{isAdmin ? "Administrator" : displayName}</p>
                       <p className="truncate text-xs text-muted">{user?.email ?? "—"}</p>
-                      <span className="mt-1 inline-flex rounded-full bg-primary-100 px-2 py-0.5 text-[11px] font-medium text-primary-700">
+                      <span className="mt-1 inline-flex rounded-full bg-white/75 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-primary-800 ring-1 ring-primary-100">
                         {roleLabel}
                       </span>
                     </div>
                   </div>
-                  <div className="border-t border-border-soft" aria-hidden="true" />
-                  <Link href="/dashboard/wellness" role="menuitem" onClick={() => setMenuOpen(false)} className="mt-1 flex items-center gap-2.5 px-4 py-2.5 text-sm text-body transition-colors hover:bg-primary-50 hover:text-heading">
+                  <div className="mx-2 my-1 border-t border-[#e9eee7]" aria-hidden="true" />
+                  <Link href="/dashboard/wellness" role="menuitem" onClick={() => setMenuOpen(false)} className="mx-1 flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-body transition-colors hover:bg-white hover:text-heading">
                     <User className="size-4" aria-hidden="true" /> Profile
                   </Link>
-                  <Link href="/dashboard/settings" role="menuitem" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-body transition-colors hover:bg-primary-50 hover:text-heading">
+                  <Link href="/dashboard/settings" role="menuitem" onClick={() => setMenuOpen(false)} className="mx-1 flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-body transition-colors hover:bg-white hover:text-heading">
                     <Settings className="size-4" aria-hidden="true" /> Settings
                   </Link>
-                  <Link href="/safety" role="menuitem" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-body transition-colors hover:bg-primary-50 hover:text-heading">
+                  <Link href="/safety" role="menuitem" onClick={() => setMenuOpen(false)} className="mx-1 flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-body transition-colors hover:bg-white hover:text-heading">
                     <HelpCircle className="size-4" aria-hidden="true" /> Help &amp; Support
                   </Link>
-                  <div className="border-t border-border-soft" aria-hidden="true" />
+                  <div className="mx-2 my-1 border-t border-[#e9eee7]" aria-hidden="true" />
                   {status === "authenticated" ? (
                     <button
                       type="button"
                       role="menuitem"
                       onClick={() => { setMenuOpen(false); void logout(); }}
-                      className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm text-body transition-colors hover:bg-primary-50 hover:text-heading"
+                      className="mx-1 flex min-h-11 w-[calc(100%-0.5rem)] items-center gap-3 rounded-xl px-3 text-left text-sm text-[#a34e45] transition-colors hover:bg-[#fff2ef]"
                     >
                       <LogOut className="size-4" aria-hidden="true" /> Log Out
                     </button>
                   ) : (
-                    <Link href="/login" role="menuitem" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-body transition-colors hover:bg-primary-50 hover:text-heading">
+                    <Link href="/login" role="menuitem" onClick={() => setMenuOpen(false)} className="mx-1 flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-body transition-colors hover:bg-white hover:text-heading">
                       <User className="size-4" aria-hidden="true" /> Sign in
                     </Link>
                   )}
-                </div>
+                </motion.div>
               ) : null}
+              </AnimatePresence>
             </div>
           </div>
-        </div>
-      </header>
-<main className="min-w-0 flex-1 px-3 pt-4 pb-32 sm:px-6 sm:py-6 lg:pb-10 bg-gradient-to-b from-surface-tint/60 via-transparent to-primary-50/20">{children}</main>
-      {/* Bottom tab bar — phones only, pill-shaped like the mobile app. */}
-      <nav aria-label="Quick navigation" className="fixed inset-x-0 bottom-[0px] z-40 lg:hidden">
-        <div className="mx-auto max-w-md w-full rounded-t-[0.8rem] border border-border-soft bg-white backdrop-blur-md shadow-lg px-2 py-1.5 ">
-          <ul className="flex justify-around items-center">
-            {TABS.map(({ href, label, Icon }) => {
-              const active = href === "/dashboard" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
-              return (
-                  <Link
-                    href={href}
-                    aria-current={active ? "page" : undefined}
-                    className={cn(
-                      "flex flex-col items-center justify-center gap-1 min-h-[30px] px-3 py-0.5 rounded-xl text-[9px] font-medium transition-colors",
-                      active ? "text-primary-600" : "text-gray-900 hover:text-primary-600",
-                    )}
-                  >
-                    <Icon
-                      className={cn(
-                        "size-5 shrink-0",
-                        active ? "text-primary-600" : "text-gray-900",
-                      )}
-                      aria-hidden="true"
-                    />
-                    <span className={cn("text-[9px] font-medium", active ? "text-primary-600" : "text-gray-900")}>
-                      {label}
-                    </span>
-                  </Link>
-              );
-            })}
-          </ul>
-        </div>
-      </nav>
-    </div>
+        </header>
+        <main className={cn("min-w-0 flex-1", focusedMobilePage
+          ? "relative flex h-[100dvh] min-h-0 flex-col overflow-hidden p-0 sm:h-auto sm:overflow-y-auto sm:px-6 sm:py-6 sm:pb-6 lg:px-8 lg:pb-8"
+          : "overflow-y-auto px-3 py-4 pb-20 sm:px-6 sm:py-6 sm:pb-6 lg:px-8 lg:pb-8")}>
+          {focusedMobilePage && !aiPage ? (
+            <Link href="/dashboard" aria-label={`Back to dashboard from ${pageTitle}`} title="Back to dashboard" className="absolute top-[max(.75rem,env(safe-area-inset-top))] left-3 z-30 inline-flex size-10 items-center justify-center rounded-full border border-white/80 bg-white/75 text-primary-900 shadow-[0_6px_24px_-12px_rgba(24,52,37,.35)] backdrop-blur-xl transition-all hover:bg-white active:scale-95 sm:hidden"><ArrowLeft className="size-5" aria-hidden="true" /></Link>
+          ) : null}
+          {focusedMobilePage && !aiPage ? <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto px-3 pt-14 pb-[max(1rem,env(safe-area-inset-bottom))] sm:contents">{children}</div> : children}
+        </main>
+      </div>
   );
+}
+
+function routeTitle(pathname: string) {
+  const titles: Record<string, string> = {
+    "/dashboard": "Overview", "/dashboard/history": "Sessions", "/dashboard/routines": "Routines",
+    "/dashboard/challenges": "Challenges", "/dashboard/wellness": "Wellness", "/dashboard/saved": "Saved library",
+    "/dashboard/settings": "Settings", "/yoga": "Yoga Asanas", "/videos": "Yoga Videos",
+    "/calm-music": "Calm Music", "/breathing": "Breathing", "/ai": "AI Assistant",
+    "/ai/history": "AI History", "/admin/content": "Content Studio", "/admin/audio": "Audio Studio",
+    "/admin/media": "Media Studio", "/admin/categories": "Categories & Tags",
+  };
+  const detail = pathname.match(/^\/(?:yoga|calm-music)\/([^/]+)/);
+  if (detail) return decodeURIComponent(detail[1]).replaceAll("-", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  if (pathname.startsWith("/dashboard/routines/")) return "Routine details";
+  if (pathname.startsWith("/admin/content/")) return "Content steps";
+  return titles[pathname] ?? "PranaVeda";
 }

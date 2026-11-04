@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { ArrowDown, ArrowUp, ImagePlus, Loader2, Sparkles, Trash2 } from "lucide-react";
 
 import { AdminGuard } from "@/components/admin/AdminGuard";
+import { AppShell } from "@/components/layout/AppShell";
 import { DotLoader } from "@/components/motion/DotLoader";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
@@ -21,7 +22,9 @@ import type { ContentStep, ContentStatus } from "@/lib/api/types";
 export default function AdminStepsPage() {
   return (
     <AdminGuard>
-      <StepsEditor />
+      <AppShell>
+        <StepsEditor />
+      </AppShell>
     </AdminGuard>
   );
 }

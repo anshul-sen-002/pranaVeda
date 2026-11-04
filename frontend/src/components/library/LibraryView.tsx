@@ -103,10 +103,10 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
 
 
   return (
-    <div className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30">
+    <div id="content-library" className="min-w-0 scroll-mt-24 rounded-2xl border border-[#e6eadd] bg-white/90 shadow-[0_12px_35px_-30px_rgba(29,63,46,.32)] sm:rounded-3xl">
       {/* Search + sort row */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center px-3 sm:px-6 pt-3 pb-2">
-        <div className="relative flex-1">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_8.5rem] items-center gap-2 px-3 pt-3 pb-2 sm:flex sm:gap-3 sm:px-5 sm:pt-5">
+        <div className="relative min-w-0 flex-1">
           <Search
             className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted"
             aria-hidden="true"
@@ -115,19 +115,19 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
             type="search"
             value={qInput}
             onChange={(e) => setQInput(e.target.value)}
-            placeholder="Search poses, focus areas, or difficulty…"
-            aria-label="Search yoga poses"
-            className="h-11 w-full max-w-xs sm:w-full rounded-full border border-border-soft bg-surface pr-4 pl-11 text-sm text-heading placeholder:text-muted focus:border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-200"
+            placeholder={fixedType === "VIDEO" ? "Search videos..." : "Search poses..."}
+            aria-label={fixedType === "VIDEO" ? "Search yoga videos" : "Search yoga poses"}
+            className="h-11 w-full rounded-full border border-[#e6eadd] bg-[#fbfcf8] pr-4 pl-11 text-sm text-heading placeholder:text-muted focus:border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-100"
           />
         </div>
 
-        <label className="relative inline-flex items-center gap-2 text-sm text-muted sm:w-auto">
+        <label className="relative inline-flex min-w-0 items-center gap-2 text-sm text-muted sm:w-auto">
           <span className="hidden sm:inline">Sort by</span>
           <select
             value={params.sort ?? "newest"}
             onChange={(e) => patch({ sort: e.target.value as ContentListParams["sort"] })}
             aria-label="Sort library results"
-            className="h-11 w-full appearance-none rounded-full border border-border-soft bg-surface px-4 pr-9 text-sm text-heading focus:border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-200 sm:w-auto"
+            className="h-11 w-full appearance-none rounded-full border border-[#e6eadd] bg-[#fbfcf8] px-3 pr-8 text-xs text-heading focus:border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-100 sm:w-auto sm:px-4 sm:pr-9 sm:text-sm"
           >
             {SORT_OPTIONS.map((s) => (
               <option key={s.value} value={s.value}>
@@ -143,7 +143,7 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
       </div>
 
       {/* Filter chips */}
-      <div className="scrollbar-none mt-4 flex flex-wrap items-center gap-2 px-3 sm:px-6" role="group" aria-label="Filter poses">
+      <div className="scrollbar-none mt-2 flex items-center gap-2 overflow-x-auto px-3 py-2 sm:mt-3 sm:flex-wrap sm:overflow-visible sm:px-5" role="group" aria-label="Filter poses">
         <Chip active={!params.difficulty && !params.type} label="All" onClick={() => patch({ difficulty: undefined, type: undefined })} />
         {DIFFICULTIES.map((d) => (
           <Chip
@@ -175,15 +175,15 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
       </div>
 
       {/* Result count */}
-      <p className="mt-4 text-sm text-muted" aria-live="polite">
-        {loading ? "Loading poses…" : err ? null : total !== null ? `${total} pose${total === 1 ? "" : "s"}` : null}
+      <p className="mt-2 px-4 pb-1 text-xs font-medium text-muted sm:px-5 sm:text-sm" aria-live="polite">
+        {loading ? (fixedType === "VIDEO" ? "Loading videos..." : "Loading poses...") : err ? null : total !== null ? `${total} ${fixedType === "VIDEO" ? "video" : "pose"}${total === 1 ? "" : "s"}` : null}
       </p>
 
 
       {err ? (
         <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-danger/30 bg-danger/5 px-6 py-12 text-center" role="alert">
           <TriangleAlert className="size-8 text-danger" aria-hidden="true" />
-          <p className="font-medium text-heading">Could not load poses</p>
+          <p className="font-medium text-heading">Could not load {fixedType === "VIDEO" ? "videos" : "poses"}</p>
           <p className="text-sm text-muted">{err}</p>
           <button
             type="button"
@@ -196,7 +196,7 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
       ) : null}
 
       {loading ? (
-        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 2xl:grid-cols-4" aria-hidden="true">
           {Array.from({ length: 6 }).map((_, i) => (
             <ContentCardSkeleton key={i} />
           ))}
@@ -204,7 +204,7 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
       ) : null}
 
       {!loading && !err && data && data.content.length > 0 ? (
-        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 grid min-w-0 gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 2xl:grid-cols-4">
           {data.content.map((item) => (
             <ContentCard key={item.id} item={item} />
           ))}
@@ -215,7 +215,7 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
         <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-border-soft bg-surface px-6 py-12 text-center">
           <Inbox className="size-8 text-primary-300" aria-hidden="true" />
           <p className="font-medium text-heading">Nothing here yet</p>
-          <p className="text-sm text-muted">No practices match these filters. Try clearing one.</p>
+          <p className="text-sm text-muted">No {fixedType === "VIDEO" ? "videos" : "practices"} match these filters. Try clearing one.</p>
           <button
             type="button"
             onClick={reset}
@@ -229,7 +229,7 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
 
       {/* Numbered pagination (bottom-left, mockup 1) */}
       {!loading && !err && totalPages > 1 ? (
-        <nav className="mt-8 flex items-center gap-1.5" aria-label="Library pages">
+        <nav className="mt-6 flex flex-wrap items-center gap-1.5 pb-4 sm:mt-8" aria-label="Library pages">
           <PageBtn onClick={() => setPage(page - 1)} disabled={page <= 0} label="Previous page">
             <ChevronLeft className="size-4" aria-hidden="true" />
           </PageBtn>
@@ -266,7 +266,7 @@ function Chip({ active, label, onClick }: { active: boolean; label: string; onCl
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "inline-flex h-9 items-center rounded-full border px-4 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300",
+        "inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300",
         active
           ? "border-primary-500 bg-gradient-primary text-white shadow-[0_6px_16px_-8px_rgba(29,111,84,0.7)]"
           : "border-border-soft bg-surface text-body hover:border-primary-200 hover:text-primary-700",

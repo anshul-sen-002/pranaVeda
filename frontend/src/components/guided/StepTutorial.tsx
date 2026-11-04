@@ -54,6 +54,7 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [slideIndex, setSlideIndex] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [narratingStep, setNarratingStep] = useState<number | null>(null);
 
   const slideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const speechSession = useRef(0);
@@ -169,37 +170,7 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
     };
   }, [speech]);
 
-  if (!active || total === 0) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 10 }}
-        className="mt-6 flex flex-col items-center gap-4 rounded-3xl border border-border-soft bg-surface p-6 sm:p-8"
-      >
-        <div className="flex items-center gap-3 rounded-xl bg-primary-50 px-4 py-3">
-          {getMediaTypeIcon(steps[0]?.mediaType ?? "IMAGE")}
-          <span className="text-sm font-semibold text-heading">
-            {steps[0]?.mediaType === "AUDIO" ? "Audio guidance" : "Guided practice"}
-          </span>
-          <span className="text-xs text-muted">{poseTitle}</span>
-        </div>
-        <div className="flex items-center justify-between w-full max-w-md gap-3">
-          <p className="text-sm text-muted">
-            {total} step{total > 1 ? "s" : ""} ready. Tap <b>Start</b> to begin.
-          </p>
-          <button
-            type="button"
-            onClick={togglePlay}
-            className="inline-flex items-center gap-2 rounded-full bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-50 disabled:pointer-events-none transition-colors"
-          >
-            <Play className="size-4" aria-hidden="true" />
-            Start
-          </button>
-        </div>
-      </motion.div>
-    );
-  }
+  if (total === 0) return null;
 
   const isLastStep = stepIndex >= total - 1;
   const isLastImage =
@@ -213,6 +184,91 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
   const isImage = mediaType === "IMAGE" && images.length > 0;
 
   return (
+    <div className="space-y-5">
+      {!active ? (
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          aria-label={`Step-by-step guide for ${poseTitle}`}
+          className="overflow-hidden rounded-2xl border border-border-soft bg-white shadow-[0_18px_44px_-38px_rgba(29,63,46,.45)] sm:rounded-3xl"
+        >
+          <header className="flex flex-col gap-3 border-b border-border-soft bg-gradient-gourd-white p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5">
+            <div className="min-w-0">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-heading sm:text-xl">
+                <span className="flex size-9 items-center justify-center rounded-xl bg-primary-100 text-primary-700">{getMediaTypeIcon(steps[0]?.mediaType ?? "IMAGE")}</span>
+                Step-by-step guide
+              </h2>
+              <p className="mt-1 text-xs leading-relaxed text-muted sm:text-sm">
+                Follow each step at your own pace. {speech.supported ? "Play narration using your device’s voice." : "Read each instruction at your own pace."}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={togglePlay}
+              className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 self-start rounded-full bg-primary-700 px-5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 sm:self-center"
+            >
+              <Play className="size-4 fill-current" aria-hidden="true" />
+              Play full guide <span className="text-xs font-medium text-white/75">({total} {total === 1 ? "step" : "steps"})</span>
+            </button>
+          </header>
+
+          <ol className="divide-y divide-border-soft">
+            {steps.map((item, index) => {
+              const image = item.coverImageUrl ?? item.imageUrl ?? item.imageUrls?.[0] ?? null;
+              const points = (item.instruction ?? "").split(/\n+|(?<=[.!?])\s+/).map((line) => line.replace(/^[-•*]\s*/, "").trim()).filter(Boolean);
+              const isNarrating = narratingStep === index && speech.speaking;
+              return (
+                <li key={item.id} className="grid min-w-0 gap-3 p-3 sm:grid-cols-[9rem_minmax(0,1fr)_auto] sm:items-center sm:gap-5 sm:p-4">
+                  <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-primary-50 sm:aspect-[4/3]">
+                    {item.mediaType === "VIDEO" && item.videoUrl ? (
+                      <video src={item.videoUrl} poster={image ?? undefined} controls playsInline preload="metadata" className="h-full w-full object-cover" aria-label={`${poseTitle}, step ${index + 1}`} />
+                    ) : image ? (
+                      <img src={image} alt={`${poseTitle}, step ${index + 1}`} loading="lazy" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-primary-500">{getMediaTypeIcon(item.mediaType)}</div>
+                    )}
+                  </div>
+
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-100 text-sm font-semibold text-primary-800">{index + 1}</span>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm font-semibold text-heading">{item.caption?.trim() || `Step ${index + 1}`}</h3>
+                      {points.length > 0 ? (
+                        <ul className="mt-1.5 space-y-1 text-xs leading-relaxed text-body sm:text-sm">
+                          {points.map((point, pointIndex) => <li key={`${item.id}-${pointIndex}`} className="flex items-start gap-2"><span className="mt-[0.45rem] size-1 shrink-0 rounded-full bg-primary-500" aria-hidden="true" /><span>{point}</span></li>)}
+                        </ul>
+                      ) : <p className="mt-1.5 text-xs text-muted">Follow the pose image and move gently into position.</p>}
+                      {item.mediaType === "AUDIO" && item.audioUrl ? <audio src={item.audioUrl} controls preload="metadata" className="mt-2 h-9 w-full max-w-sm" aria-label={`Audio for step ${index + 1}`} /> : null}
+                    </div>
+                  </div>
+
+                  {item.instruction?.trim() && speech.supported ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isNarrating) {
+                          speech.cancel();
+                          setNarratingStep(null);
+                        } else {
+                          setNarratingStep(index);
+                          speech.speak(item.instruction ?? "", { onEnd: () => setNarratingStep(null) });
+                        }
+                      }}
+                      aria-label={`${isNarrating ? "Stop" : "Play"} narration for step ${index + 1}`}
+                      className="inline-flex min-h-10 items-center justify-center gap-2 justify-self-end rounded-full border border-primary-200 bg-primary-50/60 px-4 text-xs font-semibold text-primary-800 transition-colors hover:border-primary-300 hover:bg-primary-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 sm:min-w-32"
+                    >
+                      {isNarrating ? <Pause className="size-4" aria-hidden="true" /> : <Volume2 className="size-4" aria-hidden="true" />}
+                      {isNarrating ? "Stop narration" : "Play narration"}
+                    </button>
+                  ) : <span className="hidden sm:block" aria-hidden="true" />}
+                </li>
+              );
+            })}
+          </ol>
+        </motion.section>
+      ) : null}
+
+      {active ? (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -423,5 +479,7 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
         </div>
       </div>
     </motion.div>
+      ) : null}
+    </div>
   );
 }

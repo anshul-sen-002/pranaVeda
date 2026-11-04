@@ -54,16 +54,16 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
-      <div className="flex flex-col gap-5 sm:gap-6">
+      <div className="flex flex-col gap-4 sm:gap-6">
         <motion.header
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <h1 className="text-[26px] leading-tight font-semibold tracking-tight text-heading sm:text-[30px]">
+          <h1 className="text-2xl leading-tight font-semibold tracking-tight text-heading sm:text-[30px]">
             Welcome back
           </h1>
-          <p className="mt-1.5 text-[15px] text-muted">
+          <p className="mt-1.5 text-sm leading-6 text-muted sm:text-[15px]">
             Continue your wellness journey
           </p>
         </motion.header>

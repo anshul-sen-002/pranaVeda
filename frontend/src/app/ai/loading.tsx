@@ -1,10 +1,8 @@
-import { DotLoader } from "@/components/motion/DotLoader";
+import { ModuleLoading } from "@/components/layout/ModuleLoading";
 
 /** Loading state while the AI chat loads conversation history. */
 export default function AiLoading() {
   return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <DotLoader text="Loading AI companion" />
-    </div>
+    <ModuleLoading text="Loading AI companion" />
   );
 }

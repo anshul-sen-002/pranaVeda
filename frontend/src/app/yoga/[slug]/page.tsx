@@ -43,17 +43,17 @@ export default async function YogaDetailPage({
       <SiteHeader />
       <main className="flex flex-1 flex-col">
         <PoseDetail detail={detail} />
+        {detail.steps.length > 0 ? (
+          <section className="mx-auto w-full max-w-6xl px-3 pb-6 sm:px-8 sm:pb-8" aria-label="Guided practice">
+            <StepTutorial steps={detail.steps} poseTitle={detail.summary.title} />
+          </section>
+        ) : null}
         <div className="mx-auto w-full max-w-6xl px-5 pb-4 sm:px-8">
           <PostureCoach poseTitle={detail.summary.title} />
         </div>
         <div className="mx-auto w-full max-w-6xl px-5 pb-4 sm:px-8">
           <SessionTimer contentId={detail.summary.id} defaultMinutes={detail.summary.durationMinutes ?? 10} />
         </div>
-        {detail.steps.length > 0 ? (
-          <section className="mx-auto w-full max-w-6xl px-5 pb-14 sm:px-8" aria-label="Guided practice">
-            <StepTutorial steps={detail.steps} poseTitle={detail.summary.title} />
-          </section>
-        ) : null}
       </main>
       <SiteFooter />
     </div>

@@ -13,7 +13,7 @@ export const SUGGESTIONS = [
 /** "Quick Suggestions" rail card (screenshot, right column). */
 export function QuickSuggestions({ onPick }: { onPick: (label: string) => void }) {
   return (
-    <section aria-label="Quick suggestions" className="rounded-3xl border border-border-soft bg-surface p-4 sm:p-5">
+    <section aria-label="Quick suggestions" className="rounded-3xl border border-[#e4eadd] bg-white/90 p-4 shadow-[0_14px_40px_-34px_rgba(29,63,46,.38)] sm:p-5">
       <h2 className="flex items-center gap-2 text-[15px] font-semibold text-heading">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="size-4.5 text-primary-500">
           <path d="M12 2l1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9L12 2zm7 11l.9 2.6 2.6.9-2.6.9L19 20l-.9-2.6-2.6-.9 2.6-.9L19 13z" />
@@ -26,7 +26,7 @@ export function QuickSuggestions({ onPick }: { onPick: (label: string) => void }
             <button
               type="button"
               onClick={() => onPick(s.label)}
-              className="group flex w-full items-center gap-3 rounded-2xl bg-surface-tint/60 px-3 py-2.5 text-left transition-colors hover:bg-primary-50"
+              className="group flex min-h-12 w-full items-center gap-3 rounded-2xl border border-transparent bg-gradient-gourd-white px-3 py-2.5 text-left transition-[border-color,transform] hover:-translate-y-0.5 hover:border-[#dfe9dc]"
             >
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary-100/70 text-primary-700">
                 <s.icon className="size-4.5" aria-hidden="true" />

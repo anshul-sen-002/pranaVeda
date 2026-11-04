@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { ArrowRight, BookOpen, Flower2, Home, Info, LogIn, LogOut, Menu, Music2, UserPlus, Wind, X } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
 import { LinkButton } from "@/components/ui/LinkButton";
@@ -14,7 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
  * Sticky public header.
  *
  * It reacts to the resolved auth state, not a guess:
- *  - authenticated -> Dashboard + Sign out
+ *  - authenticated -> Dashboard, with sign out in the mobile menu
  *  - anonymous     -> Sign in + Get started
  *
  * While "loading" we render the anonymous actions immediately rather than a
@@ -61,13 +61,13 @@ export function SiteHeader() {
       className={[
         "sticky top-0 z-40 transition-colors duration-300",
         scrolled || menuOpen
-          ? "border-b border-border-soft bg-surface backdrop-blur-md"
-          : "border-b border-transparent bg-transparent",
+          ? "border-b border-border-soft bg-[#fbfbf7]/95 backdrop-blur-xl"
+          : "border-b border-border-soft/50 bg-[#fbfbf7]/80 backdrop-blur-lg",
       ].join(" ")}
     >
       <nav
         aria-label="Main"
-        className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8"
+        className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-8 lg:px-10"
       >
         <Link href="/" className="rounded-lg" aria-label="PranaVeda home" onClick={() => setMenuOpen(false)}>
           <Logo />
@@ -89,7 +89,7 @@ export function SiteHeader() {
               <LinkButton href="/dashboard" size="sm" className="hidden sm:inline-flex">
                 Dashboard
               </LinkButton>
-              <Button size="sm" variant="secondary" onClick={() => void logout()}>
+              <Button size="sm" variant="secondary" onClick={() => void logout()} className="hidden md:inline-flex">
                 Sign out
               </Button>
             </>
@@ -114,54 +114,66 @@ export function SiteHeader() {
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             className="inline-flex !h-11 !min-w-11 !px-0 md:hidden"
           >
-            {menuOpen ? <X className="size-5" aria-hidden="true" /> : <Menu className="size-5" aria-hidden="true" />}
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span key={menuOpen ? "close" : "menu"} initial={{ opacity: 0, rotate: -35, scale: 0.8 }} animate={{ opacity: 1, rotate: 0, scale: 1 }} exit={{ opacity: 0, rotate: 35, scale: 0.8 }} transition={{ duration: 0.16 }} className="flex">
+                {menuOpen ? <X className="size-5" aria-hidden="true" /> : <Menu className="size-5" aria-hidden="true" />}
+              </motion.span>
+            </AnimatePresence>
           </Button>
         </div>
       </nav>
 
       {/* Mobile panel */}
-      {menuOpen ? (
-        <nav id="mobile-nav" aria-label="Mobile" className="border-t border-border-soft/50 bg-gradient-to-b from-surface via-primary-50/30 to-surface-tint/80 backdrop-blur-xl md:hidden shadow-[0_-8px_30px_-12px_rgba(29,111,84,0.15)]">
-          <ul className="mx-auto max-w-6xl space-y-1 px-5 py-4 sm:px-8">
-            {[
-              { href: "/yoga", label: "Yoga" },
-              { href: "/calm-music", label: "Calm Music" },
-              { href: "/breathing", label: "Breathing" },
-              { href: "/about", label: "About" },
-              ...(signedIn
-                ? [{ href: "/dashboard", label: "Dashboard" }]
-                : [
-                    { href: "/login", label: "Sign in" },
-                    { href: "/register", label: "Get started" },
-                  ]),
-            ].map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="flex min-h-11 items-center gap-3 rounded-xl px-4 py-2.5 text-[15px] font-medium text-heading transition-all duration-200 hover:bg-primary-50/80 hover:translate-x-1 active:bg-primary-100 active:scale-[0.98]"
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
+      <AnimatePresence>
+        {menuOpen ? (
+          <motion.nav
+            id="mobile-nav"
+            aria-label="Mobile"
+            initial={{ opacity: 0, y: -8, scale: 0.985 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.985 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute top-full right-3 left-3 z-50 mt-2 max-h-[calc(100dvh-5.5rem)] overflow-y-auto rounded-3xl border border-[#e2e9df] bg-[#fbfcf8]/[.98] p-3 shadow-[0_24px_70px_-28px_rgba(24,52,37,.35)] backdrop-blur-2xl md:hidden sm:left-auto sm:right-6 sm:w-[22rem]"
+          >
             {signedIn ? (
-              <li>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    void logout();
-                  }}
-                  className="flex min-h-11 w-full items-center gap-3 rounded-xl px-4 py-2.5 text-left text-[15px] font-medium text-heading transition-all duration-200 hover:bg-primary-50/80 hover:translate-x-1 active:bg-primary-100 active:scale-[0.98]"
-                >
+              <div className="mb-2 flex items-center gap-3 rounded-2xl bg-gradient-gourd-white p-3.5">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-800"><Home className="size-5" aria-hidden="true" /></span>
+                <span className="min-w-0"><span className="block text-sm font-semibold text-heading">{user?.displayName?.trim() || "Your account"}</span><span className="block truncate text-xs text-muted">{user?.email}</span></span>
+              </div>
+            ) : (
+              <div className="mb-2 rounded-2xl bg-gradient-gourd-white px-4 py-3.5"><p className="text-sm font-semibold text-heading">Find your moment of calm</p><p className="mt-0.5 text-xs text-muted">Explore at your own pace, with or without an account.</p></div>
+            )}
+            <ul className="space-y-1">
+              {[
+                { href: "/yoga", label: "Yoga asanas", Icon: Flower2 },
+                { href: "/calm-music", label: "Calm music", Icon: Music2 },
+                { href: "/breathing", label: "Breathing", Icon: Wind },
+                { href: "/about", label: "About PranaVeda", Icon: Info },
+                ...(signedIn ? [{ href: "/dashboard", label: "Dashboard", Icon: Home }] : [
+                  { href: "/login", label: "Sign in", Icon: LogIn },
+                  { href: "/register", label: "Create account", Icon: UserPlus },
+                ]),
+              ].map((item, index) => (
+                <motion.li key={item.href} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.18, delay: index * 0.025 }}>
+                  <Link href={item.href} onClick={() => setMenuOpen(false)} className="group flex min-h-12 items-center gap-3 rounded-2xl px-3 text-sm font-medium text-body transition-colors hover:bg-primary-50 hover:text-primary-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-white text-primary-700 shadow-sm transition-colors group-hover:bg-primary-100"><item.Icon className="size-4" aria-hidden="true" /></span>
+                    <span className="flex-1">{item.label}</span>
+                    <ArrowRight className="size-4 text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-primary-700" aria-hidden="true" />
+                  </Link>
+                </motion.li>
+              ))}
+            </ul>
+            {signedIn ? (
+              <div className="mt-2 border-t border-border-soft pt-2">
+                <button type="button" onClick={() => { setMenuOpen(false); void logout(); }} className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-3 text-left text-sm font-medium text-body transition-colors hover:bg-danger/5 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
+                  <span className="flex size-9 items-center justify-center rounded-xl bg-white text-muted shadow-sm"><LogOut className="size-4" aria-hidden="true" /></span>
                   Sign out
                 </button>
-              </li>
+              </div>
             ) : null}
-          </ul>
-        </nav>
-      ) : null}
+          </motion.nav>
+        ) : null}
+      </AnimatePresence>
     </motion.header>
   );
 }

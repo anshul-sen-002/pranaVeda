@@ -1,11 +1,10 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react";
-import { Save, User, Calendar, Trophy, Ruler, Scale, Clock, Globe, Moon, Zap, Smile, Activity, HeartPulse, Info } from "lucide-react";
+import { Save, User, Calendar, Trophy, Ruler, Scale, Clock, Globe, Moon, Zap, Smile, Activity, HeartPulse, Info, ShieldCheck, Sparkles } from "lucide-react";
 
 import { MemberGuard } from "@/components/auth/MemberGuard";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
@@ -26,12 +25,24 @@ const EXPERIENCE: Difficulty[] = ["BEGINNER", "INTERMEDIATE", "ADVANCED"];
 const PRACTICE_TIMES: PracticeTime[] = ["MORNING", "AFTERNOON", "EVENING", "FLEXIBLE"];
 
 const selectCls =
-  "h-10 w-full rounded-xl border border-border-soft bg-surface px-3 text-sm text-heading transition-colors duration-200 " +
-  "focus:border-primary-300 focus:ring-2 focus:ring-primary-200 focus:outline-none sm:h-11 sm:text-base";
+  "h-11 w-full rounded-xl border border-[#e2e8dd] bg-white px-3 text-sm text-heading transition-colors duration-200 " +
+  "focus:border-primary-300 focus:ring-2 focus:ring-primary-100 focus:outline-none sm:h-12 sm:text-base";
 
 const inputCls =
-  "h-10 w-full rounded-xl border border-border-soft bg-surface px-3 text-sm text-heading transition-colors duration-200 " +
-  "focus:border-primary-300 focus:ring-2 focus:ring-primary-200 focus:outline-none sm:h-11 sm:text-base";
+  "h-11 w-full rounded-xl border border-[#e2e8dd] bg-white px-3 text-sm text-heading transition-colors duration-200 " +
+  "focus:border-primary-300 focus:ring-2 focus:ring-primary-100 focus:outline-none sm:h-12 sm:text-base";
+
+function calculateBmi(form: WellnessProfileRequest): number | null {
+  const { heightValue, heightUnit, weightValue, weightUnit } = form;
+  if (!heightValue || !heightUnit || !weightValue || !weightUnit) return null;
+
+  const heightCm = heightUnit === "CM" ? heightValue : heightValue * 2.54;
+  const weightKg = weightUnit === "KG" ? weightValue : weightValue * 0.45359237;
+  if (!Number.isFinite(heightCm) || !Number.isFinite(weightKg) || heightCm <= 0 || weightKg <= 0) return null;
+
+  const heightM = heightCm / 100;
+  return Math.round((weightKg / (heightM * heightM)) * 10) / 10;
+}
 
 export default function WellnessPage() {
   return (
@@ -140,6 +151,7 @@ function WellnessView() {
   ) => setForm((prev) => ({ ...prev, [key]: value }));
 
   const num = (v: string): number | null => (v.trim() === "" ? null : Number(v));
+  const bmiEstimate = calculateBmi(form);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,20 +213,30 @@ function WellnessView() {
   }
 
   return (
-    <div className="space-y-5 sm:space-y-6 max-w-3xl mx-auto">
-      <PageHeader
-        title="Wellness profile"
-        subtitle="Everything is optional and stays private to you."
-      />
+    <div className="mx-auto max-w-5xl space-y-5 sm:space-y-6">
+      <section className="relative overflow-hidden rounded-3xl border border-[#dfe9dc] bg-gradient-gourd-white p-5 shadow-[0_14px_40px_-30px_rgba(29,63,46,.3)] sm:p-7">
+        <div className="pointer-events-none absolute -right-8 -top-12 size-44 rounded-full bg-white/45 blur-2xl" aria-hidden="true" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-start gap-3.5">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-white text-primary-700 shadow-sm sm:size-14"><HeartPulse className="size-6 sm:size-7" aria-hidden="true" /></span>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold tracking-[.14em] text-primary-700 uppercase">Your personal space</p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight text-heading sm:text-3xl">Wellness profile</h1>
+              <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-body sm:text-base">Share only what feels useful. These details help tailor your practice and remain private to you.</p>
+            </div>
+          </div>
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/90 bg-white/75 px-3.5 py-2 text-xs font-medium text-primary-800 sm:shrink-0"><ShieldCheck className="size-4" aria-hidden="true" /> Private to your account</span>
+        </div>
+      </section>
       {error ? <Alert tone="error">{error}</Alert> : null}
       {saved ? <Alert tone="success">Profile saved.</Alert> : null}
-      <form onSubmit={submit} className="space-y-6 rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5 sm:p-6">
-        <fieldset className="border-0 p-0 m-0">
-          <legend className="flex items-center gap-2 mb-4 text-xs font-semibold tracking-wider text-muted uppercase">
+      <form onSubmit={submit} className="min-w-0 space-y-4 rounded-3xl border border-[#e6eadd] bg-white/90 p-2.5 shadow-[0_16px_50px_-40px_rgba(29,63,46,.35)] sm:space-y-5 sm:p-6">
+        <fieldset className="m-0 rounded-2xl border border-[#edf0e9] bg-[#fafbf8] p-4 sm:p-5">
+          <legend className="mb-3 flex items-center gap-2 rounded-full border border-[#e8eee4] bg-white px-3 py-1.5 text-xs font-semibold tracking-wide text-primary-800 uppercase sm:mb-4">
             <User className="size-4 text-primary-600" aria-hidden="true" />
             Your details
           </legend>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid min-w-0 gap-3.5 sm:grid-cols-2 sm:gap-4">
             <div className="col-span-2 sm:col-span-1">
               <label htmlFor="date-of-birth" className="mb-1.5 block text-sm font-semibold text-heading">
                 <Calendar className="mr-1.5 size-4 text-primary-600" aria-hidden="true" />
@@ -259,7 +281,10 @@ function WellnessView() {
                   step="0.1"
                   min="1"
                   value={form.heightValue ?? ""}
-                  onChange={(e) => set("heightValue", num(e.target.value))}
+                  onChange={(e) => {
+                    const value = num(e.target.value);
+                    setForm((prev) => ({ ...prev, heightValue: value, heightUnit: value === null ? null : prev.heightUnit ?? "CM" }));
+                  }}
                   placeholder="170"
                   className="flex-1 h-11 sm:h-12"
                 />
@@ -289,7 +314,10 @@ function WellnessView() {
                   step="0.1"
                   min="1"
                   value={form.weightValue ?? ""}
-                  onChange={(e) => set("weightValue", num(e.target.value))}
+                  onChange={(e) => {
+                    const value = num(e.target.value);
+                    setForm((prev) => ({ ...prev, weightValue: value, weightUnit: value === null ? null : prev.weightUnit ?? "KG" }));
+                  }}
                   placeholder="65"
                   className="flex-1 h-11 sm:h-12"
                 />
@@ -357,12 +385,33 @@ function WellnessView() {
             </div>
           </div>
         </fieldset>
-        <fieldset className="border-0 p-0 m-0">
-          <legend className="flex items-center gap-2 mb-4 text-xs font-semibold tracking-wider text-muted uppercase">
+        <section aria-labelledby="bmi-calculator-title" className="rounded-2xl border border-[#dce9df] bg-gradient-gourd-white p-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/80 text-primary-700 shadow-sm"><Scale className="size-5" aria-hidden="true" /></span>
+              <div>
+                <h2 id="bmi-calculator-title" className="text-sm font-semibold text-heading">BMI calculator</h2>
+                <p className="text-xs text-muted">A live estimate from your height and weight</p>
+              </div>
+            </div>
+            <output aria-live="polite" className="rounded-xl border border-white bg-white/80 px-4 py-2 text-lg font-semibold tabular-nums text-primary-800 shadow-sm">
+              {bmiEstimate === null ? "—" : bmiEstimate.toFixed(1)}
+            </output>
+          </div>
+          {bmiEstimate === null ? (
+            <p className="mt-3 text-xs leading-relaxed text-muted">Enter a height and weight above to calculate your estimate. The value updates as you type.</p>
+          ) : (
+            <p className="mt-3 text-xs leading-relaxed text-muted">{BMI_DISCLAIMER}</p>
+          )}
+        </section>
+        <fieldset className="m-0 min-w-0 rounded-2xl border border-[#edf0e9] bg-[#fafbf8] p-3 sm:p-5">
+          <legend className="mb-3 max-w-full rounded-full border border-[#e8eee4] bg-white px-2.5 py-1.5 text-[10px] font-semibold leading-tight tracking-wide text-primary-800 uppercase sm:mb-4 sm:px-3 sm:text-xs">
+            <span className="inline-flex items-center gap-1.5">
             <HeartPulse className="size-4 text-primary-600" aria-hidden="true" />
             How you feel (1 = low, 5 = high)
+            </span>
           </legend>
-          <div className="grid gap-4 sm:grid-cols-4">
+          <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
             {([
               ["sleepQuality", "Sleep", Moon],
               ["energyLevel", "Energy", Zap],
@@ -371,19 +420,20 @@ function WellnessView() {
             ] as const).map(([key, label, Icon]) => {
               const val = form[key] ?? 0;
               return (
-                <div key={key} className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-surface border border-border-soft hover:border-primary-200 transition-colors">
-                  <Icon className="size-5 text-primary-600" aria-hidden="true" />
-                  <span className="text-xs font-semibold text-heading">{label}</span>
-                  <div className="flex items-center gap-0.5 text-[10px] text-muted">
+                <div key={key} className="flex min-w-0 flex-col items-center gap-1.5 rounded-2xl border border-[#e5ebe0] bg-white p-2.5 transition-colors hover:border-primary-200 sm:gap-2 sm:p-4">
+                  <span className="flex size-8 items-center justify-center rounded-xl bg-primary-50 text-primary-700 sm:size-9"><Icon className="size-4 sm:size-4.5" aria-hidden="true" /></span>
+                  <span className="text-[11px] font-semibold text-heading sm:text-xs">{label}</span>
+                  <div className="grid w-full max-w-32 grid-cols-5 gap-1 text-[10px] text-muted">
                     {[1, 2, 3, 4, 5].map((n) => (
                       <button
                         key={n}
                         type="button"
                         onClick={() => set(key, n)}
-                        className={`w-4 h-4 rounded-full transition-colors ${
+                        aria-pressed={val === n}
+                        className={`inline-flex aspect-square min-w-0 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 ${
                           val >= n
                             ? "bg-primary-600 text-white text-[9px] font-bold"
-                            : "bg-surface/50 text-muted hover:bg-primary-50/40"
+                            : "bg-[#f7f9f6] text-muted hover:bg-primary-50/70"
                         }`}
                         aria-label={`${label} ${n}`}
                       >
@@ -413,7 +463,7 @@ function WellnessView() {
           </p>
         </div>
 
-        <label className="flex items-start gap-3 rounded-2xl border border-primary-200 bg-primary-50 p-4">
+        <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[#dce9d9] bg-[#f2f7f0] p-4 transition-colors hover:bg-[#edf4ea] sm:p-5">
           <input
             type="checkbox"
             checked={form.aiPersonalizationConsent ?? false}
@@ -431,32 +481,35 @@ function WellnessView() {
           </span>
         </label>
 
-        <Button type="submit" loading={saving} fullWidth className="sm:w-auto">
+        <div className="sticky bottom-20 z-10 -mx-1 flex flex-col gap-2 rounded-2xl border border-[#e6eadd] bg-white/95 p-3 shadow-[0_12px_30px_-18px_rgba(29,63,46,.35)] backdrop-blur sm:bottom-4 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+          <p className="flex items-center gap-2 text-xs text-muted"><ShieldCheck className="size-4 shrink-0 text-primary-600" aria-hidden="true" /> You can update or clear these details at any time.</p>
+          <Button type="submit" loading={saving} fullWidth className="sm:w-auto">
           <Save className="size-4" aria-hidden="true" />
           {saving ? "Saving�" : "Save profile"}
-        </Button>
+          </Button>
+        </div>
       </form>
       {profile ? (
         <section
           aria-labelledby="snapshot-heading"
-          className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5 sm:p-6"
+          className="rounded-3xl border border-[#dfe9dc] bg-gradient-gourd-white p-5 shadow-[0_12px_35px_-30px_rgba(29,63,46,.32)] sm:p-6"
         >
           <h2 id="snapshot-heading" className="flex items-center gap-2 font-semibold text-heading">
             <Info className="size-4 text-primary-600" aria-hidden="true" />
             Your snapshot
           </h2>
           <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl bg-surface-tint px-3.5 py-3">
+            <div className="rounded-2xl border border-[#e5ebe0] bg-white/75 px-3.5 py-3">
               <dt className="text-xs text-muted">Age</dt>
               <dd className="mt-0.5 text-lg font-semibold text-heading">{profile.age ?? "�"}</dd>
             </div>
-            <div className="rounded-2xl bg-surface-tint px-3.5 py-3">
+            <div className="rounded-2xl border border-[#e5ebe0] bg-white/75 px-3.5 py-3">
               <dt className="text-xs text-muted">BMI</dt>
               <dd className="mt-0.5 text-lg font-semibold text-heading">
                 {profile.bmiAvailable && profile.bmiOrNull != null ? profile.bmiOrNull : "�"}
               </dd>
             </div>
-            <div className="rounded-2xl bg-surface-tint px-3.5 py-3">
+            <div className="rounded-2xl border border-[#e5ebe0] bg-white/75 px-3.5 py-3">
               <dt className="text-xs text-muted">AI personalisation</dt>
               <dd className="mt-0.5 text-lg font-semibold text-heading">
                 {profile.aiPersonalizationConsent ? "On" : "Off"}
@@ -474,7 +527,7 @@ function WellnessView() {
       ) : null}
 
       {profile ? (
-        <section className="rounded-3xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5 sm:p-6">
+        <section className="rounded-3xl border border-[#e6eadd] bg-white/90 p-5 shadow-[0_12px_35px_-30px_rgba(29,63,46,.32)] sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="font-semibold text-heading">Delete your profile</h2>

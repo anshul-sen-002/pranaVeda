@@ -21,7 +21,7 @@ import { PersonalSide } from "@/components/marketing/PersonalSide";
  */
 export default function Home() {
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh flex-col overflow-clip bg-[#fbfbf7]">
       <SiteHeader />
       <main className="flex flex-1 flex-col">
         <Hero />

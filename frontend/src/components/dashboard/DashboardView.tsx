@@ -6,6 +6,7 @@ import { Bookmark, CalendarCheck2, Flame, Timer } from "lucide-react";
 import { MemberGuard } from "@/components/auth/MemberGuard";
 import { ChallengePanel } from "@/components/dashboard/ChallengePanel";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
+import { DashboardSearch } from "@/components/dashboard/DashboardSearch";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { SavedPanel, WellnessPanel } from "@/components/dashboard/SavedWellnessPanels";
 import { WeeklyChart } from "@/components/dashboard/WeeklyChart";
@@ -79,8 +80,9 @@ function DashboardBody() {
   const firstName = user?.displayName?.trim().split(/\s+/)[0];
 
   return (
-    <div className="space-y-3 sm:space-y-6">
+    <div className="mx-auto w-full max-w-7xl min-w-0 space-y-4 sm:space-y-6">
       <DashboardHero firstName={firstName} practisedToday={streak.practisedToday} />
+      <DashboardSearch />
       <section aria-label="Practice overview" className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
         <StatCard
           icon={<Flame className="size-5" aria-hidden="true" />}
@@ -92,13 +94,13 @@ function DashboardBody() {
         <StatCard icon={<CalendarCheck2 className="size-5" aria-hidden="true" />} value={String(practice.sessionsLast7Days)} label="sessions this week" hint={`${practice.totalSessions} total`} />
         <StatCard icon={<Bookmark className="size-5" aria-hidden="true" />} value={String(dashboard.savedCount)} label="saved practices" hint="Your library" href="/dashboard/saved" />
       </section>
-    <div className="space-y-3 sm:space-y-4">
-      <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+    <div className="space-y-4 sm:space-y-5">
+      <div className="grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-2">
         <ChallengePanel challenge={dashboard.challenges[0] ?? null} onChanged={refresh} />
         <SessionsPanel sessions={sessions} onLogged={refresh} />
       </div>
       <WeeklyChart sessions={sessions} />
-      <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+      <div className="grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-2">
         <SavedPanel dashboard={dashboard} />
         <WellnessPanel wellness={wellness} routines={routines} />
       </div>

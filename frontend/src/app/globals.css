@@ -41,6 +41,9 @@
   /* Primary CTA gradient */
   --background-image-gradient-primary: linear-gradient(135deg, #2f8b66 0%, #1d6f54 100%);
 
+  /* Soft bottle-gourd green fading into warm white for highlighted surfaces. */
+  --background-image-gradient-gourd-white: linear-gradient(135deg, #e7f1e3 0%, #f7faf4 52%, #fffefa 100%);
+
   /* Light, calm gradient surfaces for cards/components (soft sage ivory) */
   --background-image-gradient-card: linear-gradient(135deg, #f0f7f4 0%, #e8f1ec 55%, #eaf6ee 100%);
   --background-image-gradient-subtle: linear-gradient(145deg, #f8fbf9 0%, #eef7f2 100%);
@@ -100,6 +103,9 @@ canvas {
 @utility bg-gradient-card {
   background-image: var(--background-image-gradient-card);
 }
+@utility bg-gradient-gourd-white {
+  background-image: var(--background-image-gradient-gourd-white);
+}
 @utility bg-gradient-subtle {
   background-image: var(--background-image-gradient-subtle);
 }
@@ -150,11 +156,34 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Consistent, visible keyboard focus on our own controls. */
-:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+/* Consistent, visible keyboard focus on navigation and action controls. */
+:where(a, button, [tabindex], input[type="file"], input[type="range"], input[type="checkbox"], input[type="radio"]):focus-visible {
   outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
   border-radius: 0.25rem;
+}
+
+@keyframes input-focus-line {
+  from {
+    box-shadow: 0 0 0 0 rgba(47, 139, 102, 0);
+  }
+  to {
+    box-shadow: 0 0 0 1px rgba(47, 139, 102, 0.42);
+  }
+}
+
+/* A restrained, shape-following focus line shared by native and reusable
+   form controls throughout the app. */
+:is(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]),
+  textarea,
+  select
+):focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 1px rgba(47, 139, 102, 0.42);
+  animation: input-focus-line 180ms ease-out both;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 
 /* Screen-reader-only helper for accessible names / live regions. */

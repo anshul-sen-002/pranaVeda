@@ -3,7 +3,6 @@ import { useRef, useState } from "react";
 import { CheckCircle2, CloudUpload, FileImage, FileMusic, FileVideo, X } from "lucide-react";
 import { DotLoader } from "@/components/motion/DotLoader";
 import { adminMediaApi, MEDIA_LIMITS, type MediaUploadKind } from "@/lib/api/admin";
-import { ApiError } from "@/lib/api/client";
 import type { MediaDto } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 
@@ -11,8 +10,48 @@ function humanBytes(n: number): string {
   if (n >= 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(1)} MB`;
   return `${Math.max(1, Math.round(n / 1024))} KB`;
 }
+
+/** Normalize formats the Java ImageIO validator may not decode and resize
+ * oversized cover images before sending them to the API. The backend still
+ * performs its own MIME, size, and pixel checks. */
+async function prepareContentImage(file: File): Promise<File> {
+  const bitmap = await createImageBitmap(file);
+  try {
+    const maxEdge = 1600;
+    const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+    const needsResize = scale < 1 || bitmap.width * bitmap.height > 12_000_000;
+    const supportedByBackend = file.type === "image/jpeg" || file.type === "image/png";
+    if (!needsResize && supportedByBackend && file.size <= MEDIA_LIMITS.CONTENT_IMAGE.maxBytes) return file;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Could not process this image. Try a JPG or PNG file.");
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+
+    const preferPng = file.type === "image/png";
+    let outputType = preferPng ? "image/png" : "image/jpeg";
+    let blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, outputType, 0.88));
+    if (blob && blob.size > MEDIA_LIMITS.CONTENT_IMAGE.maxBytes && preferPng) {
+      outputType = "image/jpeg";
+      blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, outputType, 0.82));
+    }
+    if (!blob) throw new Error("Could not process this image. Try a JPG or PNG file.");
+    if (blob.size > MEDIA_LIMITS.CONTENT_IMAGE.maxBytes) {
+      throw new Error("The processed cover image is still over 5 MB. Choose a smaller image.");
+    }
+    const baseName = file.name.replace(/\.[^.]+$/, "") || "cover";
+    const extension = outputType === "image/png" ? "png" : "jpg";
+    return new File([blob], `${baseName}.${extension}`, { type: outputType, lastModified: Date.now() });
+  } finally {
+    bitmap.close();
+  }
+}
 const KIND_META: Record<MediaUploadKind, { label: string; Icon: typeof FileImage; hint: string }> = {
-  CONTENT_IMAGE: { label: "Images", Icon: FileImage, hint: "jpg, png, webp, avif" },
+  CONTENT_IMAGE: { label: "Images", Icon: FileImage, hint: "jpg, png, webp, avif · large images are resized" },
   VIDEO: { label: "Videos", Icon: FileVideo, hint: "mp4, webm, mov" },
   AUDIO: { label: "Audios", Icon: FileMusic, hint: "mp3, m4a, ogg, wav" },
 };
@@ -35,7 +74,7 @@ export function MediaUploadStudio({ accessToken, contentId, defaultKind = "CONTE
       const next = [...prev];
       for (const file of arr) {
         const key = `${file.name}-${file.size}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-        if (file.size > limits.maxBytes) {
+        if (file.size > limits.maxBytes && kind !== "CONTENT_IMAGE") {
           next.push({ key, file, previewUrl: null, status: "error", progress: 0, error: `${file.name}: too large.` });
           continue;
         }
@@ -57,11 +96,12 @@ export function MediaUploadStudio({ accessToken, contentId, defaultKind = "CONTE
     if (!target || target.status === "uploading" || target.status === "done") return;
     setItems((prev) => prev.map((i) => (i.key === key ? { ...i, status: "uploading", progress: 8, error: undefined } : i)));
     try {
-      const media = await adminMediaApi.upload(accessToken, target.file, kind, contentId);
+      const uploadFile = kind === "CONTENT_IMAGE" ? await prepareContentImage(target.file) : target.file;
+      const media = await adminMediaApi.upload(accessToken, uploadFile, kind, contentId);
       setItems((prev) => prev.map((i) => (i.key === key ? { ...i, status: "done", progress: 100, media } : i)));
       onUploaded?.(media);
     } catch (err) {
-      setItems((prev) => prev.map((i) => (i.key === key ? { ...i, status: "error", progress: 0, error: err instanceof ApiError ? err.message : "Upload failed." } : i)));
+      setItems((prev) => prev.map((i) => (i.key === key ? { ...i, status: "error", progress: 0, error: err instanceof Error ? err.message : "Upload failed." } : i)));
     }
   };
 

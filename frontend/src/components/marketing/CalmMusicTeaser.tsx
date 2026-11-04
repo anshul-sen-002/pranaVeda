@@ -24,8 +24,8 @@ export function CalmMusicTeaser() {
   const [playing, setPlaying] = useState(false);
 
   return (
-    <section className="border-y border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30">
-      <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-2">
+    <section className="w-full border-y border-border-soft bg-[#f4f6f0]">
+      <div className="mx-auto grid w-full max-w-7xl items-center gap-9 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-2 lg:gap-16 lg:px-10 lg:py-24">
         <div>
           <SectionHeading
             eyebrow="Calm music studio"
@@ -58,7 +58,7 @@ export function CalmMusicTeaser() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-          className="rounded-3xl border border-border-soft/60 bg-home-card p-6 sm:p-7"
+          className="min-w-0 rounded-3xl border border-border-soft/70 bg-white/85 p-5 shadow-[0_20px_55px_-38px_rgba(29,63,46,.35)] sm:p-7"
         >
           <div className="flex items-center gap-4">
             <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-primary text-white">
@@ -74,7 +74,7 @@ export function CalmMusicTeaser() {
           </div>
 
           {/* Equaliser bars - gently animated unless reduced motion */}
-          <div className="mt-6 flex h-16 items-end gap-1.5" aria-hidden="true">
+          <div className="mt-6 flex h-16 items-end gap-1.5 overflow-hidden" aria-hidden="true">
             {bars.map((height, index) => (
               <motion.span
                 key={index}

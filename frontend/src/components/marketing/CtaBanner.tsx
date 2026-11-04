@@ -12,13 +12,13 @@ export function CtaBanner() {
   if (status === "authenticated") return null;
 
   return (
-    <section className="mx-auto max-w-6xl px-5 pb-20 sm:px-8 sm:pb-28">
+    <section className="mx-auto w-full max-w-7xl px-5 pb-16 sm:px-8 sm:pb-24 lg:px-10">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-400 via-primary-500 to-primary-600 px-7 py-12 text-center sm:px-12 sm:py-16"
+        className="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-primary-700 via-primary-600 to-primary-500 px-5 py-10 text-center shadow-[0_24px_70px_-38px_rgba(15,67,47,.55)] sm:rounded-[2.25rem] sm:px-12 sm:py-16"
       >
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
           <div className="absolute -top-16 -left-10 size-64 rounded-full bg-white/12 blur-3xl" />

@@ -16,11 +16,7 @@ export const metadata: Metadata = {
   description:
     "Explore asanas, guided breathing, and calming soundscapes. Sign in to save routines, track streaks, and personalise your wellness journey.",
   icons: {
-    icon: [
-      { url: "/pranaveda.png?v=2", type: "image/png", sizes: "512x512" },
-      { url: "/pranaveda.png?v=2", type: "image/png", sizes: "192x192" },
-      { url: "/pranaveda.png?v=2", type: "image/png", sizes: "32x32" },
-    ],
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml", sizes: "any" }],
     apple: [{ url: "/pranaveda.png?v=2", sizes: "180x180" }],
   },
 };
@@ -43,12 +39,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${inter.variable} h-full antialiased`}
     >
-      <head>
-        {/* Brand favicon — 512px source so browsers render it large and crisp. */}
-        <link rel="icon" href="/pranaveda.png?v=2" type="image/png" sizes="512x512" />
-        <link rel="shortcut icon" href="/pranaveda.png?v=2" type="image/png" />
-        <link rel="apple-touch-icon" href="/pranaveda.png?v=2" sizes="180x180" />
-      </head>
       <body className="min-h-full flex flex-col antialiased overflow-x-hidden" style={{ backgroundImage: 'url("/image.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed' }}>
         <AuthProvider>{children}</AuthProvider>
       </body>

@@ -33,8 +33,8 @@ export function AiCompanion() {
   const signedIn = status === "authenticated";
 
   return (
-    <section className="border-y border-border-soft bg-surface">
-      <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 sm:px-8 sm:py-24 lg:grid-cols-2">
+    <section className="w-full border-y border-border-soft bg-white">
+      <div className="mx-auto grid w-full max-w-7xl items-center gap-9 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-2 lg:gap-16 lg:px-10 lg:py-24">
         <div>
           <SectionHeading
             eyebrow="AI wellness companion"
@@ -83,7 +83,7 @@ export function AiCompanion() {
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           role="img"
           aria-label="Preview of an AI companion conversation about gentle bedtime poses"
-          className="rounded-3xl border border-border-soft/60 bg-home-card p-5 shadow-[0_24px_60px_-40px_rgba(29,111,84,0.5)] sm:p-6"
+          className="min-w-0 rounded-3xl border border-border-soft/60 bg-[#f6f8f3] p-4 shadow-[0_24px_60px_-40px_rgba(29,111,84,0.35)] sm:p-6"
         >
           <div className="flex items-center gap-2.5 border-b border-border-soft pb-4">
             <span className="inline-flex size-9 items-center justify-center rounded-full bg-gradient-primary text-white">
