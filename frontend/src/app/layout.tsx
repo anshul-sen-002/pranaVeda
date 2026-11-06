@@ -39,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col antialiased overflow-x-hidden" style={{ backgroundImage: 'url("/image.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed' }}>
+      <body className="min-h-full flex flex-col bg-[#fbfbf7] antialiased overflow-x-hidden">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

@@ -231,10 +231,13 @@ public class OpenRouterProvider implements AiProvider {
             String payload = trimmed.substring(5).trim();
             if ("[DONE]".equals(payload)) {
                 done = true;
+                // Complete first: cancelling the upstream subscription can
+                // report an IOException through onError even though OpenRouter
+                // has sent its normal end-of-stream marker.
+                bodyFuture.complete(null);
                 if (subscription != null) {
                     subscription.cancel();
                 }
-                bodyFuture.complete(null);
                 return;
             }
             if (!payload.isBlank()) {
@@ -245,6 +248,10 @@ public class OpenRouterProvider implements AiProvider {
 
         @Override
         public void onError(Throwable throwable) {
+            // JDK HttpClient reports our intentional cancellation after [DONE]
+            // as "Stream cancelled". The response is already complete then;
+            // only errors before successful completion are provider failures.
+            if (bodyFuture.isDone()) return;
             done = true;
             log.warn("AI stream provider call failed", throwable);
             bodyFuture.completeExceptionally(throwable);

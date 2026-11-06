@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { ArrowRight, BookOpen, Flower2, Home, Info, LogIn, LogOut, Menu, Music2, UserPlus, Wind, X } from "lucide-react";
+import { ArrowRight, Flower2, Home, LogIn, LogOut, Menu, Music2, UserPlus, Video, X } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
 import { LinkButton } from "@/components/ui/LinkButton";
@@ -59,7 +59,7 @@ export function SiteHeader() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       className={[
-        "sticky top-0 z-40 transition-colors duration-300",
+        "sticky top-0 z-40 w-full transition-colors duration-300",
         scrolled || menuOpen
           ? "border-b border-border-soft bg-[#fbfbf7]/95 backdrop-blur-xl"
           : "border-b border-border-soft/50 bg-[#fbfbf7]/80 backdrop-blur-lg",
@@ -74,10 +74,9 @@ export function SiteHeader() {
         </Link>
 
         <div className="hidden items-center gap-7 md:flex">
-          <HeaderLink href="/yoga">Yoga</HeaderLink>
-          <HeaderLink href="/calm-music">Calm Music</HeaderLink>
-          <HeaderLink href="/breathing">Breathing</HeaderLink>
-          <HeaderLink href="/about">About</HeaderLink>
+          <HeaderLink href="/videos">Videos</HeaderLink>
+          <HeaderLink href="/calm-music">Audio</HeaderLink>
+          <HeaderLink href="/yoga">Guided yoga asanas</HeaderLink>
         </div>
 
         <div className="flex items-center gap-2.5">
@@ -145,10 +144,9 @@ export function SiteHeader() {
             )}
             <ul className="space-y-1">
               {[
-                { href: "/yoga", label: "Yoga asanas", Icon: Flower2 },
-                { href: "/calm-music", label: "Calm music", Icon: Music2 },
-                { href: "/breathing", label: "Breathing", Icon: Wind },
-                { href: "/about", label: "About PranaVeda", Icon: Info },
+                { href: "/videos", label: "Videos", Icon: Video },
+                { href: "/calm-music", label: "Audio", Icon: Music2 },
+                { href: "/yoga", label: "Guided yoga asanas", Icon: Flower2 },
                 ...(signedIn ? [{ href: "/dashboard", label: "Dashboard", Icon: Home }] : [
                   { href: "/login", label: "Sign in", Icon: LogIn },
                   { href: "/register", label: "Create account", Icon: UserPlus },

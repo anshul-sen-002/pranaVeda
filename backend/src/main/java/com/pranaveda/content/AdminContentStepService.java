@@ -161,7 +161,7 @@ public class AdminContentStepService {
         if (request.imageUrl() != null) step.setImageUrl(request.imageUrl());
         if (request.videoUrl() != null) step.setVideoUrl(request.videoUrl());
         if (request.audioUrl() != null) step.setAudioUrl(request.audioUrl());
-        step.setImageUrls(request.imageUrls());
+        if (request.imageUrls() != null) step.setImageUrls(request.imageUrls());
         if (request.caption() != null) step.setCaption(request.caption());
         if (request.instruction() != null) {
             step.setInstruction(request.instruction());

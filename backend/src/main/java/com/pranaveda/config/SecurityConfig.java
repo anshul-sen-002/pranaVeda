@@ -3,6 +3,8 @@ package com.pranaveda.config;
 import java.util.Arrays;
 import java.util.List;
 
+import jakarta.servlet.DispatcherType;
+
 import com.pranaveda.security.ApiAccessDeniedHandler;
 import com.pranaveda.security.ApiAuthenticationEntryPoint;
 import com.pranaveda.security.JwtAuthenticationFilter;
@@ -63,6 +65,14 @@ public class SecurityConfig {
                 // public auth endpoints - identity is resolved inside the service
                 .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login",
                                  "/api/v1/auth/refresh", "/api/v1/auth/logout").permitAll()
+                // The initial POST remains authenticated below. Spring MVC
+                // redispatches SseEmitter responses as ASYNC after the
+                // response starts; the bearer filter is intentionally not
+                // rerun on that internal continuation, so don't re-authorize
+                // this exact already-authorized stream after it is committed.
+                .requestMatchers(request -> request.getDispatcherType() == DispatcherType.ASYNC
+                    && "POST".equals(request.getMethod())
+                    && "/api/v1/ai/chat/stream".equals(request.getServletPath())).permitAll()
                 // ADMIN content studio (agents.md authorization matrix)
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 // personal endpoints - ownership is re-checked in the services

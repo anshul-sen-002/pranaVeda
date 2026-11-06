@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PoseDetail } from "@/components/library/PoseDetail";
 import { StepTutorial } from "@/components/guided/StepTutorial";
-import { PostureCoach } from "@/components/coach/PostureCoach";
-import { SessionTimer } from "@/components/session/SessionTimer";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { getContent } from "@/lib/api/content";
@@ -39,21 +37,15 @@ export default async function YogaDetailPage({
   if (!detail) notFound();
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh w-full min-w-0 flex-col">
       <SiteHeader />
-      <main className="flex flex-1 flex-col">
+      <main className="flex w-full min-w-0 flex-1 flex-col bg-[#fbfbf7]">
         <PoseDetail detail={detail} />
         {detail.steps.length > 0 ? (
           <section className="mx-auto w-full max-w-6xl px-3 pb-6 sm:px-8 sm:pb-8" aria-label="Guided practice">
-            <StepTutorial steps={detail.steps} poseTitle={detail.summary.title} />
+            <StepTutorial steps={detail.steps} poseTitle={detail.summary.title} coverImageUrl={detail.summary.featuredImageUrl} />
           </section>
         ) : null}
-        <div className="mx-auto w-full max-w-6xl px-5 pb-4 sm:px-8">
-          <PostureCoach poseTitle={detail.summary.title} />
-        </div>
-        <div className="mx-auto w-full max-w-6xl px-5 pb-4 sm:px-8">
-          <SessionTimer contentId={detail.summary.id} defaultMinutes={detail.summary.durationMinutes ?? 10} />
-        </div>
       </main>
       <SiteFooter />
     </div>

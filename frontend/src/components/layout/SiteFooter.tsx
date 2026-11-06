@@ -1,78 +1,26 @@
+import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { CopyrightYear } from "@/components/layout/CopyrightYear";
 
-const columns = [
-  {
-    heading: "Explore",
-    links: [
-      { label: "Yoga library", href: "/yoga" },
-      { label: "Calm music", href: "/calm-music" },
-      { label: "Breathing", href: "/breathing" },
-    ],
-  },
-  {
-    heading: "Account",
-    links: [
-      { label: "Sign in", href: "/login" },
-      { label: "Create account", href: "/register" },
-      { label: "Dashboard", href: "/dashboard" },
-    ],
-  },
-  {
-    heading: "Company",
-    links: [
-      { label: "About", href: "/about" },
-      { label: "Safety", href: "/safety" },
-      { label: "Privacy", href: "/privacy" },
-      { label: "Terms", href: "/terms" },
-    ],
-  },
+const links = [
+  { label: "Asanas", href: "/yoga" },
+  { label: "Videos", href: "/videos" },
+  { label: "Audio", href: "/calm-music" },
+  { label: "About", href: "/about" },
+  { label: "Privacy", href: "/privacy" },
+  { label: "Terms", href: "/terms" },
 ];
 
-/** Public footer. Server Component - it needs no session state. */
+/** Compact public footer with the essential library and policy links. */
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border-soft bg-surface">
-      <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14 lg:px-10">
-        <div className="grid grid-cols-2 gap-x-5 gap-y-9 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4">
-          <div className="col-span-2 sm:col-span-1">
-            <Logo />
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-body">
-              A calm, accessible space for yoga, mindfulness, and holistic
-              wellness.
-            </p>
-          </div>
-
-          {columns.map((column) => (
-            <nav key={column.heading} aria-label={column.heading}>
-              <h2 className="text-sm font-semibold text-heading">{column.heading}</h2>
-              <ul className="mt-4 space-y-2.5">
-                {column.links.map((link) => (
-                  <li key={link.href}>
-                    <a
-                      href={link.href}
-                      className="text-sm text-body underline-offset-4 transition-colors hover:text-primary-700 hover:underline"
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          ))}
-        </div>
-
-        {/* Required wellness disclaimer (agents.md 1 / 2.4). */}
-        <p className="mt-9 border-t border-border-soft pt-5 text-xs leading-relaxed text-muted sm:mt-10 sm:pt-6">
-          PranaVeda offers general yoga and wellness information only. It is not
-          medical advice and cannot diagnose or treat any condition. Always
-          listen to your body, stop if something hurts, and consult a qualified
-          healthcare professional for medical concerns.
-        </p>
-
-        <p className="mt-4 text-xs text-muted">
-          &copy; <CopyrightYear /> PranaVeda. All rights reserved.
-        </p>
+    <footer className="border-t border-border-soft bg-[#f8f9f4]">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-6 lg:px-10">
+        <Link href="/" aria-label="PranaVeda home" className="w-fit"><Logo /></Link>
+        <nav aria-label="Footer" className="flex flex-wrap gap-x-4 gap-y-2 sm:justify-center">
+          {links.map((link) => <Link key={link.href} href={link.href} className="text-xs font-medium text-body transition-colors hover:text-primary-700">{link.label}</Link>)}
+        </nav>
+        <p className="text-[11px] text-muted sm:whitespace-nowrap">© <CopyrightYear /> PranaVeda · General wellness, not medical advice.</p>
       </div>
     </footer>
   );

@@ -13,12 +13,12 @@ import { useAuth } from "@/hooks/useAuth";
  * A calm SVG + Motion illustration visualises the "your practice, visible"
  * story - it plays only here, below the fold, so first paint stays fast.
  * Everything described maps to a real backend surface (dashboard summary,
- * routines, streaks/challenges).
+ * routines, and streaks).
  */
 const points = [
   { icon: LayoutDashboard, title: "A dashboard that greets you", body: "Today's routine, minutes practiced, and saved items - one calm glance." },
   { icon: Repeat2, title: "Routines you build", body: "Save sequences, reorder poses, and run guided sessions with timers and cues." },
-  { icon: CalendarCheck, title: "Streaks without shame", body: "Server-side streak math, 7-day challenges, and a kind missed-day policy." },
+  { icon: CalendarCheck, title: "Practice streaks", body: "A gentle view of your consistency and recent practice days." },
   { icon: Sparkles, title: "Recommendations that fit", body: "Suggestions drawn from your own activity and goals - never generic." },
 ];
 

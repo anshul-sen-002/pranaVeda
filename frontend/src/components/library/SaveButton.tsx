@@ -1,6 +1,6 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Bookmark, BookmarkCheck, Heart } from "lucide-react";
 import { meApi } from "@/lib/api/me";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,8 +13,29 @@ export function SaveButton({ targetType, targetId, savedAtStart, iconOnly = fals
   const router = useRouter();
   const pathname = usePathname();
   const [saved, setSaved] = useState(!!savedAtStart);
+  const [checkingSaved, setCheckingSaved] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (status !== "authenticated" || !accessToken) {
+      setSaved(!!savedAtStart);
+      return;
+    }
+    let active = true;
+    setCheckingSaved(true);
+    void meApi.bookmarks(accessToken, { targetType, page: 0, size: 100 })
+      .then((page) => {
+        if (active) setSaved(page.content.some((entry) => entry.targetId === targetId && entry.targetType === targetType));
+      })
+      .catch(() => {
+        // Keep the server-provided initial state if saved-items lookup is unavailable.
+      })
+      .finally(() => {
+        if (active) setCheckingSaved(false);
+      });
+    return () => { active = false; };
+  }, [accessToken, savedAtStart, status, targetId, targetType]);
 
   async function toggle() {
     setErr(null);
@@ -43,7 +64,7 @@ export function SaveButton({ targetType, targetId, savedAtStart, iconOnly = fals
       <button
         type="button"
         onClick={() => void toggle()}
-        disabled={busy || status === "loading"}
+        disabled={busy || checkingSaved || status === "loading"}
         aria-pressed={saved}
         aria-label={iconOnly ? (saved ? `Remove ${itemLabel ?? "item"} from saved library` : `Save ${itemLabel ?? "item"} to library`) : undefined}
         title={saved ? "Saved to your library" : "Save to your library"}

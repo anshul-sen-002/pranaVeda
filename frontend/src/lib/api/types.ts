@@ -79,7 +79,7 @@ export interface ContentSummary {
   title: string;
   summary: string;
   contentType: ContentType;
-  difficulty: Difficulty;
+  difficulty: Difficulty | null;
   durationMinutes: number | null;
   commonName: string | null;
   sanskritName: string | null;
@@ -172,7 +172,7 @@ export interface ContentListParams {
 
 /* ------------------------------------------------------------------ */
 /* Member dashboard (mirrors backend dashboard/streak/session/        */
-/* bookmark/challenge/wellness DTOs). Backend is the source of truth  */
+/* bookmark/wellness DTOs). Backend is the source of truth               */
 /* for streaks and totals — the frontend only renders them.           */
 /* ------------------------------------------------------------------ */
 
@@ -230,38 +230,11 @@ export interface SavedItemDto {
   content: ContentSummary | null;
 }
 
-/** A member's progress in a joined challenge (backend ChallengeProgressDto). */
-export interface ChallengeProgressDto {
-  participationId: number;
-  challengeId: number;
-  challengeTitle: string;
-  challengeSlug: string;
-  completedDays: number;
-  durationDays: number;
-  dailyGoalMinutes: number;
-  completed: boolean;
-  startedAt: string;
-  practiceDates: string[];
-  badges: string[];
-}
-
-/** Public challenge definition (backend ChallengeDto). */
-export interface ChallengeDto {
-  id: number;
-  slug: string;
-  title: string;
-  summary: string | null;
-  description: string | null;
-  durationDays: number;
-  dailyGoalMinutes: number;
-}
-
 /** One payload for the member dashboard (backend DashboardDto). */
 export interface DashboardDto {
   streak: StreakDto;
   practice: PracticeStatsDto;
   savedCount: number;
-  challenges: ChallengeProgressDto[];
   recentSaved: SavedItemDto[];
 }
 
@@ -323,6 +296,8 @@ export interface RoutineItemDto {
   id: number;
   contentId: number;
   position: number;
+  durationSeconds?: number | null;
+  note?: string | null;
   content: ContentSummary | null;
 }
 
@@ -350,7 +325,7 @@ export interface RoutineRequest {
   name: string;
   description?: string;
   isPublic?: boolean;
-  contentIds: number[];
+  items: { contentId: number; durationSeconds?: number | null; note?: string | null }[];
 }
 
 /* ------------------------------------------------------------------ */

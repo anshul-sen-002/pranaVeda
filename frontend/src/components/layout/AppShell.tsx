@@ -6,8 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   ArrowLeft, BookOpen, CalendarDays, ChevronDown, ClipboardList,
-  CloudUpload, FileMusic, Flower2, HelpCircle, Home, Layers, Leaf, LogOut, Menu,
-  Search, Settings, Sparkles, Trophy, User, Video, Wind, X,
+  FileMusic, Flower2, HelpCircle, Home, Layers, Leaf, LogOut, Menu,
+  Search, Settings, Sparkles, User, Video, Wind, X,
 } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
@@ -20,7 +20,6 @@ const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/dashboard/history", label: "Sessions", icon: CalendarDays },
   { href: "/dashboard/routines", label: "Routines", icon: Flower2 },
-  { href: "/dashboard/challenges", label: "Challenges", icon: Trophy },
   { href: "/dashboard/wellness", label: "Wellness", icon: Leaf },
   { href: "/ai", label: "AI Assistant", icon: Sparkles },
   { href: "/breathing", label: "Breathing", icon: Wind },
@@ -33,7 +32,6 @@ const NAV = [
 const ADMIN_NAV = [
   { href: "/admin/content", label: "Content Studio", icon: Layers },
   { href: "/admin/audio", label: "Audio Studio", icon: FileMusic },
-  { href: "/admin/media", label: "Media Studio", icon: CloudUpload },
   { href: "/admin/categories", label: "Categories & Tags", icon: ClipboardList },
 ];
 
@@ -85,14 +83,14 @@ export function AppShell({ children }: { children: React.ReactNode; quote?: stri
   return (
     <div className="flex min-h-dvh bg-[#f7f8f4]">
       {drawerOpen ? (
-        <div className="fixed inset-0 z-40 bg-[#223240]/40 backdrop-blur-sm lg:hidden" onClick={() => setDrawerOpen(false)} aria-hidden="true" />
+        <div className="fixed inset-0 z-[55] bg-[#223240]/40 backdrop-blur-sm lg:hidden" onClick={() => setDrawerOpen(false)} aria-hidden="true" />
       ) : null}
       <aside
         id="mobile-drawer"
         role="dialog"
         aria-modal="true"
         aria-label="App navigation"
-        className={cn("fixed inset-y-0 left-0 z-50 flex w-[17rem] max-w-[88vw] shrink-0 flex-col border-r border-border-soft bg-[#fbfcf8] pb-4 shadow-2xl transition-transform duration-300 ease-in-out lg:hidden", drawerOpen ? "translate-x-0" : "-translate-x-full")}
+        className={cn("fixed inset-y-0 left-0 z-[60] flex w-[17rem] max-w-[88vw] shrink-0 flex-col border-r border-border-soft bg-[#fbfcf8] pb-4 shadow-2xl transition-transform duration-300 ease-in-out lg:hidden", drawerOpen ? "translate-x-0" : "-translate-x-full")}
       >
         <div className="flex h-16 shrink-0 items-center justify-between gap-3 px-4">
           <Link href="/" className="rounded-lg px-1" aria-label="PranaVeda home" onClick={() => setDrawerOpen(false)}><Logo markOnly /></Link>
@@ -253,11 +251,11 @@ function AppMain({ pathname, displayName, isAdmin, onMenu, children }: { pathnam
 function routeTitle(pathname: string) {
   const titles: Record<string, string> = {
     "/dashboard": "Overview", "/dashboard/history": "Sessions", "/dashboard/routines": "Routines",
-    "/dashboard/challenges": "Challenges", "/dashboard/wellness": "Wellness", "/dashboard/saved": "Saved library",
+    "/dashboard/wellness": "Wellness", "/dashboard/saved": "Saved library",
     "/dashboard/settings": "Settings", "/yoga": "Yoga Asanas", "/videos": "Yoga Videos",
     "/calm-music": "Calm Music", "/breathing": "Breathing", "/ai": "AI Assistant",
     "/ai/history": "AI History", "/admin/content": "Content Studio", "/admin/audio": "Audio Studio",
-    "/admin/media": "Media Studio", "/admin/categories": "Categories & Tags",
+    "/admin/categories": "Categories & Tags",
   };
   const detail = pathname.match(/^\/(?:yoga|calm-music)\/([^/]+)/);
   if (detail) return decodeURIComponent(detail[1]).replaceAll("-", " ").replace(/\b\w/g, (c) => c.toUpperCase());

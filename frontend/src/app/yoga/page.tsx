@@ -27,7 +27,7 @@ export default function YogaPage() {
           </div>
         }
       >
-        <LibraryView />
+        <LibraryView fixedType="ASANA" />
       </Suspense>
     </AppShell>
   );

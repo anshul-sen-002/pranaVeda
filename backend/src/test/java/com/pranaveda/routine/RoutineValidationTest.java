@@ -26,8 +26,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Server-side routine sequence validation (agents.md 2.10): a routine must be
- * non-empty, within the size cap, and every referenced item must be a PUBLISHED
+ * Server-side routine sequence validation (agents.md 2.10): a routine may be
+ * empty while it is being built, must stay within the size cap, and every referenced item must be a PUBLISHED
  * content item - a draft/archived or unknown item is rejected so it can never be
  * embedded. Ownership comes from the security context, never the request.
  */
@@ -83,23 +83,27 @@ class RoutineValidationTest {
     }
 
     @Test
-    void emptySequenceIsRejected() {
+    void emptySequenceCanBeCreatedBeforeAddingPoses() {
         RoutineRequest request = new RoutineRequest("Morning flow", null, List.of());
+        when(routines.findByIdAndUserId(anyLong(), anyLong()))
+                .thenReturn(java.util.Optional.of(savedRoutine()));
 
-        BadRequestException ex = catchThrowableOfType(
-            () -> service.create(request), BadRequestException.class);
+        RoutineDto dto = service.create(request);
 
-        assertThat(ex.getMessage()).contains("at least one item");
+        assertThat(dto.id()).isEqualTo(100L);
+        assertThat(dto.items()).isEmpty();
     }
 
     @Test
-    void nullSequenceIsRejected() {
+    void missingSequenceCanBeCreatedBeforeAddingPoses() {
         RoutineRequest request = new RoutineRequest("Morning flow", null, null);
+        when(routines.findByIdAndUserId(anyLong(), anyLong()))
+                .thenReturn(java.util.Optional.of(savedRoutine()));
 
-        BadRequestException ex = catchThrowableOfType(
-            () -> service.create(request), BadRequestException.class);
+        RoutineDto dto = service.create(request);
 
-        assertThat(ex.getMessage()).contains("at least one item");
+        assertThat(dto.id()).isEqualTo(100L);
+        assertThat(dto.items()).isEmpty();
     }
 
     @Test

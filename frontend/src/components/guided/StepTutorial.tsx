@@ -22,6 +22,7 @@ const SLIDE_INTERVAL_MS = 3000;
 interface StepTutorialProps {
   steps: ContentStep[];
   poseTitle: string;
+  coverImageUrl?: string | null;
 }
 
 function getMediaTypeLabel(type: ContentStep["mediaType"]): string {
@@ -46,8 +47,9 @@ function getMediaTypeIcon(type: ContentStep["mediaType"]) {
   }
 }
 
-export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
+export function StepTutorial({ steps, poseTitle, coverImageUrl }: StepTutorialProps) {
   const speech = useSpeechSynthesis();
+  const { speak, cancel, supported, speaking } = speech;
   const total = steps.length;
 
   const [active, setActive] = useState(false);
@@ -56,50 +58,26 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [narratingStep, setNarratingStep] = useState<number | null>(null);
 
-  const slideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const speechSession = useRef(0);
 
   const currentStep = steps[Math.min(stepIndex, total - 1)];
-  const images =
-    currentStep?.mediaType === "IMAGE" && currentStep.imageUrls
-      ? currentStep.imageUrls
-      : currentStep?.imageUrl
-        ? [currentStep.imageUrl]
-        : [];
+  const activeCoverImage = currentStep?.coverImageUrl ?? coverImageUrl;
+  const images = currentStep?.mediaType === "IMAGE"
+    ? [...new Set([...(currentStep.imageUrls ?? []), currentStep.imageUrl].filter((url): url is string => Boolean(url?.trim())))]
+    : [];
   const currentImage = images[Math.min(slideIndex, images.length - 1)];
 
-  const stepChanged = useRef(stepIndex);
-
-  const resetSlideTimer = useCallback(() => {
-    if (slideTimer.current) {
-      clearTimeout(slideTimer.current);
-      slideTimer.current = null;
-    }
-    if (
-      active &&
-      currentStep?.mediaType === "IMAGE" &&
-      images.length > 1 &&
-      stepIndex < total - 1
-    ) {
-      slideTimer.current = setTimeout(() => {
-        setSlideIndex((prev) => (prev + 1 >= images.length ? 0 : prev + 1));
-      }, SLIDE_INTERVAL_MS);
-    }
-  }, [active, currentStep?.mediaType, images.length, stepIndex, total]);
+  useEffect(() => {
+    if (!active || currentStep?.mediaType !== "IMAGE" || images.length < 2 || slideIndex >= images.length - 1) return;
+    const timer = window.setTimeout(() => setSlideIndex((index) => Math.min(index + 1, images.length - 1)), SLIDE_INTERVAL_MS);
+    return () => window.clearTimeout(timer);
+  }, [active, currentStep?.mediaType, images.length, slideIndex, stepIndex]);
 
   useEffect(() => {
-    if (stepChanged.current !== stepIndex) {
-      stepChanged.current = stepIndex;
-      setSlideIndex(0);
-      resetSlideTimer();
-    }
-  }, [stepIndex, resetSlideTimer]);
-
-  useEffect(() => {
-    if (!active || !currentStep?.instruction) return;
+    if (!active || !currentStep?.instruction?.trim()) return;
     const session = ++speechSession.current;
     setIsSpeaking(true);
-    speech.speak(currentStep.instruction, {
+    speak(currentStep.instruction, {
       onEnd: () => {
         if (session === speechSession.current) {
           setIsSpeaking(false);
@@ -111,6 +89,8 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
                 setSlideIndex(0);
               }
             }, 400);
+          } else {
+            setActive(false);
           }
         }
       },
@@ -119,7 +99,7 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
       speechSession.current += 1;
       setIsSpeaking(false);
     };
-  }, [active, currentStep?.instruction, speech]);
+  }, [active, currentStep?.instruction, speak, stepIndex, total]);
 
   // Per-step cap: a step may run at most 2 minutes, then advance automatically.
   useEffect(() => {
@@ -128,12 +108,12 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
       if (stepIndex < total - 1) {
         setStepIndex((prev) => Math.min(prev + 1, total - 1));
         setSlideIndex(0);
-        speech.cancel();
+        cancel();
         setIsSpeaking(false);
       }
     }, 120000);
     return () => clearTimeout(timer);
-  }, [active, stepIndex, total, speech]);
+  }, [active, stepIndex, total, cancel]);
 
   const togglePlay = useCallback(() => {
     if (!active) {
@@ -141,34 +121,23 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
       setStepIndex(0);
       setSlideIndex(0);
     } else {
-      speech.cancel();
+      cancel();
       setIsSpeaking(false);
       setActive(false);
     }
-    if (slideTimer.current) {
-      clearTimeout(slideTimer.current);
-      slideTimer.current = null;
-    }
-  }, [active, speech]);
+  }, [active, cancel]);
 
   const nextStep = useCallback(() => {
     if (stepIndex >= total - 1) return;
     setSlideIndex(0);
     setStepIndex((prev) => prev + 1);
-    speech.cancel();
+    cancel();
     setIsSpeaking(false);
-    if (slideTimer.current) {
-      clearTimeout(slideTimer.current);
-      slideTimer.current = null;
-    }
-  }, [stepIndex, total, speech]);
+  }, [stepIndex, total, cancel]);
 
   useEffect(() => {
-    return () => {
-      if (slideTimer.current) clearTimeout(slideTimer.current);
-      speech.cancel();
-    };
-  }, [speech]);
+    return () => cancel();
+  }, [cancel]);
 
   if (total === 0) return null;
 
@@ -184,7 +153,7 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
   const isImage = mediaType === "IMAGE" && images.length > 0;
 
   return (
-    <div className="space-y-5">
+    <div className="w-full min-w-0 space-y-5">
       {!active ? (
         <motion.section
           initial={{ opacity: 0, y: 10 }}
@@ -199,7 +168,7 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
                 Step-by-step guide
               </h2>
               <p className="mt-1 text-xs leading-relaxed text-muted sm:text-sm">
-                Follow each step at your own pace. {speech.supported ? "Play narration using your device’s voice." : "Read each instruction at your own pace."}
+                Follow each step at your own pace. {supported ? "Play narration using your device’s voice." : "Read each instruction at your own pace."}
               </p>
             </div>
             <button
@@ -212,14 +181,16 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
             </button>
           </header>
 
+          {coverImageUrl ? <div className="aspect-[3/2] w-full overflow-hidden bg-primary-50"><img src={coverImageUrl} alt={`${poseTitle} guided practice cover`} className="h-full w-full object-cover" /></div> : null}
+
           <ol className="divide-y divide-border-soft">
             {steps.map((item, index) => {
               const image = item.coverImageUrl ?? item.imageUrl ?? item.imageUrls?.[0] ?? null;
               const points = (item.instruction ?? "").split(/\n+|(?<=[.!?])\s+/).map((line) => line.replace(/^[-•*]\s*/, "").trim()).filter(Boolean);
-              const isNarrating = narratingStep === index && speech.speaking;
+              const isNarrating = narratingStep === index && speaking;
               return (
                 <li key={item.id} className="grid min-w-0 gap-3 p-3 sm:grid-cols-[9rem_minmax(0,1fr)_auto] sm:items-center sm:gap-5 sm:p-4">
-                  <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-primary-50 sm:aspect-[4/3]">
+                  <div className="relative aspect-[3/2] overflow-hidden rounded-xl bg-primary-50">
                     {item.mediaType === "VIDEO" && item.videoUrl ? (
                       <video src={item.videoUrl} poster={image ?? undefined} controls playsInline preload="metadata" className="h-full w-full object-cover" aria-label={`${poseTitle}, step ${index + 1}`} />
                     ) : image ? (
@@ -242,16 +213,16 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
                     </div>
                   </div>
 
-                  {item.instruction?.trim() && speech.supported ? (
+                  {item.instruction?.trim() && supported ? (
                     <button
                       type="button"
                       onClick={() => {
                         if (isNarrating) {
-                          speech.cancel();
+                          cancel();
                           setNarratingStep(null);
                         } else {
                           setNarratingStep(index);
-                          speech.speak(item.instruction ?? "", { onEnd: () => setNarratingStep(null) });
+                          speak(item.instruction ?? "", { onEnd: () => setNarratingStep(null) });
                         }
                       }}
                       aria-label={`${isNarrating ? "Stop" : "Play"} narration for step ${index + 1}`}
@@ -273,12 +244,20 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="mt-6 flex flex-col gap-0 rounded-3xl border border-border-soft bg-surface overflow-hidden"
+      className="mt-6 flex w-full min-w-0 flex-col gap-0 overflow-hidden rounded-2xl border border-border-soft bg-surface sm:rounded-3xl"
     >
-      <div className="relative aspect-[16/9] w-full bg-primary-50 overflow-hidden">
-        {currentStep?.coverImageUrl ? (
+      <div className={`relative w-full overflow-hidden bg-primary-50 ${mediaType === "IMAGE" ? "aspect-[3/2]" : "aspect-[16/9]"}`}>
+        {isImage && currentImage ? (
           <motion.img
-            src={currentStep.coverImageUrl}
+            key={currentImage}
+            src={currentImage}
+            alt={`${poseTitle}, step ${stepIndex + 1}`}
+            className="h-full w-full object-cover"
+            loading="eager"
+          />
+        ) : activeCoverImage ? (
+          <motion.img
+            src={activeCoverImage}
             alt=""
             className="h-full w-full object-cover"
             loading="lazy"
@@ -312,12 +291,12 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
       </div>
 
       {currentStep?.caption && (
-        <div className="px-6 py-3 text-sm text-muted border-b border-border-soft/50 bg-surface/50">
+        <div className="border-b border-border-soft/50 bg-surface/50 px-4 py-3 text-sm text-muted sm:px-6">
           <p className="leading-relaxed">{currentStep.caption}</p>
         </div>
       )}
 
-      <div className="px-6 py-6 bg-surface/30">
+      <div className="bg-surface/30 px-4 py-4 sm:px-6 sm:py-6">
         {isVideo && currentStep?.videoUrl ? (
           <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black shadow-lg">
             <video
@@ -348,40 +327,11 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
               />
             </div>
           </div>
-        ) : isImage && currentImage ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden bg-primary-100 shadow-sm"
-          >
-            <motion.img
-              src={currentImage}
-              alt=""
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
-            {images.length > 1 && (
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 flex gap-1.5">
-                {images.map((_, i) => (
-                  <motion.div
-                    key={i}
-                    animate={{ scale: i === slideIndex ? 1 : 0.75 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    className={`w-2 h-2 rounded-full transition-all ${
-                      i === slideIndex ? "bg-primary-600" : "bg-white/60"
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-            {images.length > 1 && (
-              <div className="absolute top-2 right-2 z-10 text-xs font-semibold text-white bg-black/60 px-2 py-1 rounded">
-                {slideIndex + 1} / {images.length}
-              </div>
-            )}
-          </motion.div>
+        ) : isImage ? (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-border-soft bg-white/70 px-4 py-3">
+            <p className="text-xs font-medium text-muted">Image {slideIndex + 1} of {images.length}</p>
+            {images.length > 1 ? <div className="flex items-center gap-1.5" aria-label="Image slideshow progress">{images.map((_, imageIndex) => <span key={imageIndex} className={`size-2 rounded-full ${imageIndex === slideIndex ? "bg-primary-600" : "bg-primary-200"}`} />)}</div> : null}
+          </div>
         ) : (
           <div className="flex h-64 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border-soft bg-primary-50">
             <AlertTriangle className="size-6 text-primary-400 mb-2" aria-hidden="true" />
@@ -393,22 +343,22 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
       </div>
 
       {currentStep?.instruction && (
-        <div className="px-6 py-4 border-b border-border-soft/50 bg-surface/40">
-          <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-50 text-primary-600 shrink-0">
+        <div className="border-b border-border-soft/50 bg-surface/40 px-4 py-4 sm:px-6">
+          <div className="flex min-w-0 items-start gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-50 text-primary-600">
               <Volume2 className="size-4" aria-hidden="true" />
             </div>
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
               <p className="text-sm leading-relaxed text-heading">
                 {currentStep.instruction}
               </p>
-              {isSpeaking && speech.supported && (
+              {isSpeaking && supported && (
                 <p className="mt-1 text-xs text-primary-600 flex items-center gap-1">
                   <span className="relative h-1 w-2 rounded-full bg-primary-200 animate-pulse" />
                   Speaking…
                 </p>
               )}
-              {!speech.supported && (
+              {!supported && (
                 <p className="mt-1 text-xs text-muted">
                   Voice narration not supported on this browser — read the text
                   above instead.
@@ -419,9 +369,9 @@ export function StepTutorial({ steps, poseTitle }: StepTutorialProps) {
         </div>
       )}
 
-      <div className="px-6 py-5 bg-gradient-to-t from-surface/90 via-surface to-transparent border-t border-border-soft/60 backdrop-blur-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3">
+      <div className="border-t border-border-soft/60 bg-gradient-to-t from-surface/90 via-surface to-transparent px-4 py-4 backdrop-blur-sm sm:px-6 sm:py-5">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-3">
             <button
               type="button"
               onClick={togglePlay}

@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
-import { CheckCircle2, CloudUpload, FileImage, FileMusic, FileVideo, X } from "lucide-react";
+import { CloudUpload, FileImage, FileMusic, FileVideo, X } from "lucide-react";
 import { DotLoader } from "@/components/motion/DotLoader";
 import { adminMediaApi, MEDIA_LIMITS, type MediaUploadKind } from "@/lib/api/admin";
 import type { MediaDto } from "@/lib/api/types";
@@ -60,7 +60,7 @@ interface PendingFile {
   status: "ready" | "uploading" | "done" | "error";
   progress: number; media?: MediaDto; error?: string;
 }
-export function MediaUploadStudio({ accessToken, contentId, defaultKind = "CONTENT_IMAGE", lockKind = false, onUploaded, className }: { accessToken: string; contentId?: number | string; defaultKind?: MediaUploadKind; lockKind?: boolean; onUploaded?: (media: MediaDto) => void; className?: string }) {
+export function MediaUploadQueue({ accessToken, contentId, defaultKind = "CONTENT_IMAGE", lockKind = false, onUploaded, className }: { accessToken: string; contentId?: number | string; defaultKind?: MediaUploadKind; lockKind?: boolean; onUploaded?: (media: MediaDto) => void; className?: string }) {
   const [kind, setKind] = useState<MediaUploadKind>(defaultKind);
   const [items, setItems] = useState<PendingFile[]>([]);
   const [dragOver, setDragOver] = useState(false);
@@ -116,10 +116,10 @@ export function MediaUploadStudio({ accessToken, contentId, defaultKind = "CONTE
     });
   };
   return (
-    <div className={cn("mobile-compact rounded-2xl border border-border-soft bg-surface p-3 sm:rounded-3xl sm:p-5", className)}>
+    <div className={cn("min-w-0 rounded-2xl border border-border-soft bg-white/80 p-3 sm:rounded-2xl sm:p-4", className)}>
       {lockKind ? null : (
-        <div className="grid grid-cols-3 gap-1 rounded-2xl bg-surface-tint p-1" role="tablist" aria-label="Media type">
-          {(Object.keys(KIND_META) as MediaUploadKind[]).map((k) => {
+        <div className="grid grid-cols-2 gap-1 rounded-2xl bg-surface-tint p-1" role="tablist" aria-label="Media type">
+          {(["VIDEO", "AUDIO"] as MediaUploadKind[]).map((k) => {
             const meta = KIND_META[k];
             const active = kind === k;
             return (
@@ -132,10 +132,9 @@ export function MediaUploadStudio({ accessToken, contentId, defaultKind = "CONTE
         </div>
       )}
       <button type="button" onClick={() => inputRef.current?.click()} onDragOver={(e) => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files.length > 0) addFiles(e.dataTransfer.files); }}
-        className={cn("mt-3 flex w-full flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed px-4 py-6 text-center sm:py-10", dragOver ? "border-primary-400 bg-primary-50" : "border-border-soft hover:border-primary-300 hover:bg-primary-50/50")}>
-        <span className="flex size-11 items-center justify-center rounded-full bg-primary-100 text-primary-700"><CloudUpload className="size-5" aria-hidden="true" /></span>
-        <span className="text-sm font-semibold text-heading">Tap to choose {KIND_META[kind].label.toLowerCase()}</span>
-        <span className="text-xs text-muted">drag &amp; drop · up to {humanBytes(limits.maxBytes)} · {KIND_META[kind].hint}</span>
+        className={cn("mt-2 grid min-h-[68px] w-full grid-cols-[2.25rem_minmax(0,1fr)] items-center gap-x-3 rounded-xl border border-dashed px-3 py-2.5 text-left transition-colors sm:min-h-[72px]", dragOver ? "border-primary-400 bg-primary-50" : "border-border-soft hover:border-primary-300 hover:bg-primary-50/50")}>
+        <span className="flex size-9 items-center justify-center rounded-xl bg-primary-100 text-primary-700"><CloudUpload className="size-4" aria-hidden="true" /></span>
+        <span className="min-w-0"><span className="block truncate text-xs font-semibold text-heading">Choose {KIND_META[kind].label.toLowerCase()} or drop here</span><span className="mt-0.5 block truncate text-[10px] text-muted">Up to {humanBytes(limits.maxBytes)} · {KIND_META[kind].hint}</span></span>
       </button>
       <input ref={inputRef} type="file" accept={limits.accept} multiple onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = ""; }} className="sr-only" aria-label={`Upload ${kind}`} />
       {items.length > 0 ? (
@@ -144,32 +143,31 @@ export function MediaUploadStudio({ accessToken, contentId, defaultKind = "CONTE
             <p className="text-xs font-semibold text-heading">{items.length} file{items.length === 1 ? "" : "s"}{doneCount > 0 ? ` · ${doneCount} uploaded` : ""}</p>
             {readyCount > 1 ? <button type="button" onClick={() => { for (const i of items) if (i.status === "ready") void uploadOne(i.key); }} className="min-h-9 rounded-full bg-primary-600 px-4 text-xs font-semibold text-white">Upload all</button> : null}
           </div>
-          <ul className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <ul className="mt-2 max-h-48 space-y-1.5 overflow-y-auto pr-1">
             {items.map((item) => (
-              <li key={item.key} className="overflow-hidden rounded-xl border border-border-soft bg-surface-tint/40">
-                <div className="relative aspect-square bg-primary-50">
+              <li key={item.key} className="flex min-w-0 items-center gap-2 rounded-xl border border-border-soft bg-surface-tint/30 p-2 sm:gap-3">
+                <div className="relative size-11 shrink-0 overflow-hidden rounded-lg bg-primary-50">
                   {item.previewUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={item.previewUrl} alt="" aria-hidden="true" className="h-full w-full object-cover" />
                   ) : (
-                    <span className="flex h-full w-full items-center justify-center text-primary-400">{kind === "VIDEO" ? <FileVideo className="size-8" aria-hidden="true" /> : kind === "AUDIO" ? <FileMusic className="size-8" aria-hidden="true" /> : <FileImage className="size-8" aria-hidden="true" />}</span>
+                    <span className="flex h-full w-full items-center justify-center text-primary-500">{kind === "VIDEO" ? <FileVideo className="size-5" aria-hidden="true" /> : kind === "AUDIO" ? <FileMusic className="size-5" aria-hidden="true" /> : <FileImage className="size-5" aria-hidden="true" />}</span>
                   )}
-                  <button type="button" onClick={() => remove(item.key)} aria-label={`Remove ${item.file.name}`} className="absolute top-1.5 right-1.5 inline-flex size-8 items-center justify-center rounded-full bg-surface/95 text-muted shadow-sm"><X className="size-4" aria-hidden="true" /></button>
-                  {item.status === "done" ? <span className="absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 rounded-full bg-success px-2 py-0.5 text-[10px] font-semibold text-white"><CheckCircle2 className="size-3" aria-hidden="true" />Uploaded</span> : null}
                 </div>
-                <div className="p-2">
+                <div className="min-w-0 flex-1 p-1">
                   <p className="truncate text-[11px] font-medium text-heading" title={item.file.name}>{item.file.name}</p>
                   <p className="text-[10px] text-muted">{humanBytes(item.file.size)}{item.media ? ` · id ${item.media.id}` : ""}</p>
                   {item.status === "uploading" ? <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-primary-100" aria-hidden="true"><div className="h-full rounded-full bg-primary-500 transition-[width]" style={{ width: `${item.progress}%` }} /></div> : null}
                   {item.error ? <p className="mt-1 line-clamp-2 text-[10px] text-danger" role="alert">{item.error}</p> : null}
                   {item.status === "ready" || (item.status === "error" && !item.media) ? (
-                    <button type="button" onClick={() => void uploadOne(item.key)} className="mt-1.5 inline-flex min-h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-primary-600 text-[11px] font-semibold text-white"><CloudUpload className="size-3.5" aria-hidden="true" />{item.status === "error" ? "Retry" : "Upload"}</button>
+                    <button type="button" onClick={() => void uploadOne(item.key)} className="mt-1 inline-flex min-h-8 items-center justify-center gap-1 rounded-lg bg-primary-700 px-2.5 text-[10px] font-semibold text-white"><CloudUpload className="size-3" aria-hidden="true" />{item.status === "error" ? "Retry" : "Upload"}</button>
                   ) : item.status === "uploading" ? (
-                    <div className="mt-1.5 flex min-h-9 items-center justify-center gap-1.5 text-[11px] font-medium text-muted"><DotLoader text="Uploading…" inline size="sm" /></div>
+                    <div className="mt-1 flex min-h-7 items-center gap-1 text-[10px] font-medium text-muted"><DotLoader text="Uploading" inline size="sm" /></div>
                   ) : item.media ? (
                     <p className="mt-1 truncate text-[10px] text-success">✓ id {item.media.id} · ready to attach</p>
                   ) : null}
                 </div>
+                <button type="button" onClick={() => remove(item.key)} aria-label={`Remove ${item.file.name}`} className="inline-flex size-8 shrink-0 items-center justify-center rounded-full text-muted hover:bg-white hover:text-heading"><X className="size-4" aria-hidden="true" /></button>
               </li>
             ))}
           </ul>

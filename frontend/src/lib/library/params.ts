@@ -7,9 +7,8 @@ import type { ContentListParams, ContentType, Difficulty, SortKey } from "@/lib/
  */
 
 export const CONTENT_TYPES: { value: ContentType; label: string }[] = [
-  { value: "ASANA", label: "Asana" },
-  { value: "ARTICLE", label: "Article" },
-  { value: "VIDEO", label: "Video" },
+  { value: "ASANA", label: "Guided yoga asanas" },
+  { value: "VIDEO", label: "Videos" },
 ];
 
 export const DIFFICULTIES: { value: Difficulty; label: string }[] = [

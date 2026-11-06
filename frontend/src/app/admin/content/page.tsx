@@ -2,19 +2,21 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ImagePlus, Loader2, Plus, Video } from "lucide-react";
+import { ArrowRight, FileText, ImagePlus, Plus, Video } from "lucide-react";
 
 import { AdminGuard } from "@/components/admin/AdminGuard";
 import { AppShell } from "@/components/layout/AppShell";
-import { MediaUploadStudio } from "@/components/admin/MediaUploadStudio";
+import { MediaUploadQueue } from "@/components/admin/MediaUploadQueue";
+import { CoverImage } from "@/components/media/CoverImage";
 import { Alert } from "@/components/ui/Alert";
 import { DotLoader } from "@/components/motion/DotLoader";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/hooks/useAuth";
 import { adminContentApi } from "@/lib/api/admin";
+import { listCategories } from "@/lib/api/content";
 import { ApiError } from "@/lib/api/client";
-import type { ContentSummary, ContentType, MediaDto } from "@/lib/api/types";
+import type { CategoryDto, ContentSummary, ContentType, MediaDto } from "@/lib/api/types";
 
 /**
  * Admin content list + create (agents.md 2.15). Creating a pose yields a
@@ -25,7 +27,7 @@ import type { ContentSummary, ContentType, MediaDto } from "@/lib/api/types";
 export default function AdminContentPage() {
   return (
     <AdminGuard>
-      <AppShell quote="Create, edit, publish yoga poses and articles.">
+      <AppShell quote="Create and publish guided yoga asanas and videos.">
         <AdminContentList />
       </AppShell>
     </AdminGuard>
@@ -43,9 +45,13 @@ function AdminContentList() {
   const [videoFor, setVideoFor] = useState<number | null>(null);
   const [videoMsg, setVideoMsg] = useState<Record<number, string>>({});
   const [deletingContent, setDeletingContent] = useState<Set<number>>(new Set());
+  const [transitioningVideos, setTransitioningVideos] = useState<Set<number>>(new Set());
 
   const [title, setTitle] = useState("");
   const [type, setType] = useState<ContentType>("ASANA");
+  const [videoDescription, setVideoDescription] = useState("");
+  const [videoCategory, setVideoCategory] = useState("");
+  const [categories, setCategories] = useState<CategoryDto[]>([]);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
@@ -65,6 +71,10 @@ function AdminContentList() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    listCategories().then(setCategories).catch(() => setCategories([]));
+  }, []);
 
   const removeContent = async (id: number) => {
     if (!window.confirm("Delete this content and all its media?")) return;
@@ -88,10 +98,22 @@ function AdminContentList() {
       const created = await adminContentApi.create(accessToken, {
         title: title.trim(),
         contentType: type,
-        summary: "",
+        summary: type === "VIDEO" ? videoDescription.trim().slice(0, 500) : "",
+        ...(type === "VIDEO" ? {
+          description: videoDescription.trim(),
+          categorySlugs: videoCategory ? [videoCategory] : [],
+        } : {}),
       });
-      // Continue straight into step management for the new pose.
-      router.push(`/admin/content/${created.summary.id}/steps`);
+      if (type === "ASANA") {
+        router.push(`/admin/content/${created.summary.id}/steps`);
+      } else {
+        setItems((previous) => [created.summary, ...previous.filter((item) => item.id !== created.summary.id)]);
+        setVideoFor(created.summary.id);
+        setTitle("");
+        setVideoDescription("");
+        setVideoCategory("");
+        setCreating(false);
+      }
     } catch (error) {
       setCreateError(error instanceof ApiError ? error.message : "Could not create content.");
       setCreating(false);
@@ -173,7 +195,7 @@ function AdminContentList() {
         targetAreas: detail.targetAreas,
       });
       setItems((prev) => prev.map((it) => (it.id === id ? { ...it, featuredVideoUrl: media.url } : it)));
-      setVideoMsg((prev) => ({ ...prev, [id]: "Video saved — it appears on Yoga Videos once published." }));
+      setVideoMsg((prev) => ({ ...prev, [id]: "Video attached. Publish it from this row when ready." }));
     } catch (error) {
       setVideoMsg((prev) => ({
         ...prev,
@@ -184,48 +206,95 @@ function AdminContentList() {
     }
   };
 
+  const transitionVideo = async (item: ContentSummary) => {
+    if (!accessToken) return;
+    const action = item.status === "PUBLISHED" ? "unpublish" : "publish";
+    setTransitioningVideos((previous) => new Set(previous).add(item.id));
+    setVideoMsg((previous) => ({ ...previous, [item.id]: "" }));
+    try {
+      const updated = action === "publish"
+        ? await adminContentApi.publish(accessToken, item.id)
+        : await adminContentApi.unpublish(accessToken, item.id);
+      setItems((previous) => previous.map((current) => current.id === item.id ? { ...current, ...updated.summary } : current));
+      setVideoMsg((previous) => ({ ...previous, [item.id]: action === "publish" ? "Video published to the library." : "Video unpublished." }));
+    } catch (error) {
+      setVideoMsg((previous) => ({ ...previous, [item.id]: error instanceof ApiError ? error.message : `Could not ${action} video.` }));
+    } finally {
+      setTransitioningVideos((previous) => { const next = new Set(previous); next.delete(item.id); return next; });
+    }
+  };
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <h1 className="text-2xl font-bold text-heading">Content studio</h1>
-      <p className="mt-1 text-sm text-muted">
-        Create a pose, add ordered images with narration, then publish.
-      </p>
+    <main className="mx-auto w-full max-w-5xl min-w-0 px-3 py-6 sm:px-6 sm:py-10">
+      <header className="mb-6 sm:mb-8">
+        <p className="text-xs font-semibold tracking-[0.16em] text-primary-700 uppercase">Admin workspace</p>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-heading sm:text-3xl">Content studio</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-body">Create guided yoga asanas with narrated steps, or add a video and publish it to the video library.</p>
+      </header>
 
       <form
         onSubmit={create}
-        className="mt-6 rounded-2xl border border-border-soft bg-gradient-to-b from-surface via-primary-50/30 to-primary-100/30 p-5 space-y-4"
+        className="rounded-2xl border border-border-soft bg-gradient-gourd-white p-4 shadow-sm sm:rounded-3xl sm:p-6"
       >
-        <h2 className="text-base font-semibold text-heading">New content</h2>
-        {createError ? <Alert>{createError}</Alert> : null}
-        <div className="grid gap-4 sm:grid-cols-[1fr_180px]">
+        <div className="mb-4 flex items-start gap-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-100 text-primary-700"><Plus className="size-5" aria-hidden="true" /></span><div><h2 className="font-semibold text-heading">Create content</h2><p className="text-xs text-muted">Start a draft, then add guided steps or media.</p></div></div>
+        {createError ? <div className="mb-4"><Alert>{createError}</Alert></div> : null}
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_260px_auto] sm:items-end">
           <Input
             label="Title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Tree Pose"
+            placeholder={type === "ASANA" ? "e.g. Tree Pose" : "e.g. Morning Flow"}
             required
+            maxLength={160}
           />
           <label className="block">
             <span className="mb-1.5 block text-sm font-medium text-heading">Type</span>
             <select
               value={type}
               onChange={(e) => setType(e.target.value as ContentType)}
-              className="h-12 w-full rounded-xl border border-border-soft bg-surface px-3 text-sm text-heading focus:outline-none focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-200"
+              className="h-11 w-full rounded-xl border border-border-soft bg-white px-3 text-sm text-heading focus:outline-none focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-200"
             >
-              <option value="ASANA">Asana</option>
-              <option value="ARTICLE">Article</option>
+              <option value="ASANA">Guided yoga asana</option>
               <option value="VIDEO">Video</option>
             </select>
           </label>
         </div>
-        <Button type="submit" loading={creating} disabled={!title.trim()}>
+        {type === "VIDEO" ? (
+          <>
+            <label className="block">
+              <span className="mb-1.5 block text-sm font-medium text-heading">Video description</span>
+              <textarea
+                value={videoDescription}
+                onChange={(event) => setVideoDescription(event.target.value)}
+                rows={4}
+                maxLength={5000}
+                placeholder="Describe what viewers will practice, the pace, and what they may need."
+                className="w-full rounded-xl border border-border-soft bg-white px-4 py-3 text-sm leading-relaxed text-heading focus:outline-none focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-200"
+              />
+              <span className="mt-1 block text-xs text-muted">Shown on the video page. The first 500 characters also appear in the video card.</span>
+            </label>
+            <label className="block sm:max-w-md">
+              <span className="mb-1.5 block text-sm font-medium text-heading">Category (optional)</span>
+              <select
+                value={videoCategory}
+                onChange={(event) => setVideoCategory(event.target.value)}
+                className="h-11 w-full rounded-xl border border-border-soft bg-white px-3 text-sm text-heading focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-200"
+              >
+                <option value="">Choose a category</option>
+                {categories.map((category) => <option key={category.id} value={category.slug}>{category.name}</option>)}
+              </select>
+              {categories.length === 0 ? <span className="mt-1 block text-xs text-muted">Create categories in Admin → Categories to make them available here.</span> : null}
+            </label>
+          </>
+        ) : null}
+        <Button type="submit" loading={creating} disabled={!title.trim()} className="min-h-11 w-full rounded-full sm:w-auto">
           <Plus className="size-4" aria-hidden="true" />
           Create draft
         </Button>
       </form>
 
-      <section className="mt-8">
-        <h2 className="text-base font-semibold text-heading">All content</h2>
+      <section className="mt-8 sm:mt-10" aria-labelledby="all-content-heading">
+        <div className="mb-3 flex items-center justify-between gap-3"><div className="min-w-0"><h2 id="all-content-heading" className="text-lg font-semibold text-heading">All content</h2><p className="text-xs text-muted">Manage asanas, video assets, and publishing.</p></div><span className="shrink-0 whitespace-nowrap rounded-full bg-primary-50 px-3 py-1.5 text-xs font-medium text-primary-800">{items.length} {items.length === 1 ? "item" : "items"}</span></div>
         {listError ? (
           <div className="mt-3">
             <Alert>{listError}</Alert>
@@ -236,81 +305,76 @@ function AdminContentList() {
             <DotLoader text="Loading…" inline size="sm" />
           </div>
         ) : items.length === 0 && !listError ? (
-          <p className="mt-4 text-sm text-muted">No content yet. Create the first pose above.</p>
+          <div className="rounded-2xl border border-dashed border-border-soft bg-white px-5 py-12 text-center"><span className="mx-auto flex size-12 items-center justify-center rounded-full bg-primary-50 text-primary-700"><FileText className="size-6" aria-hidden="true" /></span><h3 className="mt-3 font-semibold text-heading">No content yet</h3><p className="mt-1 text-sm text-muted">Create your first asana or video draft above to begin.</p></div>
         ) : (
-          <ul className="mt-4 divide-y divide-border-soft rounded-2xl border border-border-soft bg-surface">
+          <ul className="mt-4 space-y-3">
             {items.map((item) => (
               <li
                 key={item.id}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                className="min-w-0 overflow-hidden rounded-2xl border border-border-soft bg-white shadow-[0_12px_30px_-28px_rgba(29,63,46,.5)] sm:rounded-3xl"
               >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-heading">{item.title}</p>
+                <div className="flex min-w-0 gap-3 p-3 sm:p-4">
+                  <div className="size-14 shrink-0 overflow-hidden rounded-xl bg-primary-50 text-primary-600 sm:size-16">{item.featuredImageUrl ? <CoverImage src={item.featuredImageUrl} alt={`${item.title} cover`} /> : <div className="flex h-full items-center justify-center">{item.contentType === "VIDEO" ? <Video className="size-6" aria-hidden="true" /> : <FileText className="size-6" aria-hidden="true" />}</div>}</div>
+                  <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2"><p className="max-w-full truncate text-sm font-semibold text-heading sm:text-base">{item.title}</p><span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${item.status === "PUBLISHED" ? "bg-success/10 text-success" : item.status === "ARCHIVED" ? "bg-muted/10 text-muted" : "bg-warning/10 text-warning"}`}>{item.status === "PUBLISHED" ? "Published" : item.status === "ARCHIVED" ? "Archived" : "Draft"}</span><span className="rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-semibold text-primary-800">{item.contentType === "ASANA" ? "Asana" : "Video"}</span></div>
                   <p className="text-xs text-muted">
                     {item.contentType} · {item.status}
                     {item.featuredImageUrl ? " · cover ✓" : ""}
                     {item.featuredVideoUrl ? " · video ✓" : ""}
                   </p>
                   {coverMsg[item.id] ? (
-                    <p className="mt-0.5 text-xs text-success">{coverMsg[item.id]}</p>
+                    <p role="status" className="mt-1 text-xs text-success">{coverMsg[item.id]}</p>
                   ) : null}
                   {videoMsg[item.id] ? (
-                    <p className="mt-0.5 text-xs text-success">{videoMsg[item.id]}</p>
+                    <p role="status" className="mt-1 text-xs text-success">{videoMsg[item.id]}</p>
                   ) : null}
-                  {coverFor === item.id ? (
-                    <div className="mt-2">
-                      <MediaUploadStudio
-                        accessToken={accessToken ?? ""}
-                        contentId={item.id}
-                        defaultKind="CONTENT_IMAGE"
-                        lockKind
-                        onUploaded={(media) => void saveCover(item.id, media)}
-                      />
-                    </div>
-                  ) : null}
-                  {videoFor === item.id ? (
-                    <div className="mt-2">
-                      <MediaUploadStudio
-                        accessToken={accessToken ?? ""}
-                        contentId={item.id}
-                        defaultKind="VIDEO"
-                        lockKind
-                        onUploaded={(media) => void saveVideo(item.id, media)}
-                      />
-                    </div>
-                  ) : null}
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
+                {coverFor === item.id ? <div className="border-t border-border-soft bg-surface-tint/30 p-3 sm:p-4"><MediaUploadQueue accessToken={accessToken ?? ""} contentId={item.id} defaultKind="CONTENT_IMAGE" lockKind onUploaded={(media) => void saveCover(item.id, media)} /></div> : null}
+                {videoFor === item.id ? <div className="border-t border-border-soft bg-surface-tint/30 p-3 sm:p-4"><MediaUploadQueue accessToken={accessToken ?? ""} contentId={item.id} defaultKind="VIDEO" lockKind onUploaded={(media) => void saveVideo(item.id, media)} /></div> : null}
+                <div className="grid grid-cols-2 items-center gap-2 border-t border-border-soft bg-surface-tint/30 p-3 sm:flex sm:flex-wrap sm:gap-2 sm:p-4">
                   <button
                     type="button"
                     onClick={() => setCoverFor((cur) => (cur === item.id ? null : item.id))}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-body underline-offset-2 hover:text-primary-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+                    className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-border-soft px-3 text-xs font-semibold text-body hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
                     aria-expanded={coverFor === item.id}
                   >
-                    <ImagePlus className="size-4" aria-hidden="true" />
+                    <ImagePlus className="size-3.5" aria-hidden="true" />
                     {item.featuredImageUrl ? "Change cover" : "Set cover"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setVideoFor((cur) => (cur === item.id ? null : item.id))}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-body underline-offset-2 hover:text-primary-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+                    className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-border-soft px-3 text-xs font-semibold text-body hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
                     aria-expanded={videoFor === item.id}
                   >
-                    <Video className="size-4" aria-hidden="true" />
+                    <Video className="size-3.5" aria-hidden="true" />
                     {item.featuredVideoUrl ? "Change video" : "Set video"}
                   </button>
-                  <Link
-                    href={`/admin/content/${item.id}/steps`}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-primary-700 underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
-                  >
-                    Steps
-                    <ArrowRight className="size-4" aria-hidden="true" />
-                  </Link>
-                  <button
+                  {item.contentType === "ASANA" ? (
+                    <Link
+                      href={`/admin/content/${item.id}/steps`}
+                      className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-primary-200 px-3 text-xs font-semibold text-primary-800 hover:bg-primary-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+                    >
+                      Guided steps <ArrowRight className="size-3.5" aria-hidden="true" />
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => void transitionVideo(item)}
+                      disabled={transitioningVideos.has(item.id) || (!item.featuredVideoUrl && item.status !== "PUBLISHED")}
+                      title={!item.featuredVideoUrl && item.status !== "PUBLISHED" ? "Upload a video before publishing" : undefined}
+                      className={`col-span-2 inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-45 sm:col-span-1 ${item.status === "PUBLISHED" ? "border border-warning/30 bg-warning/5 text-warning" : "bg-primary-700 text-white hover:bg-primary-800"}`}
+                    >
+                      {transitioningVideos.has(item.id) ? "Saving…" : item.status === "PUBLISHED" ? "Unpublish video" : "Publish video"}
+                      {item.status !== "PUBLISHED" ? <ArrowRight className="size-4" aria-hidden="true" /> : null}
+                    </button>
+                  )}
+                    <button
                     type="button"
                     onClick={() => void removeContent(item.id)}
                     disabled={deletingContent.has(item.id)}
-                    className="rounded-full border border-destructive/40 px-3 py-1 text-xs font-medium text-destructive disabled:opacity-60"
+                    className="col-span-2 inline-flex min-h-10 items-center justify-center rounded-full border border-danger/30 px-3 text-xs font-semibold text-danger hover:bg-danger/5 disabled:opacity-60 sm:col-span-1"
                   >
                     {deletingContent.has(item.id) ? "Deleting…" : "Delete"}
                   </button>
@@ -320,6 +384,6 @@ function AdminContentList() {
           </ul>
         )}
       </section>
-    </div>
+    </main>
   );
 }

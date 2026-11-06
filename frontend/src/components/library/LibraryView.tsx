@@ -5,9 +5,9 @@ import { ChevronDown, ChevronLeft, ChevronRight, Inbox, Search, TriangleAlert, X
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
-import { listContent } from "@/lib/api/content";
+import { listCategories, listContent } from "@/lib/api/content";
 import { parseParams, toSearchParams, CONTENT_TYPES, DIFFICULTIES } from "@/lib/library/params";
-import type { ContentListParams, ContentType, ContentSummary, PageResponse } from "@/lib/api/types";
+import type { CategoryDto, ContentListParams, ContentType, ContentSummary, PageResponse } from "@/lib/api/types";
 import { ContentCard } from "./ContentCard";
 import { ContentCardSkeleton } from "./ContentCardSkeleton";
 
@@ -41,6 +41,7 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
   const key = useMemo(() => toSearchParams(params).toString(), [params]);
   const [qInput, setQInput] = useState(() => params.q ?? "");
   const [reload, setReload] = useState(0);
+  const [categories, setCategories] = useState<CategoryDto[]>([]);
   const deb = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [result, setResult] = useState<{
@@ -48,6 +49,14 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
     page: PageResponse<ContentSummary> | null;
     err: string | null;
   } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    listCategories()
+      .then((items) => { if (active) setCategories(items); })
+      .catch(() => { if (active) setCategories([]); });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     const c = new AbortController();
@@ -99,7 +108,7 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
   const page = params.page ?? 0;
   const totalPages = data?.totalPages ?? 0;
   const total = data?.totalElements ?? null;
-  const hasFilters = Boolean(params.difficulty || params.type || params.goal || params.durationMax);
+  const hasFilters = Boolean(params.difficulty || (!fixedType && params.type) || params.category || params.goal || params.durationMax);
 
 
   return (
@@ -115,8 +124,8 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
             type="search"
             value={qInput}
             onChange={(e) => setQInput(e.target.value)}
-            placeholder={fixedType === "VIDEO" ? "Search videos..." : "Search poses..."}
-            aria-label={fixedType === "VIDEO" ? "Search yoga videos" : "Search yoga poses"}
+            placeholder={fixedType === "VIDEO" ? "Search videos..." : "Search guided asanas..."}
+            aria-label={fixedType === "VIDEO" ? "Search videos" : "Search guided yoga asanas"}
             className="h-11 w-full rounded-full border border-[#e6eadd] bg-[#fbfcf8] pr-4 pl-11 text-sm text-heading placeholder:text-muted focus:border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-100"
           />
         </div>
@@ -143,8 +152,8 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
       </div>
 
       {/* Filter chips */}
-      <div className="scrollbar-none mt-2 flex items-center gap-2 overflow-x-auto px-3 py-2 sm:mt-3 sm:flex-wrap sm:overflow-visible sm:px-5" role="group" aria-label="Filter poses">
-        <Chip active={!params.difficulty && !params.type} label="All" onClick={() => patch({ difficulty: undefined, type: undefined })} />
+      <div className="scrollbar-none mt-2 flex items-center gap-2 overflow-x-auto px-3 py-2 sm:mt-3 sm:flex-wrap sm:overflow-visible sm:px-5" role="group" aria-label={fixedType === "VIDEO" ? "Filter videos" : "Filter poses"}>
+        <Chip active={!params.difficulty && !params.category && !params.goal && !params.durationMax && (fixedType !== undefined || !params.type)} label="All" onClick={() => patch({ difficulty: undefined, category: undefined, goal: undefined, durationMax: undefined, type: fixedType ? params.type : undefined })} />
         {DIFFICULTIES.map((d) => (
           <Chip
             key={d.value}
@@ -162,10 +171,25 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
             onClick={() => patch({ type: params.type === t.value ? undefined : t.value })}
           />
         ))}
+        {categories.length > 0 ? (
+          <label className="relative inline-flex shrink-0 items-center">
+            <span className="sr-only">Filter by category</span>
+            <select
+              value={params.category ?? ""}
+              onChange={(event) => patch({ category: event.target.value || undefined })}
+              aria-label="Filter by category"
+              className="h-9 max-w-44 appearance-none rounded-full border border-border-soft bg-surface px-3 pr-8 text-xs font-medium text-body focus:border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-100"
+            >
+              <option value="">All categories</option>
+              {categories.map((category) => <option key={category.id} value={category.slug}>{category.name}</option>)}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2.5 size-3.5 text-muted" aria-hidden="true" />
+          </label>
+        ) : null}
         {hasFilters ? (
           <button
             type="button"
-            onClick={() => patch({ difficulty: undefined, type: undefined, goal: undefined, durationMax: undefined })}
+            onClick={() => patch({ difficulty: undefined, type: fixedType ? params.type : undefined, category: undefined, goal: undefined, durationMax: undefined })}
             className="ml-1 inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-medium text-muted transition-colors hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
           >
             <X className="size-3.5" aria-hidden="true" />
@@ -198,13 +222,13 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
       {loading ? (
         <div className="mt-5 grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 2xl:grid-cols-4" aria-hidden="true">
           {Array.from({ length: 6 }).map((_, i) => (
-            <ContentCardSkeleton key={i} />
+            <ContentCardSkeleton key={i} isVideo={fixedType === "VIDEO"} />
           ))}
         </div>
       ) : null}
 
       {!loading && !err && data && data.content.length > 0 ? (
-        <div className="mt-4 grid min-w-0 gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3 2xl:grid-cols-4">
+        <div className={cn("mt-4 grid min-w-0 gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4", fixedType === "VIDEO" ? "xl:grid-cols-3 2xl:grid-cols-3" : "xl:grid-cols-3 2xl:grid-cols-4")}>
           {data.content.map((item) => (
             <ContentCard key={item.id} item={item} />
           ))}

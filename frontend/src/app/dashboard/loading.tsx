@@ -1,6 +1,6 @@
-import { ModuleLoading } from "@/components/layout/ModuleLoading";
+import { LoadingOverlay } from "@/components/layout/LoadingOverlay";
 
 /** Loading state while the dashboard fetches streaks, sessions, wellness, and routines. */
 export default function DashboardLoading() {
-  return <ModuleLoading text="Loading your dashboard" />;
+  return <LoadingOverlay title="Getting your dashboard ready" description="Gathering your practice, saved items, and weekly progress." />;
 }

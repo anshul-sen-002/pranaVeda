@@ -1,8 +1,6 @@
 import { apiRequest } from "./client";
 import type {
   BookmarkTarget,
-  ChallengeDto,
-  ChallengeProgressDto,
   ContentType,
   DashboardDto,
   PageResponse,
@@ -23,7 +21,7 @@ import type {
  * owner from the security context so a user only ever sees their own data.
  */
 export const meApi = {
-  /** One payload for the dashboard: streak, practice totals, saved, challenges. */
+  /** One payload for the dashboard: streak, practice totals, and saved items. */
   dashboard(accessToken: string): Promise<DashboardDto> {
     return apiRequest<DashboardDto>("/api/v1/me/dashboard", { accessToken });
   },
@@ -96,37 +94,6 @@ export const meApi = {
       `/api/v1/me/bookmarks/${targetType}/${targetId}`,
       { method: "DELETE", accessToken },
     ) as Promise<void>;
-  },
-
-  /** All challenges the caller has joined. */
-  myChallenges(accessToken: string): Promise<ChallengeProgressDto[]> {
-    return apiRequest<ChallengeProgressDto[]>("/api/v1/me/challenges", { accessToken });
-  },
-
-  /** Published challenges — open to anyone, used to suggest the 7-day challenge. */
-  publishedChallenges(): Promise<ChallengeDto[]> {
-    return apiRequest<ChallengeDto[]>("/api/v1/challenges");
-  },
-
-  /** Joins a published challenge (idempotent). */
-  joinChallenge(accessToken: string, challengeId: number): Promise<ChallengeProgressDto> {
-    return apiRequest<ChallengeProgressDto>(`/api/v1/me/challenges/${challengeId}/join`, {
-      method: "POST",
-      accessToken,
-    });
-  },
-
-  /** Marks today's challenge day complete (idempotent — retries don't double-count). */
-  completeChallengeDay(
-    accessToken: string,
-    challengeId: number,
-    minutes: number,
-  ): Promise<ChallengeProgressDto> {
-    return apiRequest<ChallengeProgressDto>(`/api/v1/me/challenges/${challengeId}/complete-day`, {
-      method: "POST",
-      accessToken,
-      body: { minutes },
-    });
   },
 
   /** The caller's routines (summaries), most-recently-updated first. */

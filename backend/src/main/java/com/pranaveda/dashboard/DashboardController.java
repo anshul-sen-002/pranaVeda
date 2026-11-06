@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  * Member dashboard endpoint (agents.md 2.9). Lives under {@code /api/v1/me/**},
  * so the security chain requires authentication and the service re-resolves the
  * owner from the security context. Composes streak, practice totals, saved
- * count, challenge progress, and recent saved items in one round-trip.
+ * count and recent saved items in one round-trip.
  */
 @Tag(name = "Dashboard")
 @RestController

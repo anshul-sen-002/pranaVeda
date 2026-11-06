@@ -122,14 +122,12 @@ public class RoutineService {
 
     /**
      * Validates that every referenced content id exists and is published, and
-     * that the sequence is non-empty and within the size cap. Returns the
-     * validated items for reuse when building DTOs.
+     * that the sequence is within the size cap. Empty sequences are allowed so
+     * callers can create a routine first and add published content later.
      */
     private Map<Long, ContentItem> validateItems(List<RoutineItemRequest> requested) {
         List<RoutineItemRequest> safe = requested == null ? List.of() : requested;
-        if (safe.isEmpty()) {
-            throw new BadRequestException("A routine must contain at least one item.");
-        }
+        if (safe.isEmpty()) return Map.of();
         if (safe.size() > MAX_ITEMS) {
             throw new BadRequestException("A routine may contain at most " + MAX_ITEMS + " items.");
         }
@@ -189,7 +187,7 @@ public class RoutineService {
             ContentItem content = contentMap.get(item.getContentId());
             var summary = content == null ? null
                     : ContentMapper.summary(content, facetMap.getOrDefault(content.getId(), List.of()));
-            itemDtos.add(new RoutineItemDto(item.getId(), item.getPosition(),
+            itemDtos.add(new RoutineItemDto(item.getId(), item.getContentId(), item.getPosition(),
                     item.getDurationSeconds(), item.getNote(), summary));
         }
         return new RoutineDto(routine.getId(), routine.getName(), routine.getDescription(),

@@ -50,6 +50,7 @@
   --background-image-gradient-interactive: linear-gradient(145deg, #f0f7f4 0%, #eef7f2 100%);
 
   --font-sans: var(--font-inter);
+  --font-display: "Iowan Old Style", "Baskerville", "Palatino Linotype", "Book Antiqua", Georgia, serif;
 
   /* Calm, quiet motion */
   --animate-fade-in-up: fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -74,6 +75,72 @@
   }
   50% {
     transform: translateY(-12px);
+  }
+}
+
+@keyframes globe-breathe {
+  0%,
+  100% { transform: scale(.96); opacity: .42; }
+  50% { transform: scale(1.04); opacity: .8; }
+}
+
+@keyframes globe-drift {
+  0%,
+  100% { transform: translateX(-14px); }
+  50% { transform: translateX(14px); }
+}
+
+@keyframes globe-longitude-turn {
+  0%,
+  100% { transform: scaleX(.3); }
+  50% { transform: scaleX(1); }
+}
+
+@keyframes globe-orbit {
+  0%,
+  100% { rotate: y -7deg; }
+  50% { rotate: y 7deg; }
+}
+
+@keyframes globe-revolution {
+  from { transform: perspective(900px) rotateY(0deg); }
+  to { transform: perspective(900px) rotateY(360deg); }
+}
+
+.globe-aura {
+  background: radial-gradient(circle, rgba(255,255,255,.95) 0%, rgba(225,239,225,.48) 56%, rgba(224,238,224,0) 74%);
+  animation: globe-breathe 10s ease-in-out infinite;
+}
+
+.globe-land-shift {
+  animation: globe-drift 32s ease-in-out infinite;
+}
+
+.globe-longitude-sweep {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: globe-longitude-turn 24s ease-in-out infinite;
+}
+
+.globe-revolution {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform-style: preserve-3d;
+  animation: globe-revolution 46s linear infinite;
+}
+
+.globe-orbit {
+  transform-style: preserve-3d;
+  animation: globe-orbit 18s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .globe-aura,
+  .globe-land-shift,
+  .globe-longitude-sweep,
+  .globe-revolution,
+  .globe-orbit {
+    animation: none;
   }
 }
 
@@ -156,6 +223,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+}
+
 /* Consistent, visible keyboard focus on navigation and action controls. */
 :where(a, button, [tabindex], input[type="file"], input[type="range"], input[type="checkbox"], input[type="radio"]):focus-visible {
   outline: 2px solid var(--color-primary-500);
@@ -217,14 +291,6 @@ body {
    Do NOT hand-write these classes here: an unescaped `/` is not
    valid in a CSS class selector and breaks the stylesheet build. */
 
-
-/* Background image utility for modules - uses image.png */
-@utility bg-image-png {
-  background-image: url('/image.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
 
 /* Component duplication prevention */
 body {

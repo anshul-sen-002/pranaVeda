@@ -2,9 +2,11 @@
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { AnimatePresence } from "motion/react";
 import type { ReactNode } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
+import { LoadingOverlay } from "@/components/layout/LoadingOverlay";
 
 /**
  * Client-side gate for member pages (agents.md 2.2).
@@ -23,6 +25,15 @@ export function MemberGuard({ children }: { children: ReactNode }) {
     }
   }, [status, router, pathname]);
 
-  if (status !== "authenticated") return null;
-  return <>{children}</>;
+  return (
+    <AnimatePresence mode="wait">
+      {status !== "authenticated" ? (
+        <LoadingOverlay
+          key={status}
+          title={status === "loading" ? "Checking your session" : "Taking you to sign in"}
+          description={status === "loading" ? "We’re securely opening your personal practice space." : "Sign in to continue to your personal space."}
+        />
+      ) : children}
+    </AnimatePresence>
+  );
 }

@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { Bookmark, CalendarCheck2, Flame, Timer } from "lucide-react";
 
 import { MemberGuard } from "@/components/auth/MemberGuard";
-import { ChallengePanel } from "@/components/dashboard/ChallengePanel";
 import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { DashboardSearch } from "@/components/dashboard/DashboardSearch";
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { SavedPanel, WellnessPanel } from "@/components/dashboard/SavedWellnessPanels";
 import { WeeklyChart } from "@/components/dashboard/WeeklyChart";
 import { SessionsPanel } from "@/components/dashboard/SessionsPanel";
-import { DashboardError, DashboardSkeleton, StatCard } from "@/components/dashboard/dashboardUi";
+import { DashboardError, StatCard } from "@/components/dashboard/dashboardUi";
+import { LoadingOverlay } from "@/components/layout/LoadingOverlay";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuthedFetch } from "@/hooks/useAuthedFetch";
 import { meApi } from "@/lib/api/me";
@@ -70,7 +70,9 @@ function DashboardBody() {
     };
   }, [run, reloadKey]);
 
-  if (!data && !error) return <DashboardSkeleton />;
+  if (!data && !error) {
+    return <LoadingOverlay title="Getting your dashboard ready" description="Gathering your practice, saved items, and weekly progress." />;
+  }
   if (error && !data) return <DashboardError message={error} onRetry={() => setReloadKey((k) => k + 1)} />;
 
   const { dashboard, sessions, wellness, routines } = data!;
@@ -95,10 +97,7 @@ function DashboardBody() {
         <StatCard icon={<Bookmark className="size-5" aria-hidden="true" />} value={String(dashboard.savedCount)} label="saved practices" hint="Your library" href="/dashboard/saved" />
       </section>
     <div className="space-y-4 sm:space-y-5">
-      <div className="grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-2">
-        <ChallengePanel challenge={dashboard.challenges[0] ?? null} onChanged={refresh} />
-        <SessionsPanel sessions={sessions} onLogged={refresh} />
-      </div>
+      <SessionsPanel sessions={sessions} onLogged={refresh} />
       <WeeklyChart sessions={sessions} />
       <div className="grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-2">
         <SavedPanel dashboard={dashboard} />

@@ -4,8 +4,7 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, Clock3, History } from "lucide-react";
 
 import { LogSessionInline } from "@/components/dashboard/LogSessionInline";
-import { PanelLink } from "@/components/dashboard/ChallengePanel";
-import { formatDate } from "@/components/dashboard/dashboardUi";
+import { formatDate, PanelLink } from "@/components/dashboard/dashboardUi";
 import type { PracticeSessionDto } from "@/lib/api/types";
 
 /** Recent practice history + inline quick-log form. */

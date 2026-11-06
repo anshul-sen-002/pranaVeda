@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 export function StatCard({
@@ -70,6 +71,15 @@ export function DashboardError({ message, onRetry }: { message: string; onRetry:
         Try again
       </button>
     </div>
+  );
+}
+
+export function PanelLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link href={href} className="inline-flex items-center gap-1 text-sm font-medium text-primary-700 hover:underline">
+      {children}
+      <ArrowRight className="size-4" aria-hidden="true" />
+    </Link>
   );
 }
 

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Check, FileAudio2, ImagePlus, Music2, Plus, Trash2, Upload, X } from "lucide-react";
 
 import { AdminGuard } from "@/components/admin/AdminGuard";
-import { MediaUploadStudio } from "@/components/admin/MediaUploadStudio";
+import { MediaUploadQueue } from "@/components/admin/MediaUploadQueue";
 import { AppShell } from "@/components/layout/AppShell";
 import { CoverImage } from "@/components/media/CoverImage";
 import { Alert } from "@/components/ui/Alert";
@@ -168,7 +168,7 @@ function AdminAudioStudio() {
                   {panel ? (
                     <div className="border-t border-border-soft bg-surface-tint/30 p-3 sm:p-4">
                       <div className="mb-3 flex items-start justify-between gap-3"><div><h4 className="text-sm font-semibold text-heading">{panel.role === "audio" ? `${hasAudio ? "Replace" : "Add"} audio file` : `${hasCover ? "Replace" : "Add"} cover art`}</h4><p className="mt-0.5 text-xs text-muted">{panel.role === "audio" ? "MP3, M4A, OGG, or WAV · up to 50 MB" : "JPG, PNG, WebP, or AVIF · up to 5 MB"}. Upload attaches it to this track.</p></div><button type="button" onClick={() => setUploadTarget(null)} aria-label="Close uploader" className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-border-soft bg-white text-muted hover:text-heading"><X className="size-4" aria-hidden="true" /></button></div>
-                      <MediaUploadStudio key={`${track.id}-${panel.role}`} accessToken={accessToken ?? ""} defaultKind={panel.role === "audio" ? "AUDIO" : "CONTENT_IMAGE"} lockKind onUploaded={(media) => void attach(track.id, media.id, panel.role)} />
+                      <MediaUploadQueue key={`${track.id}-${panel.role}`} accessToken={accessToken ?? ""} defaultKind={panel.role === "audio" ? "AUDIO" : "CONTENT_IMAGE"} lockKind onUploaded={(media) => void attach(track.id, media.id, panel.role)} />
                     </div>
                   ) : null}
                 </li>

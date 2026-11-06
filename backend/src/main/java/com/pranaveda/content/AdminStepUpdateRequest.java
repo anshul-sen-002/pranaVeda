@@ -26,6 +26,5 @@ public record AdminStepUpdateRequest(
         imageUrl = imageUrl == null ? null : imageUrl.trim();
         videoUrl = videoUrl == null ? null : videoUrl.trim();
         audioUrl = audioUrl == null ? null : audioUrl.trim();
-        imageUrls = imageUrls == null ? List.of() : imageUrls;
     }
 }

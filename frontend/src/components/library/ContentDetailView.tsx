@@ -47,7 +47,7 @@ function Section({
 export function ContentDetailView({ detail }: { detail: ContentDetail }) {
   const item = detail.summary;
   const type = CONTENT_TYPE_META[item.contentType];
-  const difficulty = DIFFICULTY_META[item.difficulty];
+  const difficulty = item.difficulty ? DIFFICULTY_META[item.difficulty] : null;
   const TypeIcon = type.icon;
 
   return (
@@ -71,10 +71,12 @@ export function ContentDetailView({ detail }: { detail: ContentDetail }) {
             <TypeIcon className="size-3.5" aria-hidden="true" />
             {type.label}
           </span>
-          <span className="inline-flex items-center gap-1.5 text-xs text-muted">
-            <span className={cn("size-1.5 rounded-full", difficulty.dot)} aria-hidden="true" />
-            {difficulty.label}
-          </span>
+          {difficulty ? (
+            <span className="inline-flex items-center gap-1.5 text-xs text-muted">
+              <span className={cn("size-1.5 rounded-full", difficulty.dot)} aria-hidden="true" />
+              {difficulty.label}
+            </span>
+          ) : null}
           {item.durationMinutes ? (
             <span className="inline-flex items-center gap-1 text-xs text-muted">
               <Clock className="size-3.5" aria-hidden="true" />
@@ -97,7 +99,7 @@ export function ContentDetailView({ detail }: { detail: ContentDetail }) {
           <img
             src={item.featuredImageUrl}
             alt=""
-            className="aspect-[16/10] w-full object-cover"
+            className="aspect-[3/2] w-full object-cover"
           />
         </div>
       ) : null}
@@ -107,7 +109,7 @@ export function ContentDetailView({ detail }: { detail: ContentDetail }) {
           2.1); speech runs entirely in the browser. */}
       {detail.steps.length > 0 ? (
         <div className="mt-6">
-          <StepTutorial steps={detail.steps} poseTitle={item.title} />
+          <StepTutorial steps={detail.steps} poseTitle={item.title} coverImageUrl={item.featuredImageUrl} />
         </div>
       ) : null}
 

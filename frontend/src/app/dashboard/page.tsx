@@ -4,7 +4,7 @@ import { DashboardView } from "@/components/dashboard/DashboardView";
 
 export const metadata: Metadata = {
   title: "Dashboard | PranaVeda",
-  description: "Your personal practice space — streaks, sessions, challenges, and saved practices.",
+  description: "Your personal practice space — streaks, sessions, routines, and saved practices.",
 };
 
 /**

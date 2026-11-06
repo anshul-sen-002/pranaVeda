@@ -29,9 +29,9 @@ const tiles = [
   },
   {
     icon: Flame,
-    t: "Streaks & Challenges",
-    b: "Gentle daily streaks and a 7-day challenge that encourage, never shame. The server tracks your progress.",
-    href: "/dashboard/challenges",
+    t: "Daily Practice Streaks",
+    b: "See your recent practice rhythm and celebrate the days you make time for yourself.",
+    href: "/dashboard",
   },
   {
     icon: HeartPulse,

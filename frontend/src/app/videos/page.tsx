@@ -21,7 +21,7 @@ export default function YogaVideosPage() {
           <div className="rounded-2xl border border-[#e6eadd] bg-white/80 p-4 sm:rounded-3xl sm:p-5">
             <div className="h-11 animate-pulse rounded-full bg-primary-50" aria-hidden="true" />
             <div className="mt-5 grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3" aria-hidden="true">
-              {Array.from({ length: 6 }).map((_, index) => <ContentCardSkeleton key={index} />)}
+              {Array.from({ length: 6 }).map((_, index) => <ContentCardSkeleton key={index} isVideo />)}
             </div>
           </div>
         }

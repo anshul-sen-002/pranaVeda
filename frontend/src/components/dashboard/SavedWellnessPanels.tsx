@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { Bookmark, Flower2, MoonStar, Sparkles } from "lucide-react";
 
-import { PanelLink } from "@/components/dashboard/ChallengePanel";
-import { titleCase } from "@/components/dashboard/dashboardUi";
+import { PanelLink, titleCase } from "@/components/dashboard/dashboardUi";
 import { CONTENT_TYPE_META } from "@/lib/library/contentMeta";
 import type { DashboardDto, RoutineSummaryDto, WellnessProfileDto } from "@/lib/api/types";
 

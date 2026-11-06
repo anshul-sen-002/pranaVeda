@@ -25,20 +25,23 @@ function goalName(value: string) {
 /** Responsive yoga library card with a real, auth-gated saved action. */
 export function ContentCard({ item }: { item: ContentSummary }) {
   const type = CONTENT_TYPE_META[item.contentType];
+  const isVideo = item.contentType === "VIDEO";
   const difficulty = item.difficulty ? DIFFICULTY_META[item.difficulty] : null;
   const goal = item.goals[0];
-  const chipClass = goal ? GOAL_CHIP[goal.toLowerCase()] ?? "bg-primary-100 text-primary-800" : type.chip;
+  const category = isVideo ? item.categories[0] : null;
+  const chipLabel = category?.name ?? (goal ? goalName(goal) : type.label);
+  const chipClass = category ? "bg-[#e7eff3] text-[#406c7a]" : goal ? GOAL_CHIP[goal.toLowerCase()] ?? "bg-primary-100 text-primary-800" : type.chip;
 
   return (
-    <article className="group relative min-w-0 overflow-hidden rounded-2xl border border-[#e3ebe1] bg-white p-2.5 shadow-[0_12px_32px_-28px_rgba(29,63,46,.48)] transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-[0_18px_38px_-26px_rgba(29,111,84,.28)] sm:rounded-3xl sm:p-3">
+    <article className={cn("group relative min-w-0 overflow-hidden rounded-2xl border border-[#e3ebe1] bg-white p-2.5 shadow-[0_12px_32px_-28px_rgba(29,63,46,.48)] transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-[0_18px_38px_-26px_rgba(29,111,84,.28)] sm:rounded-3xl sm:p-3", isVideo && "w-full max-w-[340px] justify-self-center")}>
       <Link href={`/yoga/${item.slug}`} aria-label={`View ${item.title}`} className="block rounded-[14px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2">
-        <div className="relative aspect-[16/9] overflow-hidden rounded-[13px] bg-primary-50 sm:rounded-2xl">
-          <CoverImage src={item.featuredImageUrl} alt={`${item.title} pose`} imgClassName="transition-transform duration-500 group-hover:scale-[1.035]" />
+        <div className={cn("relative overflow-hidden rounded-[13px] sm:rounded-2xl", isVideo ? "aspect-[16/9] bg-[#edf2ed]" : "aspect-[3/2] bg-primary-50")}>
+          <CoverImage src={item.featuredImageUrl} alt={`${item.title} ${isVideo ? "video cover" : "pose"}`} imgClassName={cn("transition-transform duration-500 group-hover:scale-[1.035]", isVideo && "object-contain p-2 group-hover:scale-100")} />
           {item.featuredVideoUrl ? <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-semibold text-primary-800 shadow-sm backdrop-blur"><Play className="size-3 fill-current" aria-hidden="true" />Video</span> : null}
         </div>
 
         <div className="px-1.5 pt-2.5 pb-1 sm:px-2 sm:pt-3 sm:pb-2">
-          <span className={cn("inline-flex max-w-full items-center truncate rounded-full px-2.5 py-1 text-[10px] font-semibold sm:text-[11px]", chipClass)}>{goal ? goalName(goal) : type.label}</span>
+          <span className={cn("inline-flex max-w-full items-center truncate rounded-full px-2.5 py-1 text-[10px] font-semibold sm:text-[11px]", chipClass)}>{chipLabel}</span>
           <h2 className="mt-2 line-clamp-1 pr-8 text-[13px] font-semibold leading-snug text-heading transition-colors group-hover:text-primary-700 sm:text-sm">{item.title}</h2>
           <p className="mt-1 line-clamp-2 min-h-8 text-[11px] leading-relaxed text-muted sm:min-h-10 sm:text-xs">{item.summary}</p>
           <div className="mt-2.5 flex min-w-0 items-center gap-3 pr-9 text-[10px] font-medium text-body sm:mt-3 sm:gap-4 sm:text-[11px]">

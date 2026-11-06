@@ -10,6 +10,7 @@ import com.pranaveda.content.ContentSummary;
  */
 public record RoutineItemDto(
         long id,
+        long contentId,
         int position,
         Integer durationSeconds,
         String note,

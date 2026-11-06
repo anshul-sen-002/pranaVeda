@@ -46,7 +46,7 @@ export function AiCompanion() {
             {[
               { icon: Sparkles, title: "Grounded answers", body: "Recommendations link back to library poses you can open and practice." },
               { icon: ShieldCheck, title: "Safety first", body: "Contraindications, beginner variations, and clear stop-if-it-hurts cues." },
-              { icon: Bot, title: "Private by design", body: "Chats stay yours. History is saved only for you, and you can delete it." },
+              { icon: Bot, title: "Your conversations", body: "Conversation history is tied to your account and can be deleted from chat history." },
             ].map((item, index) => (
               <motion.li
                 key={item.title}
@@ -68,7 +68,7 @@ export function AiCompanion() {
           </ul>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <LinkButton href={signedIn ? "/dashboard" : "/register"} size="lg" className="sm:w-auto">
+            <LinkButton href={signedIn ? "/ai" : "/register"} size="lg" className="sm:w-auto">
               {signedIn ? "Open your companion" : "Try it with a free account"}
             </LinkButton>
             <p className="text-xs font-medium text-muted">Requires an account · educational only</p>

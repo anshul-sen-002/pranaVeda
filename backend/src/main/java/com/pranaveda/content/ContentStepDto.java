@@ -29,7 +29,10 @@ public record ContentStepDto(
             step.getMediaType(),
             step.getCoverImageUrl(),
             step.getImageUrl(),
-            step.getImageUrls(),
+            // Materialize the lazy @ElementCollection while the service
+            // transaction is open. Returning Hibernate's persistent
+            // collection lets Jackson access it after the session closes.
+            step.getImageUrls() == null ? List.of() : List.copyOf(step.getImageUrls()),
             step.getVideoUrl(),
             step.getAudioUrl(),
             step.getCaption(),

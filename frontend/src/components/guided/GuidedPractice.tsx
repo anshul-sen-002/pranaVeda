@@ -261,7 +261,7 @@ export function GuidedPractice({ steps, poseTitle }: GuidedPracticeProps) {
             <img
               src={step.imageUrl ?? undefined}
               alt={step.caption ?? `${poseTitle} — step ${index + 1}`}
-              className="aspect-[16/10] w-full object-cover"
+              className="aspect-[3/2] w-full object-cover"
             />
           </figure>
 
