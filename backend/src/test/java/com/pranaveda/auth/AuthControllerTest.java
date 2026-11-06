@@ -178,7 +178,7 @@ class AuthControllerTest {
 
     @Test
     void meWithAuthenticatedPrincipalReturnsSummary() throws Exception {
-        when(authService.me()).thenReturn(new UserSummary(1L, "demo@pranaveda.dev", "Demo User", Role.USER));
+        when(authService.me()).thenReturn(new UserSummary(1L, "demo@pranaveda.dev", "Demo User", Role.USER, null));
 
         mockMvc.perform(get("/api/v1/auth/me").with(userPrincipal()))
             .andExpect(status().isOk())
@@ -216,7 +216,7 @@ class AuthControllerTest {
 
     private static IssuedSession session(String accessToken, String refreshToken) {
         TokenResponse token = new TokenResponse(
-            accessToken, "Bearer", 900L, new UserSummary(1L, "demo@pranaveda.dev", "Demo User", Role.USER));
+            accessToken, "Bearer", 900L, new UserSummary(1L, "demo@pranaveda.dev", "Demo User", Role.USER, null));
         return new IssuedSession(token, refreshToken);
     }
 
