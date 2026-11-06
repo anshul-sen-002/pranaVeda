@@ -5,6 +5,7 @@ import com.pranaveda.security.CurrentUserPrincipal;
 import com.pranaveda.user.UserRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -36,6 +37,7 @@ public class WellnessProfileService {
 
     /** Full update of the caller's profile. All fields optional; null clears. */
     @Transactional
+    @CacheEvict(cacheNames = "dashboardSummary", key = "T(com.pranaveda.security.CurrentUserPrincipal).requireCurrentUserId()")
     public WellnessProfileDto upsert(WellnessProfileRequest request) {
         validateUnitPairing(request);
         WellnessProfile profile = findOrCreate();
@@ -62,6 +64,7 @@ public class WellnessProfileService {
 
     /** Deletes the caller's profile. Idempotent - absent profile is a no-op. */
     @Transactional
+    @CacheEvict(cacheNames = "dashboardSummary", key = "T(com.pranaveda.security.CurrentUserPrincipal).requireCurrentUserId()")
     public void delete() {
         long userId = CurrentUserPrincipal.requireCurrentUserId();
         profiles.deleteByUserId(userId);

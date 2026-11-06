@@ -12,7 +12,7 @@ import type { AudioDetailDto } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 
 export function TrackDetailView({ track }: { track: AudioDetailDto }) {
-  const { play, playing, current } = usePlayer();
+  const { play, toggle, playing, current } = usePlayer();
   const { status, accessToken } = useAuth();
   const [fav, setFav] = useState(false);
   const [favBusy, setFavBusy] = useState(false);
@@ -50,7 +50,7 @@ export function TrackDetailView({ track }: { track: AudioDetailDto }) {
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-heading">{track.title}</h1>
           {track.description ? <p className="mt-2 text-sm leading-relaxed text-body">{track.description}</p> : null}
           <div className="mt-4 flex flex-wrap gap-2.5">
-            <button type="button" onClick={() => play({ id: track.id, title: track.title, slug: track.slug, description: track.description, category: track.category, durationSeconds: track.durationSeconds, coverImageUrl: track.coverImageUrl, tags: track.tags, publishedAt: track.publishedAt ?? new Date().toISOString() })}
+            <button type="button" onClick={() => active ? toggle() : play({ id: track.id, title: track.title, slug: track.slug, description: track.description, category: track.category, durationSeconds: track.durationSeconds, coverImageUrl: track.coverImageUrl, tags: track.tags, publishedAt: track.publishedAt ?? new Date().toISOString() })}
               className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary-600 px-6 text-sm font-semibold text-white hover:bg-primary-700">
               {active ? <Pause className="size-4" aria-hidden="true" /> : <Play className="size-4" aria-hidden="true" />}{active ? "Pause" : "Play"}
             </button>

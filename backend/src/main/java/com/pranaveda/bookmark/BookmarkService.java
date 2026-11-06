@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,6 +62,7 @@ public class BookmarkService {
 
     /** Saves an item. Idempotent - re-saving an existing bookmark returns it. */
     @Transactional
+    @CacheEvict(cacheNames = "dashboardSummary", key = "T(com.pranaveda.security.CurrentUserPrincipal).requireCurrentUserId()")
     public SavedItemDto save(BookmarkRequest request) {
         long userId = CurrentUserPrincipal.requireCurrentUserId();
         ContentType contentType = resolveContentTypeForSave(request.targetType(), request.targetId());
@@ -75,6 +77,7 @@ public class BookmarkService {
 
     /** Removes a saved item. Idempotent - removing an absent item is a no-op. */
     @Transactional
+    @CacheEvict(cacheNames = "dashboardSummary", key = "T(com.pranaveda.security.CurrentUserPrincipal).requireCurrentUserId()")
     public void remove(BookmarkTarget targetType, long targetId) {
         long userId = CurrentUserPrincipal.requireCurrentUserId();
         bookmarks.deleteByUserIdAndTargetTypeAndTargetId(userId, targetType, targetId);

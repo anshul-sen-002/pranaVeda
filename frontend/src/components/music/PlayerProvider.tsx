@@ -49,11 +49,25 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const play = useCallback((track: AudioTrackSummary, nextQueue?: AudioTrackSummary[]) => {
+    // Re-selecting the current track resumes its existing audio element. It
+    // must not fetch/reload the source, which can leave an orphaned copy playing.
+    if (currentId === track.id) {
+      const el = audioRef.current;
+      if (el && el.paused && el.src) {
+        setError(null);
+        setLoading(true);
+        void el.play().then(
+          () => { setPlaying(true); setLoading(false); },
+          () => { setError("Playback was blocked. Tap play again."); setLoading(false); setPlaying(false); },
+        );
+      }
+      return;
+    }
     if (nextQueue) setQueue(nextQueue);
     else setQueue((q) => (q.some((t) => t.id === track.id) ? q : [...q, track]));
     setCurrentId(track.id);
     setElapsed(0); setDuration(track.durationSeconds); setError(null); setLoading(true);
-  }, []);
+  }, [currentId]);
 
   useEffect(() => {
     if (currentId == null) return;
@@ -94,9 +108,15 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
   }, [currentId]);
 
   useEffect(() => {
-    const el = audioRef.current;
     return () => {
+      // Read the ref at unmount time; the audio element is created lazily,
+      // after this effect first runs.
+      const el = audioRef.current;
       if (!el) return;
+      el.onloadedmetadata = null;
+      el.ontimeupdate = null;
+      el.onended = null;
+      el.onerror = null;
       el.pause();
       el.removeAttribute("src");
       el.load();

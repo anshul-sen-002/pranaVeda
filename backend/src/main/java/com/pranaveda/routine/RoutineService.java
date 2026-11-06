@@ -18,6 +18,7 @@ import com.pranaveda.content.ContentStatus;
 import com.pranaveda.security.CurrentUserPrincipal;
 
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -55,6 +56,7 @@ public class RoutineService {
      * a published item before persisting anything.
      */
     @Transactional
+    @CacheEvict(cacheNames = "dashboardSummary", key = "T(com.pranaveda.security.CurrentUserPrincipal).requireCurrentUserId()")
     public RoutineDto create(RoutineRequest request) {
         long userId = CurrentUserPrincipal.requireCurrentUserId();
         validateItems(request.items());
@@ -92,6 +94,7 @@ public class RoutineService {
      * by reordering {@code items}; the stored order becomes the client's order.
      */
     @Transactional
+    @CacheEvict(cacheNames = "dashboardSummary", key = "T(com.pranaveda.security.CurrentUserPrincipal).requireCurrentUserId()")
     public RoutineDto update(long id, RoutineRequest request) {
         long userId = CurrentUserPrincipal.requireCurrentUserId();
         Routine routine = routines.findByIdAndUserId(id, userId)
@@ -110,6 +113,7 @@ public class RoutineService {
 
     /** Deletes one of the caller's routines (and its items). Idempotent. */
     @Transactional
+    @CacheEvict(cacheNames = "dashboardSummary", key = "T(com.pranaveda.security.CurrentUserPrincipal).requireCurrentUserId()")
     public void delete(long id) {
         long userId = CurrentUserPrincipal.requireCurrentUserId();
         if (!routines.existsByIdAndUserId(id, userId)) {

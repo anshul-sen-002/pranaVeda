@@ -4,13 +4,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pranaveda.security.CurrentUserPrincipal;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Member dashboard endpoint (agents.md 2.9). Lives under {@code /api/v1/me/**},
  * so the security chain requires authentication and the service re-resolves the
- * owner from the security context. Composes streak, practice totals, saved
- * count and recent saved items in one round-trip.
+ * owner from the security context. Composes all dashboard panels in one
+ * round-trip, with a per-user five-minute Redis cache.
  */
 @Tag(name = "Dashboard")
 @RestController
@@ -23,9 +24,9 @@ public class DashboardController {
         this.dashboardService = dashboardService;
     }
 
-    /** The caller's dashboard payload. Owner-scoped; activity figures only. */
+    /** The caller's complete dashboard payload, owner-scoped. */
     @GetMapping
-    public DashboardDto get() {
-        return dashboardService.get();
+    public DashboardPageDto get() {
+        return dashboardService.get(CurrentUserPrincipal.requireCurrentUserId());
     }
 }

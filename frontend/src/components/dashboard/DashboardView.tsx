@@ -17,14 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAuthedFetch } from "@/hooks/useAuthedFetch";
 import { meApi } from "@/lib/api/me";
 import { ApiError } from "@/lib/api/client";
-import type { DashboardDto, PracticeSessionDto, RoutineSummaryDto, WellnessProfileDto } from "@/lib/api/types";
-
-interface DashboardData {
-  dashboard: DashboardDto;
-  sessions: PracticeSessionDto[];
-  wellness: WellnessProfileDto | null;
-  routines: RoutineSummaryDto[];
-}
+import type { DashboardPageDto } from "@/lib/api/types";
 
 /** Member overview (agents.md 2.9). Server figures only — never derived here. */
 export function DashboardView({ showWelcome = false }: { showWelcome?: boolean }) {
@@ -41,7 +34,7 @@ function DashboardBody({ showWelcome }: { showWelcome: boolean }) {
   const { user } = useAuth();
   const router = useRouter();
   const run = useAuthedFetch();
-  const [data, setData] = useState<DashboardData | null>(null);
+  const [data, setData] = useState<DashboardPageDto | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -49,18 +42,11 @@ function DashboardBody({ showWelcome }: { showWelcome: boolean }) {
   // callbacks so the react-hooks/set-state-in-effect rule stays quiet.
   useEffect(() => {
     let cancelled = false;
-    Promise.all([
-      run((token) => meApi.dashboard(token)),
-      run((token) => meApi.sessions(token, 0, 5)),
-      run((token) => meApi.wellnessProfile(token)).catch((err: unknown) =>
-        err instanceof ApiError && err.status === 404 ? null : Promise.reject(err),
-      ),
-      run((token) => meApi.routines(token)).catch(() => [] as RoutineSummaryDto[]),
-    ]).then(
-      ([dashboard, sessionPage, wellness, routines]) => {
+    run((token) => meApi.dashboard(token)).then(
+      (dashboardData: DashboardPageDto) => {
         if (cancelled) return;
         setError(null);
-        setData({ dashboard, sessions: sessionPage.content, wellness, routines });
+        setData(dashboardData);
       },
       (err: unknown) => {
         if (cancelled) return;

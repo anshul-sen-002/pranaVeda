@@ -123,7 +123,7 @@ class AuthControllerTest {
 
     @Test
     void loginWithBadCredentialsReturns401Envelope() throws Exception {
-        when(authService.login(any(), any())).thenThrow(new UnauthorizedException("Invalid email or password."));
+        when(authService.login(any())).thenThrow(new UnauthorizedException("Invalid email or password."));
 
         mockMvc.perform(post("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)

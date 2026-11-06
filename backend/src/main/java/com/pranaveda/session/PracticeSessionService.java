@@ -21,6 +21,7 @@ import com.pranaveda.security.CurrentUserPrincipal;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,6 +62,7 @@ public class PracticeSessionService {
      * caller. Returns the created session with its content preview.
      */
     @Transactional
+    @CacheEvict(cacheNames = "dashboardSummary", key = "T(com.pranaveda.security.CurrentUserPrincipal).requireCurrentUserId()")
     public PracticeSessionDto record(PracticeSessionRequest request) {
         long userId = CurrentUserPrincipal.requireCurrentUserId();
 
@@ -107,6 +109,7 @@ public class PracticeSessionService {
 
     /** Deletes one of the caller's sessions. Idempotent - absent is a no-op. */
     @Transactional
+    @CacheEvict(cacheNames = "dashboardSummary", key = "T(com.pranaveda.security.CurrentUserPrincipal).requireCurrentUserId()")
     public void delete(long id) {
         long userId = CurrentUserPrincipal.requireCurrentUserId();
         sessions.deleteByIdAndUserId(id, userId);

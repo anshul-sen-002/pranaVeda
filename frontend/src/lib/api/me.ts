@@ -2,7 +2,7 @@ import { apiRequest } from "./client";
 import type {
   BookmarkTarget,
   ContentType,
-  DashboardDto,
+  DashboardPageDto,
   PageResponse,
   PracticeSessionDto,
   PracticeSessionRequest,
@@ -21,9 +21,9 @@ import type {
  * owner from the security context so a user only ever sees their own data.
  */
 export const meApi = {
-  /** One payload for the dashboard: streak, practice totals, and saved items. */
-  dashboard(accessToken: string): Promise<DashboardDto> {
-    return apiRequest<DashboardDto>("/api/v1/me/dashboard", { accessToken });
+  /** Full dashboard payload in one request (backend Redis cache, five minutes). */
+  dashboard(accessToken: string): Promise<DashboardPageDto> {
+    return apiRequest<DashboardPageDto>("/api/v1/me/dashboard", { accessToken });
   },
 
   /** Practice history, newest first, paginated (used for Recent Sessions). */

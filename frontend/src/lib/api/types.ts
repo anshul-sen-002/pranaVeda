@@ -238,6 +238,14 @@ export interface DashboardDto {
   recentSaved: SavedItemDto[];
 }
 
+/** Full dashboard response, cached together by the backend for five minutes. */
+export interface DashboardPageDto {
+  dashboard: DashboardDto;
+  sessions: PracticeSessionDto[];
+  wellness: WellnessProfileDto;
+  routines: RoutineSummaryDto[];
+}
+
 /** Safe view of a wellness profile (backend WellnessProfileDto). */
 export interface WellnessProfileDto {
   id: number | null;

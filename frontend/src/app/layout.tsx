@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "@/providers/AuthProvider";
+import { GlobalAudioPlayer } from "@/components/music/GlobalAudioPlayer";
 import "@/app/globals.css";
 
 const inter = Inter({
@@ -40,7 +41,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#fbfbf7] antialiased overflow-x-hidden">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <GlobalAudioPlayer>{children}</GlobalAudioPlayer>
+        </AuthProvider>
       </body>
     </html>
   );

@@ -1,12 +1,8 @@
 package com.pranaveda.auth;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-
 import com.pranaveda.common.error.ConflictException;
 import com.pranaveda.common.error.NotFoundException;
 import com.pranaveda.common.error.UnauthorizedException;
-import com.pranaveda.mail.EmailService;
 import com.pranaveda.security.CurrentUserPrincipal;
 import com.pranaveda.security.JwtService;
 import com.pranaveda.user.Role;
@@ -14,8 +10,6 @@ import com.pranaveda.user.User;
 import com.pranaveda.user.UserRepository;
 import com.pranaveda.user.UserService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,27 +24,22 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthService {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
-
     private final UserService userService;
     private final UserRepository users;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
-    private final EmailService emailService;
 
     public AuthService(UserService userService,
                        UserRepository users,
                        PasswordEncoder passwordEncoder,
                        RefreshTokenService refreshTokenService,
-                       JwtService jwtService,
-                       EmailService emailService) {
+                       JwtService jwtService) {
         this.userService = userService;
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.refreshTokenService = refreshTokenService;
         this.jwtService = jwtService;
-        this.emailService = emailService;
     }
 
     @Transactional
@@ -60,12 +49,11 @@ public class AuthService {
         }
         User user = userService.create(request.email(), request.password(), request.displayName(), Role.USER);
         RefreshTokenService.IssuedRefreshToken refresh = refreshTokenService.issue(user.getId());
-        emailService.sendWelcomeEmail(user.getEmail(), user.getDisplayName());
         return session(user, refresh.token());
     }
 
     @Transactional
-    public IssuedSession login(LoginRequest request, String ip) {
+    public IssuedSession login(LoginRequest request) {
         User user = users.findByEmail(UserService.normalizeEmail(request.email()))
             .orElseThrow(() -> new UnauthorizedException("Invalid email or password."));
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
@@ -75,7 +63,6 @@ public class AuthService {
             throw new UnauthorizedException("Account is disabled.");
         }
         RefreshTokenService.IssuedRefreshToken refresh = refreshTokenService.issue(user.getId());
-        onSignIn(user, ip);
         return session(user, refresh.token());
     }
 
@@ -106,17 +93,5 @@ public class AuthService {
             jwtService.createAccessToken(user.getId(), user.getEmail(), user.getRole()),
             "Bearer", jwtService.accessTtlSeconds(), UserSummary.from(user));
         return new IssuedSession(response, refreshToken);
-    }
-
-    /** Best-effort sign-in alert (email only — no in-app notifications).
-     * Never throws; failures are logged only.
-     */
-    private void onSignIn(User user, String ip) {
-        try {
-            String when = OffsetDateTime.now(ZoneOffset.UTC).toString();
-            emailService.sendLoginAlert(user.getEmail(), user.getDisplayName(), when, ip);
-        } catch (RuntimeException ex) {
-            log.warn("Failed to send sign-in alert for user {}", user.getId(), ex);
-        }
     }
 }
