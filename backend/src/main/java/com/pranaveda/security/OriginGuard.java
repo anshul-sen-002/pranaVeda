@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * CSRF defense for the cookie-authenticated endpoints (/auth/refresh, /logout)
- * layered on top of the SameSite=Strict refresh cookie:
+ * protecting refresh cookies, including the SameSite=None production cookie:
  *
  * <ul>
  *   <li>a browser request that carries an {@code Origin} header must match the

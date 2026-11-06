@@ -12,7 +12,7 @@ import { VoiceInputButton } from "@/components/ai/VoiceInputButton";
 import { WhatsAppTypingDots } from "@/components/ai/WhatsAppTypingDots";
 import { LotusMark } from "@/components/brand/LotusMark";
 import { useAuth } from "@/hooks/useAuth";
-import { aiApi, AI_MAX_MESSAGE_CHARS, type AiMessage } from "@/lib/api/ai";
+import { aiApi, AI_MAX_MESSAGE_CHARS, cleanSavedAssistantMessage, type AiMessage } from "@/lib/api/ai";
 import { aiHistoryApi } from "@/lib/api/extras";
 
 /**
@@ -45,7 +45,7 @@ export function AiChat() {
       if (!active) return;
       setError(null);
       setCid(conversation.conversationId ?? id);
-      setMessages(conversation.messages ?? []);
+      setMessages((conversation.messages ?? []).map(cleanSavedAssistantMessage));
     }).catch(() => {
       if (active) setError("Could not load this saved conversation.");
     });

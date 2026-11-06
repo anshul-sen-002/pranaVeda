@@ -31,6 +31,72 @@ export interface AiConversationSummary {
 /** Longest prompt we send (mirrors the backend @Size(max = 4000)). */
 export const AI_MAX_MESSAGE_CHARS = 4000;
 
+/** Parse one or more concatenated provider chunks and return only reply text. */
+export function extractProviderReplyText(raw: string): string | null {
+  const objects: Record<string, unknown>[] = [];
+  let start = -1;
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < raw.length; i += 1) {
+    const char = raw[i];
+    if (start < 0) {
+      if (char === "{") { start = i; depth = 1; }
+      continue;
+    }
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (char === "\\") escaped = true;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (char === '"') inString = true;
+    else if (char === "{") depth += 1;
+    else if (char === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        try {
+          const value: unknown = JSON.parse(raw.slice(start, i + 1));
+          if (value && typeof value === "object" && !Array.isArray(value)) {
+            objects.push(value as Record<string, unknown>);
+          }
+        } catch { /* Ignore incomplete/non-JSON segments. */ }
+        start = -1;
+      }
+    }
+  }
+  if (objects.length === 0) return null;
+
+  let isProviderPayload = false;
+  let reply = "";
+  for (const object of objects) {
+    const choices = object.choices;
+    if (!Array.isArray(choices)) continue;
+    isProviderPayload = true;
+    for (const choice of choices) {
+      if (!choice || typeof choice !== "object") continue;
+      const item = choice as Record<string, unknown>;
+      const delta = item.delta && typeof item.delta === "object"
+        ? item.delta as Record<string, unknown>
+        : null;
+      const message = item.message && typeof item.message === "object"
+        ? item.message as Record<string, unknown>
+        : null;
+      const content = delta?.content ?? message?.content;
+      if (typeof content === "string") reply += content;
+    }
+  }
+  return isProviderPayload ? reply : null;
+}
+
+/** Legacy streamed conversations may contain raw provider JSON; hide metadata/reasoning. */
+export function cleanSavedAssistantMessage(message: AiMessage): AiMessage {
+  if (message.role !== "ASSISTANT") return message;
+  const text = extractProviderReplyText(message.content);
+  if (text === null) return message;
+  return { ...message, content: text || "This earlier reply has no readable answer." };
+}
+
 /** Supported reply languages for the AI companion. */
 export interface AiLanguage {
   code: string;
@@ -50,8 +116,7 @@ export const AI_LANGUAGES: AiLanguage[] = [
 /**
  * AI chat (agents.md 2.14). Member-only; the server holds the provider key,
  * applies rate limits/timeouts, and returns a safe fallback reply on failure.
- * No history is stored beyond the current conversation unless the backend is
- * configured to persist it.
+ * Signed-in conversations are persisted by the backend and scoped to their owner.
  */
 export const aiApi = {
   chat(
@@ -69,8 +134,8 @@ export const aiApi = {
 
   /**
    * Streams the assistant reply as Server-Sent Events. Calls `onChunk` for
-   * every text delta received. Resolves with the full chat response once
-   * the stream completes (including the [DONE] marker).
+   * every text delta received. Resolves with the conversation id after the
+   * stream completes so later prompts continue the same persisted thread.
    */
   async streamChat(
     accessToken: string,
@@ -148,39 +213,13 @@ export const aiApi = {
             }
             continue;
           }
-          // The backend emits plain-text SSE deltas (e.g. `data: Hello`).
-          // Tolerate OpenAI-style JSON (`data: {"choices":[...]}`) too so the
-          // parser works with either shape. Non-JSON payloads are treated as
-          // plain text chunks and streamed to the UI.
-          let parsed: unknown = null;
-          try {
-            parsed = JSON.parse(payload);
-          } catch {
-            // Not JSON - treat as a plain-text content delta below.
-          }
-          let contentFromJson: string | null = null;
-          if (parsed !== null && typeof parsed === "object") {
-            const choices = (parsed as { choices?: unknown }).choices;
-            if (Array.isArray(choices) && choices.length > 0) {
-              const first = choices[0];
-              const delta =
-                first && typeof first === "object"
-                  ? (first as { delta?: unknown }).delta
-                  : undefined;
-              if (delta && typeof delta === "object") {
-                const c = (delta as { content?: unknown }).content;
-                if (typeof c === "string" && c) contentFromJson = c;
-              }
-            }
-          }
-          if (contentFromJson) {
+          const providerText = extractProviderReplyText(payload);
+          if (providerText !== null) {
+            if (providerText) { receivedContent = true; onChunk?.(providerText); }
+          } else if (payload) {
             receivedContent = true;
-            onChunk?.(contentFromJson);
-          } else if (parsed === null) {
-            // Plain-text chunk from our backend.
-            if (payload) { receivedContent = true; onChunk?.(payload); }
+            onChunk?.(payload);
           }
-          // Valid JSON that doesn't match the expected shape is skipped.
         }
       }
     } catch (err) {

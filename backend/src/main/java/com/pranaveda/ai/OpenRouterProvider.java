@@ -156,7 +156,7 @@ public class OpenRouterProvider implements AiProvider {
                     if (status < 200 || status >= 300) {
                         return HttpResponse.BodySubscribers.discarding();
                     }
-                    return new SseLineSubscriber(onChunk);
+                    return new SseLineSubscriber(onChunk, mapper);
                 });
 
             HttpResponse<Void> response = responseFuture.join();
@@ -180,14 +180,16 @@ public class OpenRouterProvider implements AiProvider {
      *  delivery can be treated as a normal (not error) completion. */
     private static final class SseLineSubscriber implements HttpResponse.BodySubscriber<Void> {
         private final Consumer<String> onChunk;
+        private final JsonMapper mapper;
         private final StringBuilder buffer = new StringBuilder();
         private final CompletableFuture<Void> bodyFuture = new CompletableFuture<>();
         private Flow.Subscription subscription;
         private volatile boolean done = false;
         private int chunksDelivered = 0;
 
-        SseLineSubscriber(Consumer<String> onChunk) {
+        SseLineSubscriber(Consumer<String> onChunk, JsonMapper mapper) {
             this.onChunk = onChunk;
+            this.mapper = mapper;
         }
 
         /** Returns the number of chunks already delivered to onChunk. */
@@ -241,8 +243,35 @@ public class OpenRouterProvider implements AiProvider {
                 return;
             }
             if (!payload.isBlank()) {
-                onChunk.accept(payload);
-                chunksDelivered++;
+                String assistantText = extractAssistantText(payload);
+                if (assistantText != null && !assistantText.isEmpty()) {
+                    onChunk.accept(assistantText);
+                    chunksDelivered++;
+                }
+            }
+        }
+
+        /** Extract only user-facing content; provider reasoning/metadata is never streamed. */
+        @SuppressWarnings("unchecked")
+        private String extractAssistantText(String payload) {
+            try {
+                Object decoded = mapper.readValue(payload, Map.class);
+                if (!(decoded instanceof Map<?, ?> root)) return payload;
+                Object choices = root.get("choices");
+                if (!(choices instanceof List<?> list)) return "";
+                StringBuilder text = new StringBuilder();
+                for (Object choice : list) {
+                    if (!(choice instanceof Map<?, ?> choiceMap)) continue;
+                    Object delta = choiceMap.get("delta");
+                    if (!(delta instanceof Map<?, ?> deltaMap)) continue;
+                    Object content = deltaMap.get("content");
+                    if (content instanceof String value) text.append(value);
+                }
+                return text.toString();
+            } catch (Exception notJson) {
+                // Preserve plain-text compatible providers, but never forward
+                // a structured provider payload as visible assistant text.
+                return payload.startsWith("{") ? "" : payload;
             }
         }
 

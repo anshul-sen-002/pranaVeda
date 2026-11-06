@@ -95,7 +95,12 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const el = audioRef.current;
-    return () => { el?.pause(); };
+    return () => {
+      if (!el) return;
+      el.pause();
+      el.removeAttribute("src");
+      el.load();
+    };
   }, []);
 
   const toggle = useCallback(() => {

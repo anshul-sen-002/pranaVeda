@@ -91,6 +91,7 @@ public class EmailService {
     @Async("mailExecutor")
     public void sendWelcomeEmail(String toEmail, String displayName) {
         if (!properties.isEnabled()) {
+            log.warn("Welcome email skipped because MAIL_ENABLED is false (recipient {})", maskEmail(toEmail));
             return;
         }
         String name = (displayName == null || displayName.isBlank()) ? "there" : displayName.trim();
@@ -134,7 +135,7 @@ public class EmailService {
             ? properties.getFrom()
             : properties.getFromName().trim() + " <" + properties.getFrom().trim() + ">";
         try {
-            restClient.post()
+            Map<?, ?> result = restClient.post()
                 .uri(RESEND_EMAILS_URL)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + properties.getResendApiKey().trim())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -145,12 +146,14 @@ public class EmailService {
                     "html", html
                 ))
                 .retrieve()
-                .toBodilessEntity();
-            log.info("Resend accepted transactional email for {}", maskEmail(toEmail));
+                .body(Map.class);
+            Object emailId = result == null ? null : result.get("id");
+            log.info("Resend accepted transactional email id={} recipient={} senderDomain={}",
+                emailId, maskEmail(toEmail), senderDomain(properties.getFrom()));
         } catch (RestClientResponseException ex) {
             int status = ex.getStatusCode().value();
-            log.warn("Resend rejected transactional email for {} (HTTP {}: {})",
-                maskEmail(toEmail), status, rejectionHint(status));
+            log.warn("Resend rejected transactional email for {} (HTTP {}: {}; response={})",
+                maskEmail(toEmail), status, rejectionHint(status), safeErrorBody(ex.getResponseBodyAsString()));
         } catch (RuntimeException ex) {
             // Deliberately swallowed: email is best-effort and must not affect auth.
             log.warn("Resend request failed for {} ({})", maskEmail(toEmail), ex.getClass().getSimpleName());
@@ -165,6 +168,21 @@ public class EmailService {
             case 429 -> "Resend rate or plan limit reached";
             default -> "Resend returned an error";
         };
+    }
+
+    private static String safeErrorBody(String body) {
+        if (body == null || body.isBlank()) return "empty response";
+        String safe = body.replaceAll("(?i)[A-Z0-9._%+-]+@([A-Z0-9.-]+\\.[A-Z]{2,})", "[address]@$1")
+            .replaceAll("[\\r\\n\\t]+", " ");
+        return safe.length() > 320 ? safe.substring(0, 320) : safe;
+    }
+
+    private static String senderDomain(String from) {
+        if (from == null) return "unconfigured";
+        int at = from.lastIndexOf('@');
+        return at >= 0 && at + 1 < from.length()
+            ? from.substring(at + 1).replaceAll("[^A-Za-z0-9.-].*$", "")
+            : "unconfigured";
     }
 
     /** Minimal HTML-escaping so a display name cannot inject markup. */

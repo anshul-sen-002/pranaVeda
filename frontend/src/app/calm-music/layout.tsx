@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "Relax your mind with curated meditation, sleep, focus, and nature sounds.",
 };
 
-/** Player provider wraps music routes so audio persists across navigation. */
+/** Player state is scoped to music routes and is stopped when leaving them. */
 export default function CalmMusicLayout({ children }: { children: ReactNode }) {
   return (
     <AudioPlayerProvider>

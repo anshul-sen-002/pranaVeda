@@ -33,9 +33,9 @@ import tools.jackson.databind.json.JsonMapper;
  *
  * <p>CSRF is disabled at the framework level because the only
  * cookie-authenticated state changes ({@code /auth/refresh},
- * {@code /auth/logout}) are protected by SameSite=Strict (cross-site requests
- * never carry the cookie) plus the {@link com.pranaveda.security.OriginGuard}
- * allow-list check; bearer-token requests are CSRF-immune.
+ * {@code /auth/logout}) are protected by the {@link com.pranaveda.security.OriginGuard}
+ * allow-list check. Production cookies use SameSite=None for the separate
+ * Vercel and Render origins; bearer-token requests are CSRF-immune.
  */
 @Configuration
 public class SecurityConfig {

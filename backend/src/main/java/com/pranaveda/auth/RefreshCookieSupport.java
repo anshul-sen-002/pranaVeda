@@ -13,7 +13,9 @@ import org.springframework.stereotype.Component;
 /**
  * Builds/reads/clears the HttpOnly refresh cookie.
  * Flags: HttpOnly always; Secure per profile (forced true in prod);
- * SameSite=Strict so cross-site requests never carry it (CSRF layer 1);
+ * SameSite=None in production so the Vercel frontend can send the cookie to
+ * the Render API; SameSite=Strict locally. Cookie POSTs are protected by the
+ * explicit OriginGuard allow-list.
  * path scoped to the auth endpoints only.
  */
 @Component
@@ -37,7 +39,7 @@ public class RefreshCookieSupport {
             .httpOnly(true)
             .secure(secure)
             .path("/api/v1/auth")
-            .sameSite("Strict")
+            .sameSite(secure ? "None" : "Strict")
             .maxAge(refreshTtl)
             .build();
     }

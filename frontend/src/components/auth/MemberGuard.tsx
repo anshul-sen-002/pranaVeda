@@ -2,11 +2,9 @@
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { AnimatePresence } from "motion/react";
 import type { ReactNode } from "react";
 
 import { useAuth } from "@/hooks/useAuth";
-import { LoadingOverlay } from "@/components/layout/LoadingOverlay";
 
 /**
  * Client-side gate for member pages (agents.md 2.2).
@@ -25,15 +23,7 @@ export function MemberGuard({ children }: { children: ReactNode }) {
     }
   }, [status, router, pathname]);
 
-  return (
-    <AnimatePresence mode="wait">
-      {status !== "authenticated" ? (
-        <LoadingOverlay
-          key={status}
-          title={status === "loading" ? "Checking your session" : "Taking you to sign in"}
-          description={status === "loading" ? "We’re securely opening your personal practice space." : "Sign in to continue to your personal space."}
-        />
-      ) : children}
-    </AnimatePresence>
-  );
+  // AuthProvider still checks the server-side refresh cookie on app startup;
+  // avoid blocking the first screen with a session-check modal while it runs.
+  return status === "authenticated" ? children : null;
 }
