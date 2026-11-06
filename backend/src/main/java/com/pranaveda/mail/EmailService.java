@@ -1,50 +1,51 @@
 package com.pranaveda.mail;
 
-import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.Map;
+import java.net.http.HttpClient;
+import java.time.Duration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 
 /**
  * Sends transactional email. Two hard guarantees (agents.md reliability):
  *
  * <ol>
- *   <li><b>Best-effort:</b> every send is wrapped so an SMTP outage, a bad
+ *   <li><b>Best-effort:</b> every send is wrapped so an API outage, a bad
  *       address, or any {@link RuntimeException} is logged and swallowed. A
  *       login must never fail because email failed.</li>
  *   <li><b>Non-blocking:</b> sends run on the {@code mailExecutor} thread pool
  *       via {@link Async}, so the request returns immediately.</li>
  * </ol>
  *
- * When {@link MailProperties#isEnabled()} is false the service is a no-op, so
- * local development works with no SMTP server configured.
+ * When {@link MailProperties#isEnabled()} is false or the Resend API key is
+ * missing, the service is a no-op.
  */
 @Service
 public class EmailService {
 
     private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 
-    private final ObjectProvider<JavaMailSender> mailSenderProvider;
+    private static final String RESEND_EMAILS_URL = "https://api.resend.com/emails";
+
+    private final RestClient restClient;
     private final MailProperties properties;
 
-    /**
-     * The sender is injected lazily via {@link ObjectProvider} because
-     * {@link MailSenderConfig} only creates a {@code JavaMailSender} bean when
-     * {@code app.mail.enabled=true}. With mail disabled (local dev default) no
-     * bean exists, and a required constructor dependency would prevent the
-     * whole application from starting. Resolving it lazily keeps the service a
-     * silent no-op when mail is off.
-     */
-    public EmailService(ObjectProvider<JavaMailSender> mailSenderProvider, MailProperties properties) {
-        this.mailSenderProvider = mailSenderProvider;
+    public EmailService(MailProperties properties) {
+        HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
+        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
+        requestFactory.setReadTimeout(Duration.ofSeconds(10));
+        this.restClient = RestClient.builder().requestFactory(requestFactory).build();
         this.properties = properties;
     }
 
@@ -116,24 +117,41 @@ public class EmailService {
     }
 
     private void send(String toEmail, String subject, String html) {
-        JavaMailSender mailSender = mailSenderProvider.getIfAvailable();
-        if (mailSender == null) {
-            // Mail is disabled (no sender bean): nothing to do, never an error.
-            log.debug("No mail sender configured; skipping email to {}", maskEmail(toEmail));
+        if (!properties.isEnabled()) {
             return;
         }
+        if (properties.getResendApiKey() == null || properties.getResendApiKey().isBlank()) {
+            log.warn("Resend API key is not configured; skipping email to {}", maskEmail(toEmail));
+            return;
+        }
+        if (properties.getFrom() == null || properties.getFrom().isBlank()) {
+            log.warn("Verified sender address is not configured; skipping email to {}", maskEmail(toEmail));
+            return;
+        }
+
+        String from = properties.getFromName() == null || properties.getFromName().isBlank()
+            ? properties.getFrom()
+            : properties.getFromName().trim() + " <" + properties.getFrom().trim() + ">";
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(properties.getFrom(), properties.getFromName());
-            helper.setTo(toEmail);
-            helper.setSubject(subject);
-            helper.setText(html, true);
-            mailSender.send(message);
-            log.info("Login alert email queued for {}", maskEmail(toEmail));
-        } catch (MessagingException | UnsupportedEncodingException | RuntimeException ex) {
+            restClient.post()
+                .uri(RESEND_EMAILS_URL)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + properties.getResendApiKey().trim())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of(
+                    "from", from,
+                    "to", List.of(toEmail),
+                    "subject", subject,
+                    "html", html
+                ))
+                .retrieve()
+                .toBodilessEntity();
+            log.info("Resend accepted transactional email for {}", maskEmail(toEmail));
+        } catch (RestClientResponseException ex) {
+            log.warn("Resend rejected transactional email for {} (HTTP {})",
+                maskEmail(toEmail), ex.getStatusCode().value());
+        } catch (RuntimeException ex) {
             // Deliberately swallowed: email is best-effort and must not affect auth.
-            log.warn("Failed to send login alert email to {}: {}", maskEmail(toEmail), ex.getMessage());
+            log.warn("Resend request failed for {} ({})", maskEmail(toEmail), ex.getClass().getSimpleName());
         }
     }
 

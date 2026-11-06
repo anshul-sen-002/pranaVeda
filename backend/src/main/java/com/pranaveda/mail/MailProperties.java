@@ -3,11 +3,11 @@ package com.pranaveda.mail;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Email (SMTP) settings, bound from {@code app.mail.*}.
+ * Transactional email settings, bound from {@code app.mail.*}.
  *
  * <p>{@code enabled} defaults to false so the application boots and runs locally
  * without an SMTP server. When disabled, {@link EmailService} becomes a no-op
- * and the {@code JavaMailSender} is never touched.
+ * and the Resend API client is never called.
  */
 @ConfigurationProperties(prefix = "app.mail")
 public class MailProperties {
@@ -15,23 +15,14 @@ public class MailProperties {
     /** Master switch. Local dev runs with this off. */
     private boolean enabled = false;
 
-    /** From address for transactional emails. Override via MAIL_FROM. */
-    private String from = "no-reply@pranaveda.local";
+    /** Verified sender address. Override via MAIL_FROM. */
+    private String from = "";
 
     /** Friendly display name paired with {@link #from}. Override via MAIL_FROM_NAME. */
     private String fromName = "PranaVeda";
 
-    /** SMTP host. Only used when {@link #enabled} is true. */
-    private String host = "localhost";
-
-    /** SMTP port (587 = STARTTLS submission, 465 = implicit TLS). */
-    private int port = 587;
-
-    /** SMTP username; empty means anonymous (typical for localhost relays). */
-    private String username = "";
-
-    /** SMTP password; empty means anonymous. */
-    private String password = "";
+    /** Resend API key. Override via RESEND_API_KEY. */
+    private String resendApiKey = "";
 
     public boolean isEnabled() {
         return enabled;
@@ -57,35 +48,11 @@ public class MailProperties {
         this.fromName = fromName;
     }
 
-    public String getHost() {
-        return host;
+    public String getResendApiKey() {
+        return resendApiKey;
     }
 
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+    public void setResendApiKey(String resendApiKey) {
+        this.resendApiKey = resendApiKey;
     }
 }
