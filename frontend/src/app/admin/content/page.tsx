@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, FileText, ImagePlus, Plus, Video } from "lucide-react";
+import { ArrowRight, ChevronDown, FileText, ImagePlus, Plus, Video } from "lucide-react";
 
 import { AdminGuard } from "@/components/admin/AdminGuard";
 import { AppShell } from "@/components/layout/AppShell";
@@ -249,14 +249,17 @@ function AdminContentList() {
           />
           <label className="block">
             <span className="mb-1.5 block text-sm font-medium text-heading">Type</span>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value as ContentType)}
-              className="h-11 w-full rounded-xl border border-border-soft bg-white px-3 text-sm text-heading focus:outline-none focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-200"
-            >
-              <option value="ASANA">Guided yoga asana</option>
-              <option value="VIDEO">Video</option>
-            </select>
+            <span className="relative block">
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value as ContentType)}
+                className="h-11 w-full appearance-none rounded-xl border border-border-soft bg-white px-3 pr-10 text-sm text-heading focus:outline-none focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-200"
+              >
+                <option value="ASANA">Guided yoga asana</option>
+                <option value="VIDEO">Video</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted" aria-hidden="true" />
+            </span>
           </label>
         </div>
         {type === "VIDEO" ? (

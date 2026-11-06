@@ -1,6 +1,6 @@
-import { LoadingOverlay } from "@/components/layout/LoadingOverlay";
+import { DashboardLoadingSkeleton } from "@/components/dashboard/DashboardView";
 
-/** Loading state while the dashboard fetches streaks, sessions, wellness, and routines. */
+/** Keep navigation loading quiet; the welcome overlay is reserved for registration. */
 export default function DashboardLoading() {
-  return <LoadingOverlay title="Getting your dashboard ready" description="Gathering your practice, saved items, and weekly progress." />;
+  return <DashboardLoadingSkeleton />;
 }

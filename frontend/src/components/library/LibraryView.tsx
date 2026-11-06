@@ -145,7 +145,7 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
             ))}
           </select>
           <ChevronDown
-            className="pointer-events-none absolute right-3 size-4 -translate-y-1/2 text-muted sm:right-4"
+            className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted sm:right-4"
             aria-hidden="true"
           />
         </label>

@@ -44,7 +44,9 @@ function AiHistoryList() {
       <ul className="mt-3 divide-y divide-border-soft">
         {items.map((c) => (
           <li key={c.id} className="flex items-center justify-between gap-3 py-2.5">
-            <span className="truncate text-sm text-heading">{c.title || `Conversation ${c.id}`}</span>
+            <Link href={`/ai?conversationId=${c.id}`} className="min-w-0 flex-1 truncate text-sm text-heading hover:text-primary-700 hover:underline">
+              {c.title || `Conversation ${c.id}`}
+            </Link>
             <button type="button" onClick={() => void remove(c.id)} aria-label={`Delete conversation ${c.id}`} className="inline-flex size-8 items-center justify-center rounded-full text-muted hover:bg-danger/10 hover:text-danger"><Trash2 className="size-4" aria-hidden="true" /></button>
           </li>
         ))}

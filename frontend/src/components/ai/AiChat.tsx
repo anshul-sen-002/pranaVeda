@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Bot, SendHorizonal, ShieldCheck, Sparkles, SquarePen } from "lucide-react";
 
 import { Bubble } from "@/components/ai/AiBubble";
@@ -12,6 +13,7 @@ import { WhatsAppTypingDots } from "@/components/ai/WhatsAppTypingDots";
 import { LotusMark } from "@/components/brand/LotusMark";
 import { useAuth } from "@/hooks/useAuth";
 import { aiApi, AI_MAX_MESSAGE_CHARS, type AiMessage } from "@/lib/api/ai";
+import { aiHistoryApi } from "@/lib/api/extras";
 
 /**
  * AI wellness companion chat with streaming responses, WhatsApp-style typing
@@ -19,6 +21,9 @@ import { aiApi, AI_MAX_MESSAGE_CHARS, type AiMessage } from "@/lib/api/ai";
  */
 export function AiChat() {
   const { accessToken } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedConversationId = searchParams.get("conversationId");
   const [messages, setMessages] = useState<AiMessage[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
@@ -30,6 +35,22 @@ export function AiChat() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const streamingIdRef = useRef<number | null>(null);
   const messageIdCounterRef = useRef(0);
+
+  useEffect(() => {
+    if (!accessToken || !requestedConversationId) return;
+    const id = Number(requestedConversationId);
+    if (!Number.isSafeInteger(id) || id <= 0) return;
+    let active = true;
+    aiHistoryApi.get(accessToken, id).then((conversation) => {
+      if (!active) return;
+      setError(null);
+      setCid(conversation.conversationId ?? id);
+      setMessages(conversation.messages ?? []);
+    }).catch(() => {
+      if (active) setError("Could not load this saved conversation.");
+    });
+    return () => { active = false; };
+  }, [accessToken, requestedConversationId]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -107,6 +128,7 @@ export function AiChat() {
     setCid(null);
     setError(null);
     setInput("");
+    if (requestedConversationId) router.replace("/ai", { scroll: false });
   };
 
   return (

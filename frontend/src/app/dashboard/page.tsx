@@ -12,6 +12,11 @@ export const metadata: Metadata = {
  * stays exportable; all session-gating and data fetching live in
  * <DashboardView> behind <MemberGuard>.
  */
-export default function DashboardPage() {
-  return <DashboardView />;
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  return <DashboardView showWelcome={params.welcome === "1"} />;
 }

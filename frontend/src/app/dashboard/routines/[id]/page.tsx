@@ -114,11 +114,11 @@ function RoutineDetail({ params }: { params: Promise<{ id: string }> }) {
   };
 
   if (loading) return <p className="text-sm text-muted" role="status">Loading routine…</p>;
-  if (!routine) return <div className="space-y-4"><Link href="/dashboard/routines" className="inline-flex items-center gap-2 text-sm text-primary-700"><ArrowLeft className="size-4" /> My routines</Link>{error ? <p className="rounded-2xl bg-danger/5 px-4 py-3 text-sm text-danger" role="alert">{error}</p> : null}</div>;
+  if (!routine) return <div className="space-y-4"><Link href="/dashboard/routines" className="inline-flex items-center gap-2 text-sm text-primary-700"><ArrowLeft className="size-4 text-black" /> My routines</Link>{error ? <p className="rounded-2xl bg-danger/5 px-4 py-3 text-sm text-danger" role="alert">{error}</p> : null}</div>;
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-5">
-      <Link href="/dashboard/routines" className="inline-flex min-h-9 items-center gap-2 text-sm font-medium text-primary-700 hover:underline"><ArrowLeft className="size-4" aria-hidden="true" /> My routines</Link>
+      <Link href="/dashboard/routines" className="inline-flex min-h-9 items-center gap-2 text-sm font-medium text-primary-700 hover:underline"><ArrowLeft className="size-4 text-black" aria-hidden="true" /> My routines</Link>
       <PageHeader title={routine.name} subtitle={`${routine.items.length} ${routine.items.length === 1 ? "pose" : "poses"} in your sequence`} />
       {error ? <p className="rounded-2xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger" role="alert">{error}</p> : null}
       {notice ? <p className="rounded-2xl border border-primary-200 bg-primary-50 px-4 py-3 text-sm text-primary-800" role="status">{notice}</p> : null}

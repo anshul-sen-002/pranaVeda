@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Bookmark, CalendarCheck2, Flame, Timer } from "lucide-react";
 
 import { MemberGuard } from "@/components/auth/MemberGuard";
@@ -26,18 +27,19 @@ interface DashboardData {
 }
 
 /** Member overview (agents.md 2.9). Server figures only — never derived here. */
-export function DashboardView() {
+export function DashboardView({ showWelcome = false }: { showWelcome?: boolean }) {
   return (
     <MemberGuard>
       <DashboardShell>
-        <DashboardBody />
+        <DashboardBody showWelcome={showWelcome} />
       </DashboardShell>
     </MemberGuard>
   );
 }
 
-function DashboardBody() {
+function DashboardBody({ showWelcome }: { showWelcome: boolean }) {
   const { user } = useAuth();
+  const router = useRouter();
   const run = useAuthedFetch();
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -70,8 +72,16 @@ function DashboardBody() {
     };
   }, [run, reloadKey]);
 
+  useEffect(() => {
+    if (showWelcome && (data || error)) {
+      router.replace("/dashboard", { scroll: false });
+    }
+  }, [showWelcome, data, error, router]);
+
   if (!data && !error) {
-    return <LoadingOverlay title="Getting your dashboard ready" description="Gathering your practice, saved items, and weekly progress." />;
+    return showWelcome
+      ? <LoadingOverlay title="Preparing your dashboard" description="Gathering your practice, saved items, and weekly progress." />
+      : <DashboardLoadingSkeleton />;
   }
   if (error && !data) return <DashboardError message={error} onRetry={() => setReloadKey((k) => k + 1)} />;
 
@@ -104,6 +114,22 @@ function DashboardBody() {
         <WellnessPanel wellness={wellness} routines={routines} />
       </div>
     </div>
+    </div>
+  );
+}
+
+export function DashboardLoadingSkeleton() {
+  return (
+    <div role="status" aria-label="Loading dashboard" className="mx-auto w-full max-w-7xl animate-pulse space-y-4 sm:space-y-6">
+      <span className="sr-only">Loading dashboard</span>
+      <div className="h-36 rounded-3xl bg-primary-50 sm:h-44" />
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-4">
+        {[0, 1, 2, 3].map((item) => <div key={item} className="h-24 rounded-2xl border border-border-soft bg-white sm:h-28" />)}
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
+        <div className="h-48 rounded-2xl border border-border-soft bg-white" />
+        <div className="h-48 rounded-2xl border border-border-soft bg-white" />
+      </div>
     </div>
   );
 }

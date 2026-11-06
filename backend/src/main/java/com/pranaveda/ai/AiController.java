@@ -74,14 +74,9 @@ public class AiController {
                     }
                 });
 
-                // Send completion marker once the full reply has been collected.
-                try {
-                    emitter.send(SseEmitter.event().data("[DONE]"));
-                } catch (Exception ignored) {
-                    // Ignore.
-                }
-
-                // Send the conversation id so the client can continue the thread.
+                // Send the conversation id before the completion marker. Some
+                // streaming clients and proxies treat [DONE] as the end of the
+                // event stream and can otherwise drop the id event.
                 if (response.conversationId() != null) {
                     try {
                         emitter.send(SseEmitter.event()
@@ -90,6 +85,14 @@ public class AiController {
                     } catch (Exception ignored) {
                         // Ignore.
                     }
+                }
+
+                // Send completion marker after all metadata so clients retain
+                // the thread id for follow-up messages.
+                try {
+                    emitter.send(SseEmitter.event().data("[DONE]"));
+                } catch (Exception ignored) {
+                    // Ignore.
                 }
             } catch (Exception ex) {
                 // Only surface an error if no content was streamed. If chunks

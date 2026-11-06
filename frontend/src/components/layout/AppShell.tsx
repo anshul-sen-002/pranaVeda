@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
-  ArrowLeft, BookOpen, CalendarDays, ChevronDown, ClipboardList,
+  BookOpen, CalendarDays, ChevronDown, ClipboardList,
   FileMusic, Flower2, HelpCircle, Home, Layers, Leaf, LogOut, Menu,
   Search, Settings, Sparkles, User, Video, Wind, X,
 } from "lucide-react";
@@ -14,6 +14,7 @@ import { Logo } from "@/components/brand/Logo";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/cn";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { MobileBackButton } from "@/components/layout/MobileBackButton";
 
 
 const NAV = [
@@ -240,7 +241,7 @@ function AppMain({ pathname, displayName, isAdmin, onMenu, children }: { pathnam
           ? "relative flex h-[100dvh] min-h-0 flex-col overflow-hidden p-0 sm:h-auto sm:overflow-y-auto sm:px-6 sm:py-6 sm:pb-6 lg:px-8 lg:pb-8"
           : "overflow-y-auto px-3 py-4 pb-20 sm:px-6 sm:py-6 sm:pb-6 lg:px-8 lg:pb-8")}>
           {focusedMobilePage && !aiPage ? (
-            <Link href="/dashboard" aria-label={`Back to dashboard from ${pageTitle}`} title="Back to dashboard" className="absolute top-[max(.75rem,env(safe-area-inset-top))] left-3 z-30 inline-flex size-10 items-center justify-center rounded-full border border-white/80 bg-white/75 text-primary-900 shadow-[0_6px_24px_-12px_rgba(24,52,37,.35)] backdrop-blur-xl transition-all hover:bg-white active:scale-95 sm:hidden"><ArrowLeft className="size-5" aria-hidden="true" /></Link>
+            <MobileBackButton label={`Go back from ${pageTitle}`} className="absolute top-[max(.5rem,env(safe-area-inset-top))] left-2 z-30 sm:hidden" />
           ) : null}
           {focusedMobilePage && !aiPage ? <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto px-3 pt-14 pb-[max(1rem,env(safe-area-inset-bottom))] sm:contents">{children}</div> : children}
         </main>

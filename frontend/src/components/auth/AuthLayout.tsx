@@ -57,7 +57,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
         </p>
       </header>
 
-      <main className="relative z-10 mx-auto grid w-full max-w-7xl content-start items-center gap-5 px-4 pt-3 pb-8 sm:gap-8 sm:px-8 sm:pt-5 sm:pb-14 lg:content-center lg:grid-cols-2 lg:gap-12 lg:px-10 lg:py-8">
+      <main className="relative z-10 mx-auto grid w-full max-w-7xl content-start items-center gap-5 px-4 pt-8 pb-8 sm:gap-8 sm:px-8 sm:pt-5 sm:pb-14 lg:content-center lg:grid-cols-2 lg:gap-12 lg:px-10 lg:py-8">
         {/* ------------- Welcome panel (desktop only — mobile shows the form
             first, matching the calm single-column mockup) ------------- */}
         <section className="hidden text-center lg:block lg:text-left">

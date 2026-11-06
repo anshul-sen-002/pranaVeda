@@ -66,7 +66,7 @@ export function PoseDetail({ detail }: { detail: ContentDetail }) {
     <article className="mx-auto w-full min-w-0 max-w-6xl px-3 py-5 sm:px-8 sm:py-8">
       <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1.5 text-xs text-muted sm:mb-6">
         <Link href="/yoga" className="inline-flex min-h-9 items-center gap-1 font-medium text-primary-700 underline-offset-4 hover:underline">
-          <ArrowLeft className="size-3.5" aria-hidden="true" /> Yoga Poses
+          <ArrowLeft className="size-3.5 text-black" aria-hidden="true" /> Yoga Poses
         </Link>
         <span aria-hidden="true">›</span>
         <span className="truncate text-body">{item.title}</span>

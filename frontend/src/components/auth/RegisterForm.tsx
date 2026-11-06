@@ -46,7 +46,7 @@ export function RegisterForm() {
         // Send undefined rather than "" so the backend keeps it null.
         displayName: values.displayName?.trim() ? values.displayName.trim() : undefined,
       });
-      router.replace("/dashboard");
+      router.replace("/dashboard?welcome=1");
     } catch (error) {
       if (error instanceof ApiError) {
         // 409 DUPLICATE_EMAIL lands here and reads naturally as a field error.

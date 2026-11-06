@@ -56,6 +56,7 @@ public class EmailService {
     @Async("mailExecutor")
     public void sendLoginAlert(String toEmail, String displayName, String whenIso, String ip) {
         if (!properties.isEnabled()) {
+            log.warn("Transactional email is disabled; skipping email to {}", maskEmail(toEmail));
             return;
         }
         String name = (displayName == null || displayName.isBlank()) ? "there" : displayName.trim();
@@ -147,12 +148,23 @@ public class EmailService {
                 .toBodilessEntity();
             log.info("Resend accepted transactional email for {}", maskEmail(toEmail));
         } catch (RestClientResponseException ex) {
-            log.warn("Resend rejected transactional email for {} (HTTP {})",
-                maskEmail(toEmail), ex.getStatusCode().value());
+            int status = ex.getStatusCode().value();
+            log.warn("Resend rejected transactional email for {} (HTTP {}: {})",
+                maskEmail(toEmail), status, rejectionHint(status));
         } catch (RuntimeException ex) {
             // Deliberately swallowed: email is best-effort and must not affect auth.
             log.warn("Resend request failed for {} ({})", maskEmail(toEmail), ex.getClass().getSimpleName());
         }
+    }
+
+    private static String rejectionHint(int status) {
+        return switch (status) {
+            case 400, 422 -> "check request fields and verify MAIL_FROM in Resend";
+            case 401 -> "RESEND_API_KEY was rejected";
+            case 403 -> "check API key permissions and verified sender domain";
+            case 429 -> "Resend rate or plan limit reached";
+            default -> "Resend returned an error";
+        };
     }
 
     /** Minimal HTML-escaping so a display name cannot inject markup. */

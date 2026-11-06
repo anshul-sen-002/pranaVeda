@@ -56,7 +56,7 @@ export function ContentDetailView({ detail }: { detail: ContentDetail }) {
         href="/yoga"
         className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
       >
-        <ArrowLeft className="size-4" aria-hidden="true" />
+        <ArrowLeft className="size-4 text-black" aria-hidden="true" />
         Back to the library
       </Link>
 

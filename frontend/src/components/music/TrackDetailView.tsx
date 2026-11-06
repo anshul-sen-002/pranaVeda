@@ -41,7 +41,7 @@ export function TrackDetailView({ track }: { track: AudioDetailDto }) {
   return (
     <article className="mx-auto max-w-3xl">
       <Link href="/calm-music" className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-700 hover:underline">
-        <ArrowLeft className="size-4" aria-hidden="true" />Back to calm music
+        <ArrowLeft className="size-4 text-black" aria-hidden="true" />Back to calm music
       </Link>
       <div className="mt-4 overflow-hidden rounded-3xl border border-border-soft bg-surface">
         <div className="relative h-56 sm:h-64"><CoverImage src={track.coverImageUrl} alt="" /></div>

@@ -1,13 +1,14 @@
 "use client";
 
-import { ArrowLeft, Bot, History, Plus, ShieldCheck, Sparkles } from "lucide-react";
+import { Bot, History, Plus, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { MobileBackButton } from "@/components/layout/MobileBackButton";
 
 /** Chat identity, educational scope, and new-conversation action. */
 export function AiChatHeader({ onNewChat, newChatDisabled = false }: { onNewChat?: () => void; newChatDisabled?: boolean }) {
   return (
     <header className="flex items-center gap-2 border-b border-[#e8ede4]/80 bg-gradient-to-r from-white via-[#fcfdf9] to-[#f5f8f3] px-2.5 py-2 sm:gap-3 sm:px-5 sm:py-4">
-      <Link href="/dashboard" aria-label="Back to dashboard" title="Back to dashboard" className="inline-flex size-8 shrink-0 items-center justify-center text-[#668176] transition-colors hover:text-primary-800 active:scale-95 sm:hidden"><ArrowLeft className="size-[18px]" strokeWidth={1.8} aria-hidden="true" /></Link>
+      <MobileBackButton label="Go back" className="-ml-2 size-10 sm:hidden" />
       <span className="relative flex size-9 shrink-0 items-center justify-center rounded-full bg-[#eaf3ec] text-primary-700 sm:size-12 sm:rounded-2xl">
         <Bot className="size-[18px] sm:size-6" aria-hidden="true" />
         <Sparkles className="absolute -top-0.5 -right-0.5 size-3.5 fill-primary-500 text-primary-500" aria-hidden="true" />
