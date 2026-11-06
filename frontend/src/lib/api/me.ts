@@ -133,15 +133,15 @@ export const meApi = {
   },
 
   /** The caller's current profile photo URL (404 when unset). */
-  profilePhoto(accessToken: string): Promise<{ photoUrl: string | null }> {
-    return apiRequest<{ photoUrl: string | null }>("/api/v1/me/profile-photo", { accessToken });
+  profilePhoto(accessToken: string): Promise<{ url: string | null }> {
+    return apiRequest<{ url: string | null }>("/api/v1/me/profile-photo", { accessToken });
   },
 
   /** Replaces (or sets) the caller's profile photo. Images only, 5 MB max client-side. */
-  setProfilePhoto(accessToken: string, file: File): Promise<{ photoUrl: string | null }> {
+  setProfilePhoto(accessToken: string, file: File): Promise<{ url: string | null }> {
     const form = new FormData();
     form.append("file", file);
-    return apiRequest<{ photoUrl: string | null }>("/api/v1/me/profile-photo", {
+    return apiRequest<{ url: string | null }>("/api/v1/me/profile-photo", {
       method: "POST",
       accessToken,
       body: form,

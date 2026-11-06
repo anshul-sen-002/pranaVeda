@@ -11,6 +11,7 @@ export interface UserSummary {
   email: string;
   displayName: string | null;
   role: Role;
+  profileImageUrl: string | null;
 }
 
 /** `POST /api/v1/auth/register` and `POST /api/v1/auth/login`. */

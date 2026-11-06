@@ -27,6 +27,7 @@ export function AiChat() {
   const [messages, setMessages] = useState<AiMessage[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const [loadingConversation, setLoadingConversation] = useState(false);
   const [hasContent, setHasContent] = useState(false);
   const [streamingId, setStreamingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -35,19 +36,43 @@ export function AiChat() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const streamingIdRef = useRef<number | null>(null);
   const messageIdCounterRef = useRef(0);
+  const loadedConversationIdRef = useRef<string | null>(null);
+  const activeConversationRef = useRef<string | null>(requestedConversationId);
 
   useEffect(() => {
-    if (!accessToken || !requestedConversationId) return;
+    activeConversationRef.current = requestedConversationId;
+    if (!requestedConversationId) {
+      if (loadedConversationIdRef.current !== null) {
+        loadedConversationIdRef.current = null;
+        setCid(null);
+        setMessages([]);
+        setError(null);
+        setLoadingConversation(false);
+      }
+      return;
+    }
+    if (!accessToken) return;
+    if (loadedConversationIdRef.current === requestedConversationId) return;
     const id = Number(requestedConversationId);
     if (!Number.isSafeInteger(id) || id <= 0) return;
     let active = true;
-    aiHistoryApi.get(accessToken, id).then((conversation) => {
+    void Promise.resolve().then(async () => {
       if (!active) return;
-      setError(null);
-      setCid(conversation.conversationId ?? id);
-      setMessages((conversation.messages ?? []).map(cleanSavedAssistantMessage));
-    }).catch(() => {
-      if (active) setError("Could not load this saved conversation.");
+      setLoadingConversation(true);
+      setMessages([]);
+      setCid(null);
+      try {
+        const conversation = await aiHistoryApi.get(accessToken, id);
+        if (!active) return;
+        loadedConversationIdRef.current = requestedConversationId;
+        setError(null);
+        setCid(conversation.conversationId ?? id);
+        setMessages((conversation.messages ?? []).map(cleanSavedAssistantMessage));
+      } catch {
+        if (active) setError("Could not load this saved conversation.");
+      } finally {
+        if (active) setLoadingConversation(false);
+      }
     });
     return () => { active = false; };
   }, [accessToken, requestedConversationId]);
@@ -72,8 +97,9 @@ export function AiChat() {
 
   const send = async (text: string) => {
     const message = text.trim();
-    if (!accessToken || !message || streaming) return;
+    if (!accessToken || !message || streaming || loadingConversation) return;
     const userId = -(++messageIdCounterRef.current);
+    const threadAtStart = activeConversationRef.current;
     setStreaming(true);
     setHasContent(false);
     setError(null);
@@ -103,12 +129,27 @@ export function AiChat() {
           updateStreamingBubble(chunk);
         }
       });
-      setCid(conversationId ?? null);
+      if (activeConversationRef.current === threadAtStart) setCid(conversationId ?? null);
+      if (conversationId != null && activeConversationRef.current === threadAtStart) {
+        try {
+          // Replace temporary stream ids/timestamps with the canonical saved
+          // thread so the visible reply and conversation history stay aligned.
+          const saved = await aiHistoryApi.get(accessToken, conversationId);
+          if (activeConversationRef.current === threadAtStart) {
+            setMessages((saved.messages ?? []).map(cleanSavedAssistantMessage));
+          }
+        } catch {
+          // Keep the streamed reply visible if the follow-up history read fails.
+        }
+      }
     } catch (err) {
       // Set error message and immediately clear streaming state so the error
       // takes exclusive precedence over the typing indicator.
       setError(err instanceof Error ? err.message : "The assistant is unavailable right now.");
-      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      if (activeConversationRef.current === threadAtStart) {
+        setMessages((prev) => prev.filter((m) => m.id !== tempId && m.id !== userId));
+        setInput(message);
+      }
       setStreaming(false);
       setStreamingId(null);
       setHasContent(false);
@@ -124,6 +165,8 @@ export function AiChat() {
 
   const startNewChat = () => {
     if (streaming) return;
+    activeConversationRef.current = null;
+    loadedConversationIdRef.current = null;
     setMessages([]);
     setCid(null);
     setError(null);
@@ -137,6 +180,7 @@ export function AiChat() {
         <AiChatHeader onNewChat={startNewChat} newChatDisabled={streaming} />
 
         <div ref={scrollRef} aria-live="polite" aria-relevant="additions text" className="scrollbar-none min-h-0 flex-1 space-y-3 overflow-y-auto bg-[radial-gradient(ellipse_at_top,rgba(232,241,226,.42),transparent_55%),#fbfcf9] px-3 py-3.5 sm:space-y-6 sm:px-7 sm:py-7">
+          {loadingConversation ? <p className="py-6 text-center text-sm text-muted">Loading conversation history…</p> : null}
           {messages.length === 0 ? (
             <div className="flex min-h-full flex-col items-center justify-center py-8 text-center">
               <span className="flex size-12 items-center justify-center rounded-2xl border border-[#dfe9dc] bg-gradient-gourd-white text-primary-700 shadow-sm sm:size-[4.5rem]">
@@ -200,7 +244,7 @@ export function AiChat() {
             />
             <button
               type="submit"
-              disabled={streaming || !input.trim()}
+              disabled={streaming || loadingConversation || !input.trim()}
               aria-label="Send message"
               className="mb-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-primary text-white shadow-[0_7px_18px_-8px_rgba(29,111,84,.75)] transition-all hover:-translate-y-0.5 hover:shadow-md disabled:pointer-events-none disabled:opacity-45 sm:size-11"
             >

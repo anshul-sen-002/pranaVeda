@@ -10,8 +10,10 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 import { CoverImage } from "@/components/media/CoverImage";
 import { useAuth } from "@/hooks/useAuth";
 import { meApi } from "@/lib/api/me";
+import { audioApi } from "@/lib/api/audio";
+import { audioMemberApi } from "@/lib/api/extras";
 import { ApiError } from "@/lib/api/client";
-import type { BookmarkTarget, SavedItemDto } from "@/lib/api/types";
+import type { AudioTrackSummary, BookmarkTarget, SavedItemDto } from "@/lib/api/types";
 import { CONTENT_TYPE_META } from "@/lib/library/contentMeta";
 import { cn } from "@/lib/cn";
 
@@ -35,6 +37,7 @@ function SavedView() {
   const { accessToken } = useAuth();
   const [filter, setFilter] = useState<BookmarkTarget | "ALL">("ALL");
   const [items, setItems] = useState<SavedItemDto[]>([]);
+  const [audioItems, setAudioItems] = useState<AudioTrackSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,11 +45,22 @@ function SavedView() {
     if (!accessToken) return;
     setLoading(true);
     try {
-      const page = await meApi.bookmarks(accessToken, {
-        targetType: filter === "ALL" ? undefined : filter,
-        size: 50,
-      });
-      setItems(page.content);
+      if (filter === "AUDIO") {
+        const favorites = await audioMemberApi.favorites(accessToken, 0, 50);
+        setItems([]);
+        setAudioItems(favorites.content);
+      } else if (filter === "CONTENT") {
+        const page = await meApi.bookmarks(accessToken, { targetType: "CONTENT", size: 50 });
+        setItems(page.content);
+        setAudioItems([]);
+      } else {
+        const [page, favorites] = await Promise.all([
+          meApi.bookmarks(accessToken, { targetType: "CONTENT", size: 50 }),
+          audioMemberApi.favorites(accessToken, 0, 50),
+        ]);
+        setItems(page.content);
+        setAudioItems(favorites.content);
+      }
       setError(null);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not load your saved library.");
@@ -69,6 +83,18 @@ function SavedView() {
     }
   };
 
+  const removeAudio = async (track: AudioTrackSummary) => {
+    if (!accessToken) return;
+    setAudioItems((prev) => prev.filter((item) => item.id !== track.id));
+    try {
+      await audioApi.toggleFavorite(track.id, accessToken);
+    } catch {
+      void load();
+    }
+  };
+
+  const savedCount = items.length + audioItems.length;
+
   return (
     <div className="space-y-5">
       <PageHeader title="Saved library" subtitle="Practices and tracks you have bookmarked." />
@@ -90,15 +116,34 @@ function SavedView() {
       </div>
       {error ? <p className="rounded-2xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger" role="alert">{error}</p> : null}
       {loading ? <p className="text-sm text-muted">Loading…</p> : null}
-      {!loading && !error && items.length === 0 ? (
+      {!loading && !error && savedCount === 0 ? (
         <div className="rounded-3xl border border-border-soft bg-surface px-6 py-12 text-center">
           <Bookmark className="mx-auto size-8 text-primary-300" aria-hidden="true" />
-          <p className="mt-3 font-medium text-heading">Nothing saved yet</p>
-          <p className="mt-1 text-sm text-muted">Tap the heart on any practice to keep it here.</p>
-          <Link href="/yoga" className="mt-4 inline-flex min-h-11 items-center rounded-full border border-border-soft px-5 text-sm font-medium text-primary-700 hover:border-primary-300 hover:bg-primary-50">
-            Browse yoga
-          </Link>
+          <p className="mt-3 font-medium text-heading">{filter === "AUDIO" ? "No favorite audio yet" : filter === "CONTENT" ? "No saved yoga yet" : "Nothing saved yet"}</p>
+          <p className="mt-1 text-sm text-muted">{filter === "AUDIO" ? "Tap the heart on any audio track to keep it here." : filter === "CONTENT" ? "Tap the heart on any yoga practice to keep it here." : "Save yoga practices and audio tracks to find them here."}</p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {filter !== "AUDIO" ? <Link href="/yoga" className="inline-flex min-h-11 items-center rounded-full border border-border-soft px-5 text-sm font-medium text-primary-700 hover:border-primary-300 hover:bg-primary-50">Browse yoga</Link> : null}
+            {filter !== "CONTENT" ? <Link href="/calm-music" className="inline-flex min-h-11 items-center rounded-full border border-border-soft px-5 text-sm font-medium text-primary-700 hover:border-primary-300 hover:bg-primary-50">Browse audio</Link> : null}
+          </div>
         </div>
+      ) : null}
+      {!loading && audioItems.length > 0 ? (
+        <ul className="grid gap-4 sm:grid-cols-2">
+          {audioItems.map((track) => (
+            <li key={`AUDIO-${track.id}`} className="flex min-w-0 gap-3 rounded-2xl border border-border-soft bg-surface p-3.5">
+              <Link href={`/calm-music/${track.slug}`} className="size-20 shrink-0 overflow-hidden rounded-xl bg-primary-50" aria-label={`View ${track.title}`}>
+                <CoverImage src={track.coverImageUrl} alt="" />
+              </Link>
+              <div className="flex min-w-0 flex-1 flex-col justify-center">
+                <Link href={`/calm-music/${track.slug}`} className="truncate text-sm font-semibold text-heading hover:text-primary-700">{track.title}</Link>
+                <p className="truncate text-xs text-muted">Calm audio · {track.category.toLowerCase().replaceAll("_", " ")}</p>
+              </div>
+              <button type="button" onClick={() => void removeAudio(track)} aria-label={`Remove ${track.title} from favorites`} className="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-danger/10 hover:text-danger">
+                <Trash2 className="size-4" aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ul>
       ) : null}
       {!loading && items.length > 0 ? (
         <ul className="grid gap-4 sm:grid-cols-2">

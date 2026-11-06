@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { pauseAllMedia } from "@/lib/media/exclusivePlayback";
 
 /**
  * Browser speech narration via `window.speechSynthesis` (feature: guided yoga
@@ -73,6 +74,8 @@ export function useSpeechSynthesis(): UseSpeechSynthesisResult {
       return; // unsupported: stay in text-only mode
     }
     supportedRef.current = true;
+    // Browser capability detection belongs after hydration to avoid an SSR mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSupported(true);
 
     const synth = window.speechSynthesis;
@@ -109,6 +112,7 @@ export function useSpeechSynthesis(): UseSpeechSynthesisResult {
     if (!trimmed) return;
 
     const synth = window.speechSynthesis;
+    pauseAllMedia();
     // Cancel first so two utterances can never play at once.
     synth.cancel();
     sessionRef.current += 1;

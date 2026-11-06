@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from "react";
 import { audioApi } from "@/lib/api/audio";
 import { apiBaseUrl } from "@/lib/api/client";
+import { registerExclusiveMedia } from "@/lib/media/exclusivePlayback";
 import type { AudioTrackSummary } from "@/lib/api/types";
 
 interface PlayerState {
@@ -27,6 +28,7 @@ const PlayerContext = createContext<PlayerState | null>(null);
 /** Global calm-music player: one <audio> for the whole app. */
 export function AudioPlayerProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const unregisterMediaRef = useRef<(() => void) | null>(null);
   const [queue, setQueue] = useState<AudioTrackSummary[]>([]);
   const [currentId, setCurrentId] = useState<number | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -44,6 +46,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
       const el = new Audio();
       el.preload = "metadata";
       audioRef.current = el;
+      unregisterMediaRef.current = registerExclusiveMedia(el);
     }
     return audioRef.current;
   }, []);
@@ -88,6 +91,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
             el.pause(); setPlaying(false); sleepAt.current = null; setSleepMins(null);
           }
         };
+        el.onpause = () => { if (!cancelled) setPlaying(false); };
         el.onended = () => {
           if (cancelled) return;
           setQueue((q) => {
@@ -117,6 +121,9 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
       el.ontimeupdate = null;
       el.onended = null;
       el.onerror = null;
+      el.onpause = null;
+      unregisterMediaRef.current?.();
+      unregisterMediaRef.current = null;
       el.pause();
       el.removeAttribute("src");
       el.load();

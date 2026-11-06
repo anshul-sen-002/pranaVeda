@@ -35,7 +35,11 @@ function AiHistoryList() {
   const remove = async (id: number) => {
     if (!accessToken) return;
     setItems((prev) => prev.filter((c) => c.id !== id));
-    try { await aiHistoryApi.remove(accessToken, id); } catch { /* reload on failure */ }
+    try {
+      await aiHistoryApi.remove(accessToken, id);
+    } catch {
+      try { setItems(await aiHistoryApi.list(accessToken)); } catch { /* retain the optimistic list */ }
+    }
   };
   if (items.length === 0) return <p className="rounded-3xl border border-border-soft bg-surface p-5 text-sm text-muted">No saved conversations yet.</p>;
   return (

@@ -182,6 +182,32 @@ export const aiApi = {
     let conversationIdResult: number | null = null;
     let receivedContent = false;
     let currentEvent = "message";
+    let eventData: string[] = [];
+
+    const dispatchEvent = () => {
+      if (eventData.length === 0) { currentEvent = "message"; return; }
+      const payload = eventData.join("\n");
+      eventData = [];
+      if (payload === "[DONE]") { currentEvent = "message"; return; }
+      if (currentEvent === "error") {
+        currentEvent = "message";
+        throw new Error(payload || "The assistant is unavailable right now.");
+      }
+      if (currentEvent === "conversation-id") {
+        const id = Number(payload);
+        conversationIdResult = Number.isSafeInteger(id) && id > 0 ? id : null;
+        currentEvent = "message";
+        return;
+      }
+      const providerText = extractProviderReplyText(payload);
+      if (providerText !== null) {
+        if (providerText) { receivedContent = true; onChunk?.(providerText); }
+      } else if (payload) {
+        receivedContent = true;
+        onChunk?.(payload);
+      }
+      currentEvent = "message";
+    };
 
     try {
       while (true) {
@@ -191,37 +217,30 @@ export const aiApi = {
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? ""; // keep incomplete line in buffer
 
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed === "") { currentEvent = "message"; continue; }
-          if (trimmed.startsWith("event:")) {
-            currentEvent = trimmed.slice(6).trim();
+        for (const rawLine of lines) {
+          const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
+          if (line === "") { dispatchEvent(); continue; }
+          if (line.startsWith("event:")) {
+            currentEvent = line.slice(6).trim();
             continue;
           }
-          if (!trimmed.startsWith("data:")) continue;
-          const payload = trimmed.slice(5).trim();
-          if (payload === "[DONE]") continue;
-          if (currentEvent === "error") {
-            throw new Error(payload || "The assistant is unavailable right now.");
-          }
-          if (currentEvent === "conversation-id") {
-            try {
-              conversationIdResult = Number(payload);
-              if (!Number.isFinite(conversationIdResult)) conversationIdResult = null;
-            } catch {
-              // Ignore unparseable conversation id.
-            }
-            continue;
-          }
-          const providerText = extractProviderReplyText(payload);
-          if (providerText !== null) {
-            if (providerText) { receivedContent = true; onChunk?.(providerText); }
-          } else if (payload) {
-            receivedContent = true;
-            onChunk?.(payload);
+          if (line.startsWith("data:")) {
+            // SSE allows one optional space after the colon. Preserve all
+            // remaining whitespace: a provider often sends spaces as chunks.
+            const value = line.slice(5);
+            eventData.push(value.startsWith(" ") ? value.slice(1) : value);
           }
         }
       }
+      buffer += decoder.decode();
+      if (buffer) {
+        const line = buffer.endsWith("\r") ? buffer.slice(0, -1) : buffer;
+        if (line.startsWith("data:")) {
+          const value = line.slice(5);
+          eventData.push(value.startsWith(" ") ? value.slice(1) : value);
+        }
+      }
+      dispatchEvent();
     } catch (err) {
       // Some runtimes (undici/Node, and occasionally browsers) throw a
       // "terminated"/network error when the server closes the SSE stream

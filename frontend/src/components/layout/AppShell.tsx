@@ -110,7 +110,7 @@ export function AppShell({ children }: { children: React.ReactNode; quote?: stri
           {isAdmin ? (<><div className="mx-3.5 my-2 border-t border-border-soft" /><p className="px-3.5 pb-1 text-[11px] font-semibold tracking-widest text-muted uppercase">Admin</p>{ADMIN_NAV.map((item) => (<NavLink key={item.label} href={item.href} label={item.label} Icon={item.icon} active={isActive(item.href)} />))}</>) : null}
         </nav>
       </aside>
-      <AppMain pathname={pathname} displayName={displayName} isAdmin={isAdmin} onMenu={() => setDrawerOpen(true)}>
+      <AppMain pathname={pathname} displayName={displayName} profileImageUrl={user?.profileImageUrl ?? null} isAdmin={isAdmin} onMenu={() => setDrawerOpen(true)}>
         {children}
       </AppMain>
       <BottomNav />
@@ -119,7 +119,7 @@ export function AppShell({ children }: { children: React.ReactNode; quote?: stri
 }
 
 
-function AppMain({ pathname, displayName, isAdmin, onMenu, children }: { pathname: string; displayName: string; isAdmin: boolean; onMenu: () => void; children: React.ReactNode }) {
+function AppMain({ pathname, displayName, profileImageUrl, isAdmin, onMenu, children }: { pathname: string; displayName: string; profileImageUrl: string | null; isAdmin: boolean; onMenu: () => void; children: React.ReactNode }) {
   const { status, user, logout } = useAuth();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -183,7 +183,12 @@ function AppMain({ pathname, displayName, isAdmin, onMenu, children }: { pathnam
                 aria-label={`Account: ${displayName}`}
                 className={cn("group inline-flex max-w-[45vw] items-center gap-2 rounded-full border border-transparent p-1 transition-all duration-200 hover:border-[#dce8df] hover:bg-white/80 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 sm:max-w-none", menuOpen && "border-[#dce8df] bg-white shadow-sm")}
               >
-                <span className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-[#e5f0e8] to-[#cfe5d8] text-primary-800 ring-1 ring-white transition-transform group-hover:scale-[1.03]"><User className="size-[1.1rem]" aria-hidden="true" /></span>
+                <span className="flex size-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[#e5f0e8] to-[#cfe5d8] text-primary-800 ring-1 ring-white transition-transform group-hover:scale-[1.03]">
+                  {profileImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={profileImageUrl} alt="" className="size-full object-cover" />
+                  ) : <User className="size-[1.1rem]" aria-hidden="true" />}
+                </span>
                 <span className="hidden min-w-0 pr-1 text-left sm:block"><span className="block max-w-36 truncate text-sm font-semibold leading-4 text-heading">{isAdmin ? "Administrator" : displayName}</span><span className="mt-0.5 block max-w-36 truncate text-[11px] leading-3 text-muted">{isAdmin ? displayName : "Your account"}</span></span>
                 {/* Role chip — the mockup shows "Administrator" next to the name. */}
                 <span className="hidden items-center gap-1.5 lg:inline-flex">
@@ -195,8 +200,11 @@ function AppMain({ pathname, displayName, isAdmin, onMenu, children }: { pathnam
                 <motion.div role="menu" initial={{ opacity: 0, y: -7, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -5, scale: 0.98 }} transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }} className="absolute right-0 z-40 mt-2.5 w-[min(19rem,calc(100vw-1.5rem))] origin-top-right overflow-hidden rounded-[1.35rem] border border-[#e1e9df] bg-[#fcfdf9]/95 p-1.5 shadow-[0_22px_60px_-24px_rgba(24,52,37,.4)] backdrop-blur-2xl">
                   {/* Screenshot-style header: avatar + name + email + role pill */}
                   <div className="m-1 flex items-center gap-3 rounded-2xl bg-gradient-gourd-white p-3">
-                    <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/80 text-primary-700 shadow-sm ring-1 ring-white">
-                      <User className="size-5" aria-hidden="true" />
+                    <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white/80 text-primary-700 shadow-sm ring-1 ring-white">
+                      {profileImageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={profileImageUrl} alt="" className="size-full object-cover" />
+                      ) : <User className="size-5" aria-hidden="true" />}
                     </span>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-heading">{isAdmin ? "Administrator" : displayName}</p>

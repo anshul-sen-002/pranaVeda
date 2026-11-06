@@ -57,7 +57,6 @@ function WellnessView() {
   const { accessToken } = useAuth();
   const [profile, setProfile] = useState<WellnessProfileDto | null>(null);
   const [form, setForm] = useState<WellnessProfileRequest>({});
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -66,7 +65,6 @@ function WellnessView() {
 
   const load = useCallback(() => {
     if (!accessToken) return;
-    setLoading(true);
     meApi
       .wellnessProfile(accessToken)
       .then((p) => {
@@ -97,53 +95,12 @@ function WellnessView() {
         } else {
           setError(err instanceof ApiError ? err.message : "Could not load your profile.");
         }
-      })
-      .finally(() => setLoading(false));
+      });
   }, [accessToken]);
 
   useEffect(() => {
-    if (!accessToken) return;
-    let cancelled = false;
-    meApi
-      .wellnessProfile(accessToken)
-      .then((p) => {
-        if (cancelled) return;
-        setProfile(p);
-        setForm({
-          dateOfBirth: p.dateOfBirth,
-          heightValue: p.heightValue,
-          heightUnit: p.heightUnit,
-          weightValue: p.weightValue,
-          weightUnit: p.weightUnit,
-          experienceLevel: p.experienceLevel,
-          preferredSessionMinutes: p.preferredSessionMinutes,
-          practiceTime: p.practiceTime,
-          sleepQuality: p.sleepQuality,
-          energyLevel: p.energyLevel,
-          moodScore: p.moodScore,
-          flexibilityScore: p.flexibilityScore,
-          timezone: p.timezone,
-          constraintsNotes: p.constraintsNotes,
-          aiPersonalizationConsent: p.aiPersonalizationConsent,
-        });
-        setError(null);
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        if (err instanceof ApiError && err.status === 404) {
-          setProfile(null);
-          setError(null);
-        } else {
-          setError(err instanceof ApiError ? err.message : "Could not load your profile.");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [accessToken]);
+    load();
+  }, [load]);
 
   const set = <K extends keyof WellnessProfileRequest>(
     key: K,
@@ -203,14 +160,6 @@ function WellnessView() {
       setDeleting(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-sm text-muted">Loading your wellness profile�</p>
-      </div>
-    );
-  }
 
   return (
     <div className="mx-auto max-w-5xl space-y-5 sm:space-y-6">
@@ -378,7 +327,7 @@ function WellnessView() {
                 value={form.timezone ?? ""}
                 onChange={(e) => set("timezone", e.target.value || null)}
                 placeholder="e.g. Asia/Kolkata"
-                hint="Used for streak day boundaries � never for any health reading."
+                hint="Used for streak day boundaries; never for any health reading."
                 label=""
                 className="h-11 sm:h-12"
               />
@@ -459,7 +408,7 @@ function WellnessView() {
             className={inputCls + " h-auto py-2.5"}
           />
           <p className="mt-1.5 text-xs text-muted">
-            Used to soften recommendations � never a diagnosis.
+            Used to soften recommendations; never a diagnosis.
           </p>
         </div>
 
@@ -485,7 +434,7 @@ function WellnessView() {
           <p className="flex items-center gap-2 text-xs text-muted"><ShieldCheck className="size-4 shrink-0 text-primary-600" aria-hidden="true" /> You can update or clear these details at any time.</p>
           <Button type="submit" loading={saving} fullWidth className="sm:w-auto">
           <Save className="size-4" aria-hidden="true" />
-          {saving ? "Saving�" : "Save profile"}
+          {saving ? "Saving..." : "Save profile"}
           </Button>
         </div>
       </form>
@@ -501,12 +450,12 @@ function WellnessView() {
           <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
             <div className="rounded-2xl border border-[#e5ebe0] bg-white/75 px-3.5 py-3">
               <dt className="text-xs text-muted">Age</dt>
-              <dd className="mt-0.5 text-lg font-semibold text-heading">{profile.age ?? "�"}</dd>
+              <dd className="mt-0.5 text-lg font-semibold text-heading">{profile.age ?? ""}</dd>
             </div>
             <div className="rounded-2xl border border-[#e5ebe0] bg-white/75 px-3.5 py-3">
               <dt className="text-xs text-muted">BMI</dt>
               <dd className="mt-0.5 text-lg font-semibold text-heading">
-                {profile.bmiAvailable && profile.bmiOrNull != null ? profile.bmiOrNull : "�"}
+                {profile.bmiAvailable && profile.bmiOrNull != null ? profile.bmiOrNull : ""}
               </dd>
             </div>
             <div className="rounded-2xl border border-[#e5ebe0] bg-white/75 px-3.5 py-3">
@@ -520,7 +469,7 @@ function WellnessView() {
             <p className="mt-3 text-xs leading-relaxed text-muted">{BMI_DISCLAIMER}</p>
           ) : (
             <p className="mt-3 text-xs leading-relaxed text-muted">
-              Add your height and weight above to see a BMI estimate � always with its limits noted.
+              Add your height and weight above to see a BMI estimate; always with its limits noted.
             </p>
           )}
         </section>

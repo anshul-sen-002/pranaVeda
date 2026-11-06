@@ -290,7 +290,7 @@ function AdminContentList() {
             </label>
           </>
         ) : null}
-        <Button type="submit" loading={creating} disabled={!title.trim()} className="min-h-11 w-full rounded-full sm:w-auto">
+        <Button type="submit" loading={creating} disabled={!title.trim()} className="mt-3 min-h-11 w-full rounded-full sm:mt-0 sm:w-auto">
           <Plus className="size-4" aria-hidden="true" />
           Create draft
         </Button>

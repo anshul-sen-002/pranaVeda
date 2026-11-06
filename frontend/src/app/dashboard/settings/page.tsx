@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Camera, LogOut, Trash2, UserRound } from "lucide-react";
 
 import { MemberGuard } from "@/components/auth/MemberGuard";
@@ -14,6 +14,27 @@ import { cn } from "@/lib/cn";
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 
+async function prepareProfilePhoto(file: File): Promise<File> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  const context = canvas.getContext("2d");
+  if (!context) {
+    bitmap.close();
+    throw new Error("Could not prepare this image for upload.");
+  }
+  context.fillStyle = "#fff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.84));
+  if (!blob || blob.size > MAX_PHOTO_BYTES) throw new Error("Could not compress this image under 5 MB.");
+  return new File([blob], "profile-photo.jpg", { type: "image/jpeg", lastModified: Date.now() });
+}
+
 export default function SettingsPage() {
   return (
     <MemberGuard>
@@ -26,21 +47,13 @@ export default function SettingsPage() {
 
 function SettingsView() {
   const { accessToken, logout, revalidate, user } = useAuth();
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(user?.profileImageUrl ?? null);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoMsg, setPhotoMsg] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (!accessToken) return;
-    meApi
-      .profilePhoto(accessToken)
-      .then((res) => setPhotoUrl(res.photoUrl))
-      .catch(() => setPhotoUrl(null));
-  }, [accessToken]);
-
-  const pick = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const pick = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file || !accessToken) return;
@@ -54,17 +67,17 @@ function SettingsView() {
     }
     setPhotoBusy(true);
     setPhotoMsg(null);
-    meApi
-      .setProfilePhoto(accessToken, file)
-      .then((res) => {
-        setPhotoUrl(res.photoUrl);
-        setPhotoMsg("Profile photo updated.");
-        void revalidate();
-      })
-      .catch((err: unknown) => {
-        setPhotoMsg(err instanceof ApiError ? err.message : "Could not upload the photo.");
-      })
-      .finally(() => setPhotoBusy(false));
+    try {
+      const prepared = await prepareProfilePhoto(file);
+      const res = await meApi.setProfilePhoto(accessToken, prepared);
+      setPhotoUrl(res.url);
+      setPhotoMsg("Profile photo updated.");
+      void revalidate();
+    } catch (err) {
+      setPhotoMsg(err instanceof ApiError || err instanceof Error ? err.message : "Could not upload the photo.");
+    } finally {
+      setPhotoBusy(false);
+    }
   };
 
   const remove = () => {

@@ -2,9 +2,9 @@
 
 import { Bot, Speaker, User, VolumeX } from "lucide-react";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import { MarkdownContent } from "@/components/ai/MarkdownContent";
 import type { AiMessage } from "@/lib/api/ai";
 import { cn } from "@/lib/cn";
-import { useEffect, useState } from "react";
 
 /** Local clock label for a message (backend `createdAt` is UTC ISO). */
 export function clockLabel(iso: string): string {
@@ -48,21 +48,15 @@ export function FormattedContent({ content }: { content: string }) {
 /** Speaker toggle for an AI assistant message: reads the bubble aloud via Web Speech API. */
 export function SpeakerToggle({ content, supported }: { content: string; supported: boolean }) {
   const speech = useSpeechSynthesis();
-  const [speaking, setSpeaking] = useState(false);
+  const speaking = speech.speaking;
 
   const speak = () => {
     if (speech.speaking) {
       speech.cancel();
-      setSpeaking(false);
     } else {
       speech.speak(content);
-      setSpeaking(true);
     }
   };
-
-  useEffect(() => {
-    if (!speech.speaking) setSpeaking(false);
-  }, [speech.speaking]);
 
   if (!supported) return null;
 
@@ -107,7 +101,7 @@ export function Bubble({ role, content, createdAt, streaming = false }: { role: 
               : "rounded-2xl rounded-bl-md border border-[#e7ece3] bg-white text-body shadow-[0_8px_24px_-22px_rgba(29,63,46,.5)]",
           )}
         >
-          <FormattedContent content={content} />
+          <MarkdownContent content={content} />
         </div>
         {!isUser && !streaming && (
           <SpeakerToggle content={content} supported={speech.supported} />

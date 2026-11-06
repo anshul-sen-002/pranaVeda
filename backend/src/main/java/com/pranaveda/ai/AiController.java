@@ -63,12 +63,10 @@ public class AiController {
         // committed" errors.
         CompletableFuture.runAsync(() -> {
             SecurityContextHolder.setContext(context);
-            boolean[] contentSent = { false };
             try {
                 AiChatResponse response = aiService.streamChat(request, chunk -> {
                     try {
                         emitter.send(SseEmitter.event().data(chunk));
-                        contentSent[0] = true;
                     } catch (Exception ignored) {
                         // Client may have disconnected.
                     }
@@ -95,17 +93,16 @@ public class AiController {
                     // Ignore.
                 }
             } catch (Exception ex) {
-                // Only surface an error if no content was streamed. If chunks
-                // were already delivered, a stream cancellation (e.g. client
-                // disconnect) is not a failure - the reply was received.
-                if (!contentSent[0]) {
-                    try {
-                        emitter.send(SseEmitter.event()
-                            .name("error")
-                            .data("The assistant is unavailable right now. Please try again."));
-                    } catch (Exception ignored) {
-                        // Response already committed or client disconnected.
-                    }
+                // A provider failure can happen after partial chunks. Surface
+                // it so the client does not treat an unpersisted partial reply
+                // as a successful, history-backed conversation. If the client
+                // disconnected, this send simply fails.
+                try {
+                    emitter.send(SseEmitter.event()
+                        .name("error")
+                        .data("The assistant is unavailable right now. Please try again."));
+                } catch (Exception ignored) {
+                    // Response already committed or client disconnected.
                 }
             } finally {
                 try {

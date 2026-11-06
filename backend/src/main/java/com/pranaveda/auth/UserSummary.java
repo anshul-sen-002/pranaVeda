@@ -4,9 +4,9 @@ import com.pranaveda.user.Role;
 import com.pranaveda.user.User;
 
 /** Safe account projection - never contains the password hash. */
-public record UserSummary(long id, String email, String displayName, Role role) {
+public record UserSummary(long id, String email, String displayName, Role role, String profileImageUrl) {
 
     public static UserSummary from(User user) {
-        return new UserSummary(user.getId(), user.getEmail(), user.getDisplayName(), user.getRole());
+        return new UserSummary(user.getId(), user.getEmail(), user.getDisplayName(), user.getRole(), user.getProfileImageUrl());
     }
 }

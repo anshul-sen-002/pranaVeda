@@ -65,6 +65,11 @@ public class AiConversation {
         message.setConversation(this);
     }
 
+    /** Update the history ordering timestamp for each new conversation turn. */
+    public void touch() {
+        this.updatedAt = Instant.now();
+    }
+
     public Long getId() {
         return id;
     }
