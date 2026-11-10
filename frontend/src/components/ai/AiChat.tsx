@@ -234,7 +234,7 @@ export function AiChat() {
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); void send(input); } }}
               rows={1}
               placeholder="Type your message…"
-              className="max-h-24 min-h-9 min-w-0 flex-1 resize-none bg-transparent px-1 py-2 text-[13px] leading-5 text-heading placeholder:text-muted focus:outline-none sm:max-h-32 sm:min-h-10 sm:px-2 sm:py-2.5 sm:text-[15px]"
+              className="max-h-24 min-h-9 min-w-0 flex-1 resize-none border-0 bg-transparent px-1 py-2 text-[13px] leading-5 text-heading shadow-none placeholder:text-muted focus:border-0 focus:outline-none focus:ring-0 focus:shadow-none sm:max-h-32 sm:min-h-10 sm:px-2 sm:py-2.5 sm:text-[15px]"
             />
             <VoiceInputButton
               language="en"

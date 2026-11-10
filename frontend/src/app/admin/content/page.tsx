@@ -263,7 +263,7 @@ function AdminContentList() {
           </label>
         </div>
         {type === "VIDEO" ? (
-          <>
+          <div className="mt-4 space-y-4">
             <label className="block">
               <span className="mb-1.5 block text-sm font-medium text-heading">Video description</span>
               <textarea
@@ -288,9 +288,9 @@ function AdminContentList() {
               </select>
               {categories.length === 0 ? <span className="mt-1 block text-xs text-muted">Create categories in Admin → Categories to make them available here.</span> : null}
             </label>
-          </>
+          </div>
         ) : null}
-        <Button type="submit" loading={creating} disabled={!title.trim()} className="mt-3 min-h-11 w-full rounded-full sm:mt-0 sm:w-auto">
+        <Button type="submit" loading={creating} disabled={!title.trim()} className="mt-4 min-h-11 w-full rounded-full sm:mt-4 sm:w-auto">
           <Plus className="size-4" aria-hidden="true" />
           Create draft
         </Button>

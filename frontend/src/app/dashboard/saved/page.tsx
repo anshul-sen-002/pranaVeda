@@ -54,12 +54,20 @@ function SavedView() {
         setItems(page.content);
         setAudioItems([]);
       } else {
-        const [page, favorites] = await Promise.all([
+        const [pageResult, favoritesResult] = await Promise.allSettled([
           meApi.bookmarks(accessToken, { targetType: "CONTENT", size: 50 }),
           audioMemberApi.favorites(accessToken, 0, 50),
         ]);
-        setItems(page.content);
-        setAudioItems(favorites.content);
+        if (pageResult.status === "fulfilled") setItems(pageResult.value.content);
+        else setItems([]);
+        if (favoritesResult.status === "fulfilled") setAudioItems(favoritesResult.value.content);
+        else setAudioItems([]);
+        if (pageResult.status === "rejected" || favoritesResult.status === "rejected") {
+          setError("Some saved items could not be loaded. Please try again.");
+        } else {
+          setError(null);
+        }
+        return;
       }
       setError(null);
     } catch (err) {

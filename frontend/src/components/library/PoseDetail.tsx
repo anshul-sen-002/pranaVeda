@@ -115,13 +115,13 @@ export function PoseDetail({ detail }: { detail: ContentDetail }) {
 
         {/* Right: title, sanskrit, badges, description */}
         <div className="min-w-0">
-          <div className="flex items-start justify-between gap-3">
-            <div>
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
               {isVideo ? <p className="mb-1 text-[10px] font-semibold tracking-[.14em] text-primary-700 uppercase">Video practice</p> : null}
               <h1 className="text-2xl font-semibold tracking-tight text-heading sm:text-3xl">{item.title}</h1>
               {item.sanskritName ? <p className="mt-1 text-sm text-muted italic">{item.sanskritName}</p> : null}
             </div>
-            <div className="flex shrink-0 flex-wrap justify-end gap-2">
+            <div className="flex min-w-0 flex-wrap justify-start gap-2 sm:shrink-0 sm:justify-end">
               {item.contentType === "ASANA" ? <AddToRoutineButton contentId={item.id} contentTitle={item.title} /> : null}
               <SaveButton targetType="CONTENT" targetId={item.id} className="whitespace-nowrap" />
             </div>

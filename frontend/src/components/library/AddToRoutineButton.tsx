@@ -91,7 +91,7 @@ export function AddToRoutineButton({ contentId, contentTitle }: { contentId: num
       <ListMusic className="size-4" aria-hidden="true" /> Add to routine
     </button>
     {open ? <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpen(false); }}>
-      <section role="dialog" aria-modal="true" aria-labelledby="add-routine-title" className="max-h-[90svh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-border-soft bg-white p-5 shadow-2xl sm:rounded-3xl sm:p-6">
+      <section role="dialog" aria-modal="true" aria-labelledby="add-routine-title" className="max-h-[min(90svh,90dvh)] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-3xl border border-border-soft bg-white px-5 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl sm:rounded-3xl sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div><h2 id="add-routine-title" className="text-lg font-semibold text-heading">Add pose to a routine</h2><p className="mt-1 text-sm text-muted">{contentTitle}</p></div>
           <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-muted hover:bg-primary-50 hover:text-heading"><X className="size-4" aria-hidden="true" /></button>

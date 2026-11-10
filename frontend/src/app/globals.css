@@ -260,6 +260,13 @@ h3 {
   transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 
+/* The AI composer has its own focus treatment on the rounded form wrapper. */
+#ai-message:focus {
+  border: 0;
+  box-shadow: none;
+  animation: none;
+}
+
 /* Screen-reader-only helper for accessible names / live regions. */
 .sr-only-focusable:not(:focus):not(:focus-within) {
   position: absolute;

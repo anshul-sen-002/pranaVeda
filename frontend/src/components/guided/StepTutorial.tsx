@@ -244,7 +244,7 @@ export function StepTutorial({ steps, poseTitle, coverImageUrl }: StepTutorialPr
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="mt-6 flex w-full min-w-0 flex-col gap-0 overflow-hidden rounded-2xl border border-border-soft bg-surface sm:rounded-3xl"
+      className="fixed inset-0 z-[70] flex h-[100dvh] w-full min-w-0 flex-col gap-0 overflow-y-auto overscroll-contain bg-surface px-3 pt-[max(.75rem,env(safe-area-inset-top))] pb-[max(.75rem,env(safe-area-inset-bottom))] sm:relative sm:inset-auto sm:z-auto sm:mt-6 sm:h-auto sm:overflow-hidden sm:rounded-3xl sm:border sm:border-border-soft sm:px-0 sm:pt-0 sm:pb-0"
     >
       <div className={`relative w-full overflow-hidden bg-primary-50 ${mediaType === "IMAGE" ? "aspect-[3/2]" : "aspect-[16/9]"}`}>
         {isImage && currentImage ? (
