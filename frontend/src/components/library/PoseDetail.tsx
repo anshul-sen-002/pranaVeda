@@ -104,7 +104,7 @@ export function PoseDetail({ detail }: { detail: ContentDetail }) {
             <div className="scrollbar-none mt-2.5 flex gap-2 overflow-x-auto pb-0.5 sm:mt-3 sm:grid sm:grid-cols-5" aria-label="Pose images">
               {gallery.map((url, i) => (
                 <button key={i} type="button" onClick={() => setActiveImg(i)} aria-pressed={activeImg === i} aria-label={`View image ${i + 1}`}
-                  className={cn("aspect-[3/2] h-12 w-[4.5rem] shrink-0 overflow-hidden rounded-xl border-2 sm:h-auto sm:w-full", activeImg === i ? "border-primary-500" : "border-transparent opacity-70 hover:opacity-100")}>
+                  className={cn("box-border aspect-[3/2] h-12 w-[4.5rem] shrink-0 overflow-hidden rounded-xl border-2 bg-white transition-[border-color,opacity] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-300 sm:h-auto sm:w-full", activeImg === i ? "border-primary-600" : "border-transparent opacity-70 hover:opacity-100")}>
                   <img src={url} alt="" aria-hidden="true" className="h-full w-full object-cover" loading="lazy" />
                 </button>
               ))}

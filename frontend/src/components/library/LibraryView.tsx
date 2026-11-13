@@ -228,7 +228,7 @@ export function LibraryView({ fixedType }: { fixedType?: ContentType }) {
       ) : null}
 
       {!loading && !err && data && data.content.length > 0 ? (
-        <div className={cn("mt-4 grid min-w-0 gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4", fixedType === "VIDEO" ? "xl:grid-cols-3 2xl:grid-cols-3" : "xl:grid-cols-3 2xl:grid-cols-4")}>
+        <div className={cn("mt-4 grid min-w-0 gap-3 px-1.5 pb-1.5 sm:mt-5 sm:grid-cols-2 sm:gap-4 sm:px-2 sm:pb-2", fixedType === "VIDEO" ? "xl:grid-cols-3 2xl:grid-cols-3" : "xl:grid-cols-3 2xl:grid-cols-4")}>
           {data.content.map((item) => (
             <ContentCard key={item.id} item={item} />
           ))}

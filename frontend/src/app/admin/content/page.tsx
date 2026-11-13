@@ -16,13 +16,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { adminContentApi } from "@/lib/api/admin";
 import { listCategories } from "@/lib/api/content";
 import { ApiError } from "@/lib/api/client";
-import type { CategoryDto, ContentSummary, ContentType, MediaDto } from "@/lib/api/types";
+import type { CategoryDto, ContentSummary, ContentType, Difficulty, MediaDto } from "@/lib/api/types";
 
 /**
  * Admin content list + create (agents.md 2.15). Creating a pose yields a
  * DRAFT; steps are managed on the dedicated page and publication is an
  * explicit server-checked action. Each row can set its featured cover via
- * the Cloudinary pipeline (upload → PUT featuredImageUrl).
+ * the Cloudinary pipeline (upload â†’ PUT featuredImageUrl).
  */
 export default function AdminContentPage() {
   return (
@@ -50,7 +50,8 @@ function AdminContentList() {
   const [title, setTitle] = useState("");
   const [type, setType] = useState<ContentType>("ASANA");
   const [videoDescription, setVideoDescription] = useState("");
-  const [videoCategory, setVideoCategory] = useState("");
+  const [newCategory, setNewCategory] = useState("");
+  const [newDifficulty, setNewDifficulty] = useState<Difficulty | "">("");
   const [categories, setCategories] = useState<CategoryDto[]>([]);
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -101,8 +102,9 @@ function AdminContentList() {
         summary: type === "VIDEO" ? videoDescription.trim().slice(0, 500) : "",
         ...(type === "VIDEO" ? {
           description: videoDescription.trim(),
-          categorySlugs: videoCategory ? [videoCategory] : [],
         } : {}),
+        categorySlugs: newCategory ? [newCategory] : [],
+        difficulty: newDifficulty || undefined,
       });
       if (type === "ASANA") {
         router.push(`/admin/content/${created.summary.id}/steps`);
@@ -111,7 +113,8 @@ function AdminContentList() {
         setVideoFor(created.summary.id);
         setTitle("");
         setVideoDescription("");
-        setVideoCategory("");
+        setNewCategory("");
+        setNewDifficulty("");
         setCreating(false);
       }
     } catch (error) {
@@ -262,6 +265,25 @@ function AdminContentList() {
             </span>
           </label>
         </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-heading">Category (optional)</span>
+            <select value={newCategory} onChange={(event) => setNewCategory(event.target.value)} className="h-11 w-full rounded-xl border border-border-soft bg-white px-3 text-sm text-heading focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-200">
+              <option value="">Choose a category</option>
+              {categories.map((category) => <option key={category.id} value={category.slug}>{category.name}</option>)}
+            </select>
+            {categories.length === 0 ? <span className="mt-1 block text-xs text-muted">Create categories in Admin â†’ Categories to make them available here.</span> : null}
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-heading">Difficulty (optional)</span>
+            <select value={newDifficulty} onChange={(event) => setNewDifficulty(event.target.value as Difficulty | "")} className="h-11 w-full rounded-xl border border-border-soft bg-white px-3 text-sm text-heading focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-200">
+              <option value="">Choose a difficulty</option>
+              <option value="BEGINNER">Beginner</option>
+              <option value="INTERMEDIATE">Intermediate</option>
+              <option value="ADVANCED">Advanced</option>
+            </select>
+          </label>
+        </div>
         {type === "VIDEO" ? (
           <div className="mt-4 space-y-4">
             <label className="block">
@@ -275,18 +297,6 @@ function AdminContentList() {
                 className="w-full rounded-xl border border-border-soft bg-white px-4 py-3 text-sm leading-relaxed text-heading focus:outline-none focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-200"
               />
               <span className="mt-1 block text-xs text-muted">Shown on the video page. The first 500 characters also appear in the video card.</span>
-            </label>
-            <label className="block sm:max-w-md">
-              <span className="mb-1.5 block text-sm font-medium text-heading">Category (optional)</span>
-              <select
-                value={videoCategory}
-                onChange={(event) => setVideoCategory(event.target.value)}
-                className="h-11 w-full rounded-xl border border-border-soft bg-white px-3 text-sm text-heading focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-200"
-              >
-                <option value="">Choose a category</option>
-                {categories.map((category) => <option key={category.id} value={category.slug}>{category.name}</option>)}
-              </select>
-              {categories.length === 0 ? <span className="mt-1 block text-xs text-muted">Create categories in Admin → Categories to make them available here.</span> : null}
             </label>
           </div>
         ) : null}
@@ -305,7 +315,7 @@ function AdminContentList() {
         ) : null}
         {loading ? (
           <div className="mt-4 flex items-center gap-2 text-sm text-muted">
-            <DotLoader text="Loading…" inline size="sm" />
+            <DotLoader text="Loadingâ€¦" inline size="sm" />
           </div>
         ) : items.length === 0 && !listError ? (
           <div className="rounded-2xl border border-dashed border-border-soft bg-white px-5 py-12 text-center"><span className="mx-auto flex size-12 items-center justify-center rounded-full bg-primary-50 text-primary-700"><FileText className="size-6" aria-hidden="true" /></span><h3 className="mt-3 font-semibold text-heading">No content yet</h3><p className="mt-1 text-sm text-muted">Create your first asana or video draft above to begin.</p></div>
@@ -321,9 +331,9 @@ function AdminContentList() {
                   <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2"><p className="max-w-full truncate text-sm font-semibold text-heading sm:text-base">{item.title}</p><span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${item.status === "PUBLISHED" ? "bg-success/10 text-success" : item.status === "ARCHIVED" ? "bg-muted/10 text-muted" : "bg-warning/10 text-warning"}`}>{item.status === "PUBLISHED" ? "Published" : item.status === "ARCHIVED" ? "Archived" : "Draft"}</span><span className="rounded-full bg-primary-50 px-2 py-0.5 text-[10px] font-semibold text-primary-800">{item.contentType === "ASANA" ? "Asana" : "Video"}</span></div>
                   <p className="text-xs text-muted">
-                    {item.contentType} · {item.status}
-                    {item.featuredImageUrl ? " · cover ✓" : ""}
-                    {item.featuredVideoUrl ? " · video ✓" : ""}
+                    {item.contentType} Â· {item.status}
+                    {item.featuredImageUrl ? " Â· cover âœ“" : ""}
+                    {item.featuredVideoUrl ? " Â· video âœ“" : ""}
                   </p>
                   {coverMsg[item.id] ? (
                     <p role="status" className="mt-1 text-xs text-success">{coverMsg[item.id]}</p>
@@ -335,6 +345,7 @@ function AdminContentList() {
                 </div>
                 {coverFor === item.id ? <div className="border-t border-border-soft bg-surface-tint/30 p-3 sm:p-4"><MediaUploadQueue accessToken={accessToken ?? ""} contentId={item.id} defaultKind="CONTENT_IMAGE" lockKind onUploaded={(media) => void saveCover(item.id, media)} /></div> : null}
                 {videoFor === item.id ? <div className="border-t border-border-soft bg-surface-tint/30 p-3 sm:p-4"><MediaUploadQueue accessToken={accessToken ?? ""} contentId={item.id} defaultKind="VIDEO" lockKind onUploaded={(media) => void saveVideo(item.id, media)} /></div> : null}
+                <ContentMetadataEditor key={`${item.id}-${item.difficulty}-${item.categories.map((category) => category.slug).join(",")}`} item={item} categories={categories} accessToken={accessToken ?? ""} onSaved={(summary) => setItems((previous) => previous.map((current) => current.id === item.id ? summary : current))} />
                 <div className="grid grid-cols-2 items-center gap-2 border-t border-border-soft bg-surface-tint/30 p-3 sm:flex sm:flex-wrap sm:gap-2 sm:p-4">
                   <button
                     type="button"
@@ -369,7 +380,7 @@ function AdminContentList() {
                       title={!item.featuredVideoUrl && item.status !== "PUBLISHED" ? "Upload a video before publishing" : undefined}
                       className={`col-span-2 inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full px-4 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-45 sm:col-span-1 ${item.status === "PUBLISHED" ? "border border-warning/30 bg-warning/5 text-warning" : "bg-primary-700 text-white hover:bg-primary-800"}`}
                     >
-                      {transitioningVideos.has(item.id) ? "Saving…" : item.status === "PUBLISHED" ? "Unpublish video" : "Publish video"}
+                      {transitioningVideos.has(item.id) ? "Savingâ€¦" : item.status === "PUBLISHED" ? "Unpublish video" : "Publish video"}
                       {item.status !== "PUBLISHED" ? <ArrowRight className="size-4" aria-hidden="true" /> : null}
                     </button>
                   )}
@@ -379,7 +390,7 @@ function AdminContentList() {
                     disabled={deletingContent.has(item.id)}
                     className="col-span-2 inline-flex min-h-10 items-center justify-center rounded-full border border-danger/30 px-3 text-xs font-semibold text-danger hover:bg-danger/5 disabled:opacity-60 sm:col-span-1"
                   >
-                    {deletingContent.has(item.id) ? "Deleting…" : "Delete"}
+                    {deletingContent.has(item.id) ? "Deletingâ€¦" : "Delete"}
                   </button>
                 </div>
               </li>
@@ -388,5 +399,78 @@ function AdminContentList() {
         )}
       </section>
     </main>
+  );
+}
+
+function ContentMetadataEditor({ item, categories, accessToken, onSaved }: { item: ContentSummary; categories: CategoryDto[]; accessToken: string; onSaved: (summary: ContentSummary) => void }) {
+  const [category, setCategory] = useState(item.categories[0]?.slug ?? "");
+  const [difficulty, setDifficulty] = useState<Difficulty | "">(item.difficulty ?? "");
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const save = async () => {
+    if (!accessToken) return;
+    setSaving(true);
+    setMessage("");
+    try {
+      const detail = await adminContentApi.get(accessToken, item.id);
+      const current = detail.summary;
+      const updated = await adminContentApi.update(accessToken, item.id, {
+        title: current.title,
+        slug: current.slug,
+        summary: current.summary ?? "",
+        description: detail.description ?? undefined,
+        commonName: current.commonName ?? undefined,
+        sanskritName: current.sanskritName ?? undefined,
+        contentType: current.contentType,
+        difficulty: difficulty || undefined,
+        durationMinutes: current.durationMinutes ?? undefined,
+        featuredImageUrl: current.featuredImageUrl ?? undefined,
+        featuredVideoUrl: current.featuredVideoUrl ?? undefined,
+        instructions: detail.instructions ?? undefined,
+        breathingNotes: detail.breathingNotes ?? undefined,
+        modifications: detail.modifications ?? undefined,
+        safetyPrecautions: detail.safetyPrecautions ?? undefined,
+        benefits: detail.benefits ?? undefined,
+        evidenceNotes: detail.evidenceNotes ?? undefined,
+        seoTitle: detail.seoTitle ?? undefined,
+        seoDescription: detail.seoDescription ?? undefined,
+        categorySlugs: category ? [category] : [],
+        tagSlugs: current.tags.map((tag) => tag.slug),
+        goals: current.goals,
+        targetAreas: detail.targetAreas,
+      });
+      onSaved(updated.summary);
+      setMessage("Category and difficulty saved.");
+    } catch (error) {
+      setMessage(error instanceof ApiError ? error.message : "Could not save category and difficulty.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="grid gap-2 border-t border-border-soft bg-surface-tint/20 p-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end sm:p-4">
+      <label className="block">
+        <span className="mb-1 block text-xs font-medium text-heading">Category</span>
+        <select value={category} onChange={(event) => setCategory(event.target.value)} className="h-10 w-full rounded-xl border border-border-soft bg-white px-3 text-sm text-heading">
+          <option value="">Uncategorized</option>
+          {categories.map((entry) => <option key={entry.id} value={entry.slug}>{entry.name}</option>)}
+        </select>
+      </label>
+      <label className="block">
+        <span className="mb-1 block text-xs font-medium text-heading">Difficulty</span>
+        <select value={difficulty} onChange={(event) => setDifficulty(event.target.value as Difficulty | "")} className="h-10 w-full rounded-xl border border-border-soft bg-white px-3 text-sm text-heading">
+          <option value="">Not set</option>
+          <option value="BEGINNER">Beginner</option>
+          <option value="INTERMEDIATE">Intermediate</option>
+          <option value="ADVANCED">Advanced</option>
+        </select>
+      </label>
+      <div className="flex items-center gap-2">
+        <Button variant="secondary" size="sm" onClick={() => void save()} loading={saving}>Save filters</Button>
+        {message ? <span className="text-xs text-muted" role="status">{message}</span> : null}
+      </div>
+    </div>
   );
 }

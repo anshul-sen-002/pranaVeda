@@ -43,7 +43,7 @@ function StepsEditor() {
   const [coverOpen, setCoverOpen] = useState(false);
   const [coverBusy, setCoverBusy] = useState(false);
   const [coverMessage, setCoverMessage] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [busyAction, setBusyAction] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -61,12 +61,12 @@ function StepsEditor() {
   const fail = (e: unknown) =>
     setError(e instanceof ApiError ? e.message : e instanceof TypeError ? "Could not reach the server. Check your connection and try again." : e instanceof Error ? e.message : "Something went wrong. Please try again.");
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (showLoader = false) => {
     if (!accessToken) {
       setLoading(false);
       return;
     }
-    setLoading(true);
+    if (showLoader) setLoading(true);
     try {
       const [detail, list] = await Promise.all([
         adminContentApi.get(accessToken, contentId),
@@ -86,11 +86,11 @@ function StepsEditor() {
   }, [accessToken, contentId]);
 
   useEffect(() => {
-    void refresh();
+    void refresh(true);
   }, [refresh]);
 
-  const run = async (action: () => Promise<void>) => {
-    setBusy(true);
+  const run = async (key: string, action: () => Promise<void>) => {
+    setBusyAction(key);
     setError(null);
     setNotice(null);
     try {
@@ -98,12 +98,12 @@ function StepsEditor() {
     } catch (e) {
       fail(e);
     } finally {
-      setBusy(false);
+      setBusyAction(null);
     }
   };
 
   const uploadStep = () =>
-    run(async () => {
+    run("upload", async () => {
       if (!accessToken || !file) return;
       const created = await adminStepApi.add(accessToken, contentId, file, caption, newInstruction);
       setFile(null);
@@ -116,7 +116,7 @@ function StepsEditor() {
     });
 
   const saveInstruction = (stepId: number) =>
-    run(async () => {
+    run(`save-${stepId}`, async () => {
       if (!accessToken) return;
       const updated = await adminStepApi.update(accessToken, contentId, stepId, {
         instruction: (drafts[stepId] ?? "").trim(),
@@ -127,7 +127,7 @@ function StepsEditor() {
     });
 
   const generate = (overwrite: boolean) =>
-    run(async () => {
+    run(`generate-${overwrite ? "all" : "missing"}`, async () => {
       if (!accessToken) return;
       const list = await adminStepApi.generate(accessToken, contentId, { overwrite });
       setSteps(list);
@@ -140,7 +140,7 @@ function StepsEditor() {
     });
 
   const move = (index: number, delta: number) =>
-    run(async () => {
+    run("reorder", async () => {
       if (!accessToken) return;
       const target = index + delta;
       if (target < 0 || target >= steps.length) return;
@@ -151,7 +151,7 @@ function StepsEditor() {
     });
 
   const remove = (stepId: number) =>
-    run(async () => {
+    run(`delete-${stepId}`, async () => {
       if (!accessToken) return;
       await adminStepApi.remove(accessToken, contentId, stepId);
       setConfirmDelete(null);
@@ -160,7 +160,7 @@ function StepsEditor() {
     });
 
   const publish = () =>
-    run(async () => {
+    run("publish", async () => {
       if (!accessToken) return;
       const unsaved = steps.find((step) => (drafts[step.id] ?? "").trim() !== (step.instruction ?? "").trim());
       if (unsaved) {
@@ -178,7 +178,7 @@ function StepsEditor() {
     });
 
   const unpublish = () =>
-    run(async () => {
+    run("unpublish", async () => {
       if (!accessToken) return;
       await adminContentApi.unpublish(accessToken, contentId);
       setStatus("DRAFT");
@@ -303,7 +303,7 @@ function StepsEditor() {
               className="h-11 w-full rounded-xl border border-border-soft bg-white px-3 text-sm text-heading focus:outline-none focus-visible:border-primary-500 focus-visible:ring-2 focus-visible:ring-primary-200"
             />
           </label>
-          <Button onClick={uploadStep} loading={busy} disabled={!file} className="w-full sm:w-auto">
+          <Button onClick={uploadStep} loading={busyAction === "upload"} disabled={!file || busyAction !== null} className="w-full sm:w-auto">
             Upload step
           </Button>
         </div>
@@ -333,10 +333,10 @@ function StepsEditor() {
           every step.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button variant="secondary" size="sm" onClick={() => generate(false)} loading={busy} disabled={steps.length === 0}>
+          <Button variant="secondary" size="sm" onClick={() => generate(false)} loading={busyAction === "generate-missing"} disabled={steps.length === 0 || busyAction !== null}>
             Fill missing steps
           </Button>
-          <Button variant="secondary" size="sm" onClick={() => generate(true)} loading={busy} disabled={steps.length === 0}>
+          <Button variant="secondary" size="sm" onClick={() => generate(true)} loading={busyAction === "generate-all"} disabled={steps.length === 0 || busyAction !== null}>
             Regenerate all
           </Button>
         </div>
@@ -377,7 +377,7 @@ function StepsEditor() {
                         <button
                           type="button"
                           onClick={() => move(i, -1)}
-                          disabled={busy || i === 0}
+                          disabled={busyAction !== null || i === 0}
                           aria-label={`Move step ${i + 1} up`}
                           className="inline-flex size-8 items-center justify-center rounded-full border border-border-soft text-muted hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
                         >
@@ -386,7 +386,7 @@ function StepsEditor() {
                         <button
                           type="button"
                           onClick={() => move(i, 1)}
-                          disabled={busy || i === steps.length - 1}
+                          disabled={busyAction !== null || i === steps.length - 1}
                           aria-label={`Move step ${i + 1} down`}
                           className="inline-flex size-8 items-center justify-center rounded-full border border-border-soft text-muted hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
                         >
@@ -408,7 +408,7 @@ function StepsEditor() {
                   <textarea
                     value={drafts[step.id] ?? ""}
                     onChange={(e) => setDrafts((prev) => ({ ...prev, [step.id]: e.target.value }))}
-                    disabled={busy}
+                    disabled={busyAction !== null}
                     rows={3}
                     maxLength={2000}
                     placeholder="What should the voice say? Posture guidance + breathing cue + safety note."
@@ -429,7 +429,8 @@ function StepsEditor() {
                           ? `Confirm deleting step ${i + 1}`
                           : `Delete step ${i + 1}`
                       }
-                      className="inline-flex size-9 items-center justify-center rounded-full border border-border-soft text-muted hover:border-danger/40 hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
+                      disabled={busyAction !== null}
+                      className="inline-flex size-9 items-center justify-center rounded-full border border-border-soft text-muted hover:border-danger/40 hover:text-danger disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-300"
                     >
                       <Trash2 className="size-4" aria-hidden="true" />
                     </button>
@@ -437,7 +438,8 @@ function StepsEditor() {
                       variant="secondary"
                       size="sm"
                       onClick={() => saveInstruction(step.id)}
-                      loading={busy}
+                      loading={busyAction === `save-${step.id}`}
+                      disabled={busyAction !== null}
                     >
                       {step.instruction?.trim()
                         ? (drafts[step.id] ?? "").trim() === step.instruction.trim() ? "Edit narration" : "Update narration"
@@ -462,13 +464,13 @@ function StepsEditor() {
       <section className="mt-8 flex flex-wrap items-center gap-3 border-t border-border-soft pt-6">
         <Button
           onClick={publish}
-          loading={busy}
-          disabled={steps.length === 0 || status === "PUBLISHED"}
+          loading={busyAction === "publish"}
+          disabled={steps.length === 0 || status === "PUBLISHED" || busyAction !== null}
         >
           Publish
         </Button>
         {status === "PUBLISHED" ? (
-          <Button variant="secondary" onClick={unpublish} loading={busy}>
+          <Button variant="secondary" onClick={unpublish} loading={busyAction === "unpublish"} disabled={busyAction !== null}>
             Unpublish
           </Button>
         ) : null}
